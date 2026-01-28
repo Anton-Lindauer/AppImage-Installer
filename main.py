@@ -18,3 +18,5 @@ elif fileListLen <= 0:
     print("No .AppImage file found")
 
 print(f"You choose {fileList[choice]}")
+
+#test
