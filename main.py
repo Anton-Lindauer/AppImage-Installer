@@ -2,13 +2,16 @@ import os
 import sys
 import shutil
 fileList = []
-fileDestination = "C:/Users/primu/Downloads/test/"
+fileDest = "C:/Users/primu/Downloads/test/"
 
 # Function to move the AppImage File to the right directory
-def moveFile(selectedFile, fileDestination):
-    print(f"You choose {fileList[choice]}")
-    shutil.move(selectedFile, fileDestination)
-    print("File moved successfully")
+def moveFile(fileList, fileDest):
+    print(f"You chose {fileList[choice]}")
+    try:
+        shutil.move(fileList[choice], fileDest)
+        print("File moved successfully")
+    except Exception:
+        print(f"This went wrong: \n{Exception}")
 
 # List every AppImage file
 for file in os.listdir("C:/Users/primu/Downloads/"):
@@ -16,21 +19,22 @@ for file in os.listdir("C:/Users/primu/Downloads/"):
         fileList.append(os.path.join("C:/Users/primu/Downloads/", file))
         print(f"{len(fileList)}. {file}")
 
-# Ask user what to do
+# Ask user which file to move
 fileListLen = len(fileList)
-if fileListLen >= 2:    #Execute if there is more than one AppImage file
-    choice = int(input(f"Select a file(1 - {fileListLen})")) - 1
-    selectedFile = fileList[choice]
-    moveFile(selectedFile, fileDestination)
-elif fileListLen == 1:  #Execute if there is one AppImage file
-    print("You have only one .AppImage file")
-    choice = 0
-    selectedFile = fileList[choice] 
-    fileChoice = input("Enter y to use this file")
+if fileListLen >= 2:    # Execute if there is more than one AppImage file
+    choice = int(input(f"Select a file to move (1 - {fileListLen}):")) - 1
+    if choice >= 0:
+        moveFile(fileList, fileDest)
+    else:
+        print(f"Please select a file from the list (1 - {fileListLen})")
+elif fileListLen == 1:  # Execute if there is only one AppImage file
+    print("This .AppImage file has been found")
+    choice = 0 
+    fileChoice = input("Enter y to move this file:").lower()
     if fileChoice == "y":
-        moveFile(selectedFile, fileDestination)
+        moveFile(fileList, fileDest)
     else:
         sys.exit()
-elif fileListLen <= 0:  #Execute if there are no AppImage files
-    print("No .AppImage file found")
+elif fileListLen <= 0:  # Execute if there are no AppImage files
+    print("No .AppImage file has been found")
     sys.exit()
