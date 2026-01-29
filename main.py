@@ -3,7 +3,7 @@ import sys
 import shutil
 
 fileList = []
-fileDest = "C:/Users/primu/Downloads/test/"
+fileDest = "/home/silas/Downloads/test"
 
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
@@ -15,9 +15,9 @@ def moveFile(fileList, fileDest):
         print(f"This went wrong: \n{error}")
 
 # List every AppImage file
-for file in os.listdir("C:/Users/primu/Downloads/"):
+for file in os.listdir("/home/silas/Downloads"):
     if file.endswith(".AppImage"):
-        fileList.append(os.path.join("C:/Users/primu/Downloads/", file))
+        fileList.append(os.path.join("/home/silas/Downloads", file))
         print(f"{len(fileList)}. {file}")
 
 # Ask user which file to move
