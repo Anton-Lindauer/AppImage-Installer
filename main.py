@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+
 fileList = []
 fileDest = "C:/Users/primu/Downloads/test/"
 
@@ -10,8 +11,8 @@ def moveFile(fileList, fileDest):
     try:
         shutil.move(fileList[choice], fileDest)
         print("File moved successfully")
-    except Exception:
-        print(f"This went wrong: \n{Exception}")
+    except Exception as error:
+        print(f"This went wrong: \n{error}")
 
 # List every AppImage file
 for file in os.listdir("C:/Users/primu/Downloads/"):
@@ -34,7 +35,7 @@ elif fileListLen == 1:  # Execute if there is only one AppImage file
     if fileChoice == "y":
         moveFile(fileList, fileDest)
     else:
-        sys.exit()
-elif fileListLen <= 0:  # Execute if there are no AppImage files
+        print("Canceling the operation")
+else:  # Execute if there are no AppImage files
     print("No .AppImage file has been found")
     sys.exit()
