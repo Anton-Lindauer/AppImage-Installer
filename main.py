@@ -23,10 +23,14 @@ def mkExec():
     print("The AppImage file can now be executed")
 
 # List every AppImage file
-for file in os.listdir("/home/silas/Downloads"): # .sort():
-    if file.endswith(".AppImage"): #and os.path.isfile(file):
+for file in os.listdir("/home/silas/Downloads"):
+    if file.endswith(".AppImage") and os.path.isfile(os.path.join("/home/silas/Downloads", file)):
         fileList.append(os.path.join("/home/silas/Downloads", file))
-        print(f"{len(fileList)}. {file}")
+
+fileList.sort()    # Sort the list in a alphabetic order
+
+for file in fileList:   # Display every file
+    print(f"{len(fileList)}. {file}")
 
 # Ask user which file to move
 fileListLen = len(fileList)
