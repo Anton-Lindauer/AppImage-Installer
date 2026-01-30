@@ -8,20 +8,23 @@ fileDest = "/home/silas/Downloads/test"
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
     print(f"You chose {fileList[choice]}")
-    try:
+    if not os.path.isdir("/home/silas/Downloads/test"): # Create the directory if it doesn't exist
+        os.mkdir("/home/silas/Downloads/test")
+    try:    # Moving the .AppImage file
         shutil.move(fileList[choice], fileDest)
         print("File moved successfully")
         mkExec()
     except Exception as error:
         print(f"This went wrong: \n{error}")
 
-def mkExec():   # Function to make the AppImage file executable
+# Function to make the AppImage file executable
+def mkExec():
     os.system(f'chmod +x /home/silas/Downloads/test/{os.path.basename(fileList[choice])}')
     print("The AppImage file can now be executed")
 
 # List every AppImage file
-for file in os.listdir("/home/silas/Downloads"):
-    if file.endswith(".AppImage"):
+for file in os.listdir("/home/silas/Downloads").sort():
+    if file.endswith(".AppImage") and os.path.isfile(file):
         fileList.append(os.path.join("/home/silas/Downloads", file))
         print(f"{len(fileList)}. {file}")
 
