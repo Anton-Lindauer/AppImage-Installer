@@ -23,8 +23,8 @@ def mkExec():
     print("The AppImage file can now be executed")
 
 # List every AppImage file
-for file in os.listdir("/home/silas/Downloads").sort():
-    if file.endswith(".AppImage") and os.path.isfile(file):
+for file in os.listdir("/home/silas/Downloads"): # .sort():
+    if file.endswith(".AppImage"): #and os.path.isfile(file):
         fileList.append(os.path.join("/home/silas/Downloads", file))
         print(f"{len(fileList)}. {file}")
 
