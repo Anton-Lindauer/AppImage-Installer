@@ -11,8 +11,13 @@ def moveFile(fileList, fileDest):
     try:
         shutil.move(fileList[choice], fileDest)
         print("File moved successfully")
+        mkExec()
     except Exception as error:
         print(f"This went wrong: \n{error}")
+
+def mkExec():   # Function to make the AppImage file executable
+    os.system(f'chmod +x /home/silas/Downloads/test/{os.path.basename(fileList[choice])}')
+    print("The AppImage file can now be executed")
 
 # List every AppImage file
 for file in os.listdir("/home/silas/Downloads"):
