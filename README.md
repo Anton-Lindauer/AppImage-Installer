@@ -1,6 +1,6 @@
 # AppImage-Installer
 
-A console-based tool to easylly install AppImage files on Linux.
+A console-based tool to easily install AppImage files on Linux.
 
 You can move the AppImage file to the right directory, make the file executable and create a desktop startmenu entry.
 
