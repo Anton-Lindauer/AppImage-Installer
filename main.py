@@ -1,6 +1,7 @@
 import os
 import sys
 import shutil
+import subprocess
 
 fileList = []
 fileDest = "/home/silas/Downloads/test"
@@ -16,6 +17,14 @@ def moveFile(fileList, fileDest):
         mkExec()
     except Exception as error:
         print(f"This went wrong: \n{error}")
+
+# Function to find out which user is active
+def findUsername():
+    stdout = subprocess.Popen('whoami', shell=True, stdout=subprocess.PIPE).stdout
+    output = stdout.read()
+    print(output)
+
+findUsername()
 
 # Function to make the AppImage file executable
 def mkExec():
