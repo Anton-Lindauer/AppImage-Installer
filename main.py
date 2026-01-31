@@ -25,7 +25,7 @@ def moveFile(fileList, fileDest):
 
 # Function to make the AppImage file executable
 def mkExec():
-    os.system(f'chmod +x /home/"+findUsername()+"/Downloads/test/{os.path.basename(fileList[choice])}')
+    os.system(f'chmod +x /home/{findUsername()}/Downloads/test/{os.path.basename(fileList[choice])}')
     print("The AppImage file can now be executed")
 
 # List every AppImage file
@@ -36,7 +36,8 @@ for file in os.listdir("/home/"+findUsername()+"/Downloads"):
 fileList.sort()    # Sort the list in a alphabetic order
 
 for file in fileList:   # Display every file
-    print(f"{len(fileList)}. {file}")
+    print(f"{fileList.index(file) + 1}. {file}")
+
 
 # Ask user which file to move
 fileListLen = len(fileList)
