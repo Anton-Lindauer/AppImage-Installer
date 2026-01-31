@@ -20,8 +20,7 @@ def moveFile(fileList, fileDest):
 
 # Function to find out which user is active
 def findUsername():
-    stdout = subprocess.Popen('whoami', shell=True, stdout=subprocess.PIPE).stdout
-    output = stdout.read()
+    output = subprocess.check_output("whoami").decode().strip()
     print(output)
 
 findUsername()
