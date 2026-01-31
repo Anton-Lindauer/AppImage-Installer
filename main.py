@@ -3,10 +3,8 @@ import sys
 import shutil
 import subprocess
 
-# Function to find out which user is active
-def findUsername():
-    global username
-    username = subprocess.check_output("whoami").decode().strip()
+# Find out which user is active
+username = subprocess.check_output("whoami").decode().strip()
 
 fileList = []
 fileDest = "/home/"+username+"/AppImages/"
@@ -27,6 +25,12 @@ def moveFile(fileList, fileDest):
 def mkExec():
     os.system(f'chmod +x /home/{username}/AppImages/{os.path.basename(fileList[choice])}')
     print("The AppImage file can now be executed")
+    mkSymLink()
+
+def mkSymLink(): # Function to create a symLink file, to execute the .AppImage file with a terminal command systemwide
+    cmdName = input("Enter the command your want to execute the .AppImage file from the terminal: ")
+    os.system(f"ln -s ~/AppImages/{os.path.basename(fileList[choice])}""  ~/.local/bin/"+cmdName)
+    print(f"You can now use {cmdName} to execute this program from the terminal")
 
 # List every AppImage file
 for file in os.listdir("/home/"+username+"/Downloads"):
@@ -41,15 +45,15 @@ for file in fileList:   # Display every file
 # Ask user which file to move
 fileListLen = len(fileList)
 if fileListLen >= 2:    # Execute if there is more than one AppImage file
-    choice = int(input(f"Select a file to move (1 - {fileListLen}):")) - 1
+    choice = int(input(f"Select a file to move (1 - {fileListLen}): ")) - 1
     if choice >= 0:
         moveFile(fileList, fileDest)
     else:
-        print(f"Please select a file from the list (1 - {fileListLen})")
+        print(f"Please select a file from the list (1 - {fileListLen}): ")
 elif fileListLen == 1:  # Execute if there is only one AppImage file
     print("This .AppImage file has been found")
     choice = 0 
-    fileChoice = input("Enter y to move this file:").lower()
+    fileChoice = input("Enter y to move this file: ").lower()
     if fileChoice == "y":
         moveFile(fileList, fileDest)
     else:
