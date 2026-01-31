@@ -3,14 +3,19 @@ import sys
 import shutil
 import subprocess
 
+# Function to find out which user is active
+def findUsername():
+    username = subprocess.check_output("whoami").decode().strip()
+    return username
+
 fileList = []
-fileDest = "/home/silas/Downloads/test"
+fileDest = "/home/"+findUsername()+"/Downloads/test"
 
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
     print(f"You chose {fileList[choice]}")
-    if not os.path.isdir("/home/silas/Downloads/test"): # Create the directory if it doesn't exist
-        os.mkdir("/home/silas/Downloads/test")
+    if not os.path.isdir("/home/"+findUsername()+"/Downloads/test"): # Create the directory if it doesn't exist
+        os.mkdir("/home/"+findUsername()+"/Downloads/test")
     try:    # Moving the .AppImage file
         shutil.move(fileList[choice], fileDest)
         print("File moved successfully")
@@ -18,22 +23,15 @@ def moveFile(fileList, fileDest):
     except Exception as error:
         print(f"This went wrong: \n{error}")
 
-# Function to find out which user is active
-def findUsername():
-    output = subprocess.check_output("whoami").decode().strip()
-    print(output)
-
-findUsername()
-
 # Function to make the AppImage file executable
 def mkExec():
-    os.system(f'chmod +x /home/silas/Downloads/test/{os.path.basename(fileList[choice])}')
+    os.system(f'chmod +x /home/"+findUsername()+"/Downloads/test/{os.path.basename(fileList[choice])}')
     print("The AppImage file can now be executed")
 
 # List every AppImage file
-for file in os.listdir("/home/silas/Downloads"):
-    if file.endswith(".AppImage") and os.path.isfile(os.path.join("/home/silas/Downloads", file)):
-        fileList.append(os.path.join("/home/silas/Downloads", file))
+for file in os.listdir("/home/"+findUsername()+"/Downloads"):
+    if file.endswith(".AppImage") and os.path.isfile(os.path.join("/home/"+findUsername()+"/Downloads", file)):
+        fileList.append(os.path.join("/home/"+findUsername()+"/Downloads", file))
 
 fileList.sort()    # Sort the list in a alphabetic order
 
