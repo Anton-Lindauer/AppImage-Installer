@@ -10,13 +10,16 @@ You need Python version 3.13 or higher to use this program.
 No external libraries required.
 Should work on any **Linux** Distro, doesn't work on Windows.
 
-## How to use
+## How to install and launch
+Download this directory as a .ZIP file, decompress it, open a terminal in the decompressed folder and type in this command:
 
 ```
 python3 main.py
 ```
 
 ## Other important notes
-This tool is still work in progress and more functionality will be added soon. 
-For now, the directory the files are moved to are for testing purposes only.
+This tool is still work in progress and more functionality will be added soon.
+
+The files are moved to /home/{username}/AppImages/.
+
 If you want to contribute, make suggestions on how to make the program more performant - feature requests will be ignored until I have finished the core features.

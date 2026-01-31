@@ -9,13 +9,13 @@ def findUsername():
     username = subprocess.check_output("whoami").decode().strip()
 
 fileList = []
-fileDest = "/home/"+username+"/Downloads/test"
+fileDest = "/home/"+username+"/AppImages/"
 
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
     print(f"You chose {fileList[choice]}")
-    if not os.path.isdir("/home/"+username+"/Downloads/test"): # Create the directory if it doesn't exist
-        os.mkdir("/home/"+username+"/Downloads/test")
+    if not os.path.isdir("/home/"+username+"/AppImages/"): # Create the directory if it doesn't exist
+        os.mkdir("/home/"+username+"/AppImages/")
     try:    # Moving the .AppImage file
         shutil.move(fileList[choice], fileDest)
         print("File moved successfully")
@@ -25,7 +25,7 @@ def moveFile(fileList, fileDest):
 
 # Function to make the AppImage file executable
 def mkExec():
-    os.system(f'chmod +x /home/{username}/Downloads/test/{os.path.basename(fileList[choice])}')
+    os.system(f'chmod +x /home/{username}/AppImages/{os.path.basename(fileList[choice])}')
     print("The AppImage file can now be executed")
 
 # List every AppImage file
