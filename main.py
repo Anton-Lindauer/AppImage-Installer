@@ -38,7 +38,6 @@ fileList.sort()    # Sort the list in a alphabetic order
 for file in fileList:   # Display every file
     print(f"{fileList.index(file) + 1}. {file}")
 
-
 # Ask user which file to move
 fileListLen = len(fileList)
 if fileListLen >= 2:    # Execute if there is more than one AppImage file
