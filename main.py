@@ -4,17 +4,19 @@ import shutil
 import subprocess
 import pathlib
 
+# Find user directory
+userDir = pathlib.Path.home()
 # Find out which user is active
 username = subprocess.check_output("whoami").decode().strip()
 
 fileList = []
-fileDest = "/home/"+username+"/AppImages/"
+fileDest = userDir+"/AppImages"
 
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
     print(f"You chose {fileList[choice]}")
-    if not os.path.isdir("/home/"+username+"/AppImages/"): # Create the directory if it doesn't exist
-        os.mkdir("/home/"+username+"/AppImages/")
+    if not os.path.isdir(fileDest): # Create the directory if it doesn't exist
+        os.mkdir(fileDest)
     try:    # Moving the .AppImage file
         shutil.move(fileList[choice], fileDest)
         print("File moved successfully")
@@ -24,7 +26,7 @@ def moveFile(fileList, fileDest):
 
 # Function to make the AppImage file executable
 def mkExec():
-    os.system(f'chmod +x /home/{username}/AppImages/{os.path.basename(fileList[choice])}')
+    os.system(f'chmod +x {fileDest}/{os.path.basename(fileList[choice])}')
     print("The AppImage file can now be executed")
     mkSymLink()
 
@@ -36,22 +38,26 @@ def mkSymLink():
     mkStartmenuEntry()
 
 def mkStartmenuEntry():
-    subprocess.run([f"{pathlib.Path.home()}/AppImages/cura.AppImage", "--appimage-extract"], check=True)  # Extract AppImage
-    print("1. Pass")
+    subprocess.run([f"{fileDest}/cura.AppImage", "--appimage-extract"], check=True)  # Extract AppImage
+    print("Finished extracting data from the .AppImage file")
     
-    if not os.path.isdir(f"{pathlib.Path.home()}/AppImages/"): # Create the icons directory if it doesn't exist
-            os.mkdir(f"{pathlib.Path.home()}/.local/share/icons/")
-    print("2. Pass")
+    if not os.path.isdir(fileDest): # Create the icons directory if it doesn't exist
+        os.mkdir(f"{userDir}/.local/share/icons")
+        print(f"Created {userDir}/.local/share/icons")
+    else:
+        print(f"{userDir}/.local/share/icons/ has been found")
     
-    subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{pathlib.Path.home()}/.local/share/icons"], check=True) # Copy Icon to icons directory
-    print("3. Pass")
+    subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True) # Copy Icon to icons directory
+    print("Finished copying the icon to the icons directory")
     
     subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True)    # Delete squashfs-root 
-    print("4. Pass")
+    print("Finished deleting the squashfs-root")
     
-    if not os.path.isdir(f"{pathlib.Path.home()}/.local/share/applications/"): # Create the applications directory if it doesn't exist
-            os.mkdir(f"{pathlib.Path.home()}/.local/share/applications")
-    print("5. Pass")
+    if not os.path.isdir(f"{userDir}/.local/share/applications/"): # Create the applications directory if it doesn't exist
+        os.mkdir(f"{userDir}/.local/share/applications")
+        print(f"Created {userDir}/.local/share/applications")
+    else:
+        print(f"{userDir}/.local/share/applications has been found")
     
     desktopFile = f"""[Desktop Entry]
                       Type=Application
@@ -61,24 +67,25 @@ def mkStartmenuEntry():
                       Terminal=false
                       Categories=Graphics;Engineering;
                       """
-    print("6. Pass")
+    print("Gathered data for .desktop file creation")
     
-    home = pathlib.Path.home()
-    appsDir = home/".local/share/applications"
+    appsDir = userDir+"/.local/share/applications"
     desktopEntry = appsDir/"curatest.desktop" # Write the .desktop file
     desktopEntry.write_text(desktopFile)
-    print("7. Pass")
+    print("Finished creating the .desktop file")
     
     subprocess.run(["chmod", "+x", str(desktopEntry)], check=True) # Make the .desktop file executable
-    print("8. Pass")
+    print("Made the .desktop file executable")
     
-    subprocess.run(["update-desktop-database", f"{pathlib.Path.home()}.local/share/applications"])  # Update the startmenu
-    print("9. Pass")
+    # subprocess.run(["update-desktop-database", f"{pathlib.Path.home()}.local/share/applications"])  # Update the startmenu
+    # print("9. Pass")
+
+    print("Everyting has finished successfully, try loging out and back in if the program doesn't show up in the startmenu")
 
 # List every AppImage file
-for file in os.listdir("/home/"+username+"/Downloads"):
-    if file.endswith(".AppImage") and os.path.isfile(os.path.join("/home/"+username+"/Downloads", file)):
-        fileList.append(os.path.join("/home/"+username+"/Downloads", file))
+for file in os.listdir(userDir+"Downloads"):
+    if file.endswith(".AppImage") and os.path.isfile(os.path.join(userDir+"/Downloads", file)):
+        fileList.append(os.path.join(userDir+"/Downloads", file))
 
 fileList.sort()    # Sort the list in a alphabetic order
 
