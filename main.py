@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import subprocess
+import pathlib
 
 # Find out which user is active
 username = subprocess.check_output("whoami").decode().strip()
@@ -35,7 +36,44 @@ def mkSymLink():
     mkStartmenuEntry()
 
 def mkStartmenuEntry():
-    pass
+    subprocess.run([f"{pathlib.Path.home()}/AppImages/cura.AppImage", "--appimage-extract"], check=True)  # Extract AppImage
+    print("1. Pass")
+    
+    if not os.path.isdir(f"{pathlib.Path.home()}/AppImages/"): # Create the icons directory if it doesn't exist
+            os.mkdir(f"{pathlib.Path.home()}/.local/share/icons/")
+    print("2. Pass")
+    
+    subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{pathlib.Path.home()}/.local/share/icons"], check=True) # Copy Icon to icons directory
+    print("3. Pass")
+    
+    subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True)    # Delete squashfs-root 
+    print("4. Pass")
+    
+    if not os.path.isdir(f"{pathlib.Path.home()}/.local/share/applications/"): # Create the applications directory if it doesn't exist
+            os.mkdir(f"{pathlib.Path.home()}/.local/share/applications")
+    print("5. Pass")
+    
+    desktopFile = f"""[Desktop Entry]
+                      Type=Application
+                      Name=CuraTest
+                      Exec={pathlib.Path.home()}/AppImages/cura.AppImage
+                      Icon={pathlib.Path.home()}/.local/share/icons/cura.png
+                      Terminal=false
+                      Categories=Graphics;Engineering;
+                      """
+    print("6. Pass")
+    
+    home = pathlib.Path.home()
+    appsDir = home/".local/share/applications"
+    desktopEntry = appsDir/"curatest.desktop" # Write the .desktop file
+    desktopEntry.write_text(desktopFile)
+    print("7. Pass")
+    
+    subprocess.run(["chmod", "+x", str(desktopEntry)], check=True) # Make the .desktop file executable
+    print("8. Pass")
+    
+    subprocess.run(["update-desktop-database", f"{pathlib.Path.home()}.local/share/applications"])  # Update the startmenu
+    print("9. Pass")
 
 # List every AppImage file
 for file in os.listdir("/home/"+username+"/Downloads"):
