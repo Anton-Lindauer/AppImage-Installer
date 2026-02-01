@@ -6,9 +6,8 @@ import pathlib
 
 # Find user directory
 userDir = pathlib.Path.home()
-# Find out which user is active
-username = subprocess.check_output("whoami").decode().strip()
 
+# Create needed list and file path
 fileList = []
 fileDest = str(userDir)+"/AppImages"
 
@@ -77,9 +76,6 @@ def mkStartmenuEntry():
     
     subprocess.run(["chmod", "+x", str(desktopEntry)], check=True) # Make the .desktop file executable
     print("Made the .desktop file executable")
-    
-    # subprocess.run(["update-desktop-database", f"{pathlib.Path.home()}.local/share/applications"])  # Update the startmenu
-    # print("9. Pass")
 
     print("Everyting has finished successfully, try loging out and back in if the program doesn't show up in the startmenu")
 
