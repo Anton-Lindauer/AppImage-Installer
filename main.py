@@ -10,7 +10,7 @@ userDir = pathlib.Path.home()
 username = subprocess.check_output("whoami").decode().strip()
 
 fileList = []
-fileDest = userDir+"/AppImages"
+fileDest = str(userDir)+"/AppImages"
 
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
@@ -69,7 +69,8 @@ def mkStartmenuEntry():
                       """
     print("Gathered data for .desktop file creation")
     
-    appsDir = userDir+"/.local/share/applications"
+    home = pathlib.Path.home()
+    appsDir = home/".local/share/applications"
     desktopEntry = appsDir/"curatest.desktop" # Write the .desktop file
     desktopEntry.write_text(desktopFile)
     print("Finished creating the .desktop file")
@@ -83,9 +84,9 @@ def mkStartmenuEntry():
     print("Everyting has finished successfully, try loging out and back in if the program doesn't show up in the startmenu")
 
 # List every AppImage file
-for file in os.listdir(userDir+"Downloads"):
-    if file.endswith(".AppImage") and os.path.isfile(os.path.join(userDir+"/Downloads", file)):
-        fileList.append(os.path.join(userDir+"/Downloads", file))
+for file in os.listdir(str(userDir)+"/Downloads"):
+    if file.endswith(".AppImage") and os.path.isfile(os.path.join(str(userDir)+"/Downloads", file)):
+        fileList.append(os.path.join(str(userDir)+"/Downloads", file))
 
 fileList.sort()    # Sort the list in a alphabetic order
 
