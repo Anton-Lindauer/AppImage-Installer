@@ -63,6 +63,7 @@ def mkStartmenuEntry():
         print(f"{userDir}/.local/share/applications has been found")
 
     programName = input("Enter the name of the program in the startmenu: ")
+    programDescr = input("Enter a description for the program: ")
 
     print("Categories: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;")
     print("Use ';' to seperate them and at the end")
@@ -71,6 +72,7 @@ def mkStartmenuEntry():
     desktopFile = f"""[Desktop Entry]
                       Type=Application
                       Name={programName}
+                      Comment={programDescr}
                       Exec={fileDest}/{fileName}
                       Icon={userDir}/.local/share/icons/{programIcon}
                       Terminal=false
