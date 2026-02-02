@@ -25,7 +25,9 @@ def moveFile(fileList, fileDest):
 
 # Function to make the AppImage file executable
 def mkExec():
-    os.system(f'chmod +x {fileDest}/{os.path.basename(fileList[choice])}')
+    global fileName
+    fileName = os.path.basename(fileList[choice])
+    os.system(f'chmod +x {fileDest}/{fileName}')
     print("The AppImage file can now be executed")
     mkSymLink()
 
@@ -37,7 +39,7 @@ def mkSymLink():
     mkStartmenuEntry()
 
 def mkStartmenuEntry():
-    subprocess.run([f"{fileDest}/cura.AppImage", "--appimage-extract"], check=True)  # Extract AppImage
+    subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  # Extract AppImage
     print("Finished extracting data from the .AppImage file")
     
     if not os.path.isdir(fileDest): # Create the icons directory if it doesn't exist
@@ -45,6 +47,8 @@ def mkStartmenuEntry():
         print(f"Created {userDir}/.local/share/icons")
     else:
         print(f"{userDir}/.local/share/icons/ has been found")
+
+    programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))
     
     subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True) # Copy Icon to icons directory
     print("Finished copying the icon to the icons directory")
@@ -57,20 +61,26 @@ def mkStartmenuEntry():
         print(f"Created {userDir}/.local/share/applications")
     else:
         print(f"{userDir}/.local/share/applications has been found")
+
+    programName = input("Enter the name of the program in the startmenu: ")
+
+    print("Categories: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;")
+    print("Use ';' to seperate them and at the end")
+    programCategory = input("Enter the categories the program belongs to: ")
     
     desktopFile = f"""[Desktop Entry]
                       Type=Application
-                      Name=CuraTest
-                      Exec={pathlib.Path.home()}/AppImages/cura.AppImage
-                      Icon={pathlib.Path.home()}/.local/share/icons/cura.png
+                      Name={programName}
+                      Exec={fileDest}/{fileName}
+                      Icon={userDir}/.local/share/icons/{programIcon}
                       Terminal=false
-                      Categories=Graphics;Engineering;
+                      Categories={programCategory}
                       """
-    print("Gathered data for .desktop file creation")
+    print("Gathered all data for .desktop file creation")
     
     home = pathlib.Path.home()
     appsDir = home/".local/share/applications"
-    desktopEntry = appsDir/"curatest.desktop" # Write the .desktop file
+    desktopEntry = appsDir/f"{programName}.desktop" # Write the .desktop file
     desktopEntry.write_text(desktopFile)
     print("Finished creating the .desktop file")
     
