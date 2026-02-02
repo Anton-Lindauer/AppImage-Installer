@@ -2,9 +2,9 @@
 
 ## A console-based tool to easily install AppImage files on Linux.
 
-This project is **still in development**, but when finished you can do the following things: You can move the AppImage file to the right directory, make the file executable and you can also create a desktop startmenu entry.
+This project is **still in development**, but when finished you can do the following things: You can move the AppImage file to the right directory, make the file executable, launch it from the terminal and you can also create a desktop startmenu entry.
 
-Only thing missing is making a startmenu entry, everything else works now.
+Everything works now, but there is still more work to do, since the code is pretty messy.
 
 ## Requirements
 
@@ -19,9 +19,10 @@ Download this directory as a .ZIP file, decompress it, open a terminal in the de
 python3 main.py
 ```
 
+The program will guide you through the installation process. Please report any errors that may occoure.
 ## Other important notes
 This tool is still work in progress and more functionality will be added soon.
 
 The files are moved to ~/{username}/AppImages/.
 
-If you want to contribute, make suggestions on how to make the program more performant - feature requests will be ignored until I have finished the core features.
+If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will be ignored until I have finished cleaning up the code.

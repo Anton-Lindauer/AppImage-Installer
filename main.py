@@ -7,7 +7,7 @@ import pathlib
 # Find user directory
 userDir = pathlib.Path.home()
 
-# Create needed list and file path
+# Create a list of all .AppImage files in the Downloads directory and the file path to ~/{username}/AppImages
 fileList = []
 fileDest = str(userDir)+"/AppImages"
 
@@ -39,7 +39,7 @@ def mkSymLink():
     mkStartmenuEntry()
 
 def mkStartmenuEntry():
-    subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  # Extract AppImage
+    subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  # Extract AppImage in to the temporary directory
     print("Finished extracting data from the .AppImage file")
     
     if not os.path.isdir(fileDest): # Create the icons directory if it doesn't exist
@@ -48,12 +48,12 @@ def mkStartmenuEntry():
     else:
         print(f"{userDir}/.local/share/icons/ has been found")
 
-    programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))
+    programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))   # Find the name of the icon.png file; Used later in the .desktop file 
     
     subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True) # Copy Icon to icons directory
     print("Finished copying the icon to the icons directory")
     
-    subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True)    # Delete squashfs-root 
+    subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True)    # Delete squashfs-root; This is a temporary directory and the app icon is extracted to this directory
     print("Finished deleting the squashfs-root")
     
     if not os.path.isdir(f"{userDir}/.local/share/applications/"): # Create the applications directory if it doesn't exist
@@ -62,13 +62,14 @@ def mkStartmenuEntry():
     else:
         print(f"{userDir}/.local/share/applications has been found")
 
-    programName = input("Enter the name of the program in the startmenu: ")
-    programDescr = input("Enter a description for the program: ")
+    programName = input("Enter the name of the program in the startmenu: ")     # Name of the program in the startmenu
+    programDescr = input("Enter a description for the program: ")   # Description of the program in the tooltip 
 
-    print("Categories: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;")
+    print("Categories: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;")     # Startmenu categories 
     print("Use ';' to seperate them and at the end")
     programCategory = input("Enter the categories the program belongs to: ")
-    
+
+    # .desktop file content
     desktopFile = f"""[Desktop Entry]
                       Type=Application
                       Name={programName}
@@ -101,7 +102,7 @@ fileList.sort()    # Sort the list in a alphabetic order
 for file in fileList:   # Display every file
     print(f"{fileList.index(file) + 1}. {file}")
 
-# Ask user which file to move
+# Ask user which file to install
 def usrSelect():
     fileListLen = len(fileList)
     global choice
