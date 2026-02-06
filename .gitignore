@@ -1,0 +1,10 @@
+# Virtualenv
+venv/
+.env/
+
+# Python
+__pycache__
+*.pyc
+
+# Qt
+*.qmlc
