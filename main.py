@@ -11,6 +11,38 @@ userDir = pathlib.Path.home()
 fileList = []
 fileDest = str(userDir)+"/AppImages"
 
+# List every AppImage file
+for file in os.listdir(str(userDir)+"/Downloads"):
+    if file.endswith(".AppImage") and os.path.isfile(os.path.join(str(userDir)+"/Downloads", file)):
+        fileList.append(os.path.join(str(userDir)+"/Downloads", file))
+
+fileList.sort()    # Sort the list in a alphabetic order
+
+for file in fileList:   # Display every file
+    print(f"{fileList.index(file) + 1}. {file}")
+
+# Ask user which file to install
+def usrSelect():
+    fileListLen = len(fileList)
+    global choice
+    if fileListLen >= 2:    # Execute if there is more than one AppImage file
+        choice = int(input(f"Select a file to move (1 - {fileListLen}): ")) - 1
+        if choice >= 0:
+            moveFile(fileList, fileDest)
+        else:
+            print(f"Please select a file from the list (1 - {fileListLen}): ")
+    elif fileListLen == 1:  # Execute if there is only one AppImage file
+        print("This .AppImage file has been found")
+        choice = 0 
+        fileChoice = input("Enter y to move this file: ").lower()
+        if fileChoice == "y":
+            moveFile(fileList, fileDest)
+        else:
+            print("Canceling the operation")
+    else:  # Execute if there are no AppImage files
+        print("No .AppImage file has been found")
+        sys.exit()
+        
 # Function to move the AppImage File to the right directory
 def moveFile(fileList, fileDest):
     print(f"You chose {fileList[choice]}")
@@ -91,38 +123,6 @@ def mkStartmenuEntry():
     print("Made the .desktop file executable")
 
     print("Everyting has finished successfully, try loging out and back in if the program doesn't show up in the startmenu")
-
-# List every AppImage file
-for file in os.listdir(str(userDir)+"/Downloads"):
-    if file.endswith(".AppImage") and os.path.isfile(os.path.join(str(userDir)+"/Downloads", file)):
-        fileList.append(os.path.join(str(userDir)+"/Downloads", file))
-
-fileList.sort()    # Sort the list in a alphabetic order
-
-for file in fileList:   # Display every file
-    print(f"{fileList.index(file) + 1}. {file}")
-
-# Ask user which file to install
-def usrSelect():
-    fileListLen = len(fileList)
-    global choice
-    if fileListLen >= 2:    # Execute if there is more than one AppImage file
-        choice = int(input(f"Select a file to move (1 - {fileListLen}): ")) - 1
-        if choice >= 0:
-            moveFile(fileList, fileDest)
-        else:
-            print(f"Please select a file from the list (1 - {fileListLen}): ")
-    elif fileListLen == 1:  # Execute if there is only one AppImage file
-        print("This .AppImage file has been found")
-        choice = 0 
-        fileChoice = input("Enter y to move this file: ").lower()
-        if fileChoice == "y":
-            moveFile(fileList, fileDest)
-        else:
-            print("Canceling the operation")
-    else:  # Execute if there are no AppImage files
-        print("No .AppImage file has been found")
-        sys.exit()
 
 if __name__ == "__main__":
     usrSelect()
