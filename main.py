@@ -7,14 +7,14 @@ import pathlib
 # Find user directory
 userDir = pathlib.Path.home()
 
-# Create a list of all .AppImage files in the Downloads directory and the file path to ~/{username}/AppImages
-fileList = []
+# Filepaths to the directories for and of the .AppImage files 
 fileDest = str(userDir)+"/AppImages"
+downloadsDir = os.path.join(str(userDir), "Downloads")
 
-# List every AppImage file
-for file in os.listdir(str(userDir)+"/Downloads"):
-    if file.endswith(".AppImage") and os.path.isfile(os.path.join(str(userDir)+"/Downloads", file)):
-        fileList.append(os.path.join(str(userDir)+"/Downloads", file))
+# Put every AppImage file into a list
+fileList = [file.path 
+            for file in os.scandir(downloadsDir) 
+            if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
 
 fileList.sort()    # Sort the list in a alphabetic order
 
