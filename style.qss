@@ -1,0 +1,6 @@
+QLabel#title {
+    font-weight: bold;
+    background-color: gray;
+    max-height: 40px;
+    min-height: 40px
+}

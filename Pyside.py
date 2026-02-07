@@ -1,17 +1,40 @@
-from PySide6.QtWidgets import QApplication, QMessageBox
-from PySide6.QtCore import QFile
-from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton
+from PySide6.QtCore import Qt
+import sys
 
-app = QApplication()
+class MainWindow(QMainWindow):
 
-loader = QUiLoader()
+    def __init__(self):
+        super().__init__()
+    
+        self.setWindowTitle("AppImage-Installer")
 
-file = QFile('GUI.ui')
-file.open(QFile.ReadOnly)
+        central = QWidget()
+        self.setCentralWidget(central)
 
-window = loader.load(file)
-file.close()
+        main_layout = QVBoxLayout(central)
 
-window.show()
+        container = QGroupBox()
+        layout = QVBoxLayout(container)
 
-app.exec()
+        title = QLabel("one")
+        title.setObjectName("title")
+        title.setAlignment(Qt.AlignCenter)
+
+        main_layout.addWidget(title)
+        layout.addWidget(QLabel("TEST"))
+
+        main_layout.addWidget(container)
+
+
+if __name__ == "__main__":
+    app = QApplication()
+
+    window = MainWindow()
+    window.show()
+
+    with open("/home/silas/Programmieren/AppImage-Installer/style.qss", "r") as f:
+        _style = f.read()
+        app.setStyleSheet(_style)
+
+    sys.exit(app.exec())
