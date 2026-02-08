@@ -1,6 +1,32 @@
 QLabel#title {
     font-weight: bold;
-    background-color: gray;
     max-height: 40px;
     min-height: 40px
+}
+QMainWindow {
+    background-color: #212121
+}
+QGroupBox {
+    background-color: #2c2c2c;
+    border: 1px solid #424242;
+    border-radius: 10px
+}
+QPushButton#submitBtn {
+    min-height: 20px;
+    max-height: 20px
+}
+QPushButton {
+    background-color: #373737;
+    border: none;
+    border-radius: 6px
+}
+QPushButton:hover {
+    background-color: #484848
+}
+QPushButton:pressed {
+    background-color: #525252
+}
+QRadioButton {
+    border: 1px solid #424242;
+    padding: 6px
 }

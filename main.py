@@ -26,6 +26,8 @@ def showFiles():
 
     for file in fileList:   # Display every file
         print(f"{fileList.index(file) + 1}. {file}")
+    
+    return fileList
 
 # Ask user which file to install
 def userChoice():

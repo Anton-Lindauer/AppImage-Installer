@@ -1,30 +1,40 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton
 from PySide6.QtCore import Qt
 import sys
+from main import showFiles
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
     
-        self.setWindowTitle("AppImage-Installer")
+        self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
 
-        central = QWidget()
+        central = QWidget()     # Widget for all the elements
         self.setCentralWidget(central)
 
-        main_layout = QVBoxLayout(central)
+        mainLayout = QVBoxLayout(central)   # Layout of the entiry window
 
-        container = QGroupBox()
+        title = QLabel("Select a file to install")   # Title of the current thing the user does
+        title.setObjectName("title")
+        title.setAlignment(Qt.AlignLeft)
+
+        container = QGroupBox()    # Box for the options for the user
         layout = QVBoxLayout(container)
 
-        title = QLabel("one")
-        title.setObjectName("title")
-        title.setAlignment(Qt.AlignCenter)
+        fileList = showFiles()
 
-        main_layout.addWidget(title)
-        layout.addWidget(QLabel("TEST"))
+        for file in fileList:
+            radioBtn = QRadioButton(file)
+            layout.addWidget(radioBtn)
 
-        main_layout.addWidget(container)
+        submitButton = QPushButton("Continue")  # Button to continue with the selected options
+        submitButton.setObjectName("submitBtn")
+
+        # Add the elemts to the window
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(container)
+        mainLayout.addWidget(submitButton)
 
 
 if __name__ == "__main__":
