@@ -1,7 +1,8 @@
 QLabel#title {
     font-weight: bold;
-    max-height: 40px;
-    min-height: 40px
+    max-height: 20px;
+    min-height: 20px;
+    font-size: 14px
 }
 QMainWindow {
     background-color: #212121
@@ -9,16 +10,17 @@ QMainWindow {
 QGroupBox {
     background-color: #2c2c2c;
     border: 1px solid #424242;
-    border-radius: 10px
+    border-radius: 10px;
 }
 QPushButton#submitBtn {
-    min-height: 20px;
-    max-height: 20px
+    min-height: 26px;
+    max-height: 26px
 }
 QPushButton {
     background-color: #373737;
     border: none;
-    border-radius: 6px
+    border-radius: 6px;
+    font-size: 14px
 }
 QPushButton:hover {
     background-color: #484848
@@ -27,6 +29,9 @@ QPushButton:pressed {
     background-color: #525252
 }
 QRadioButton {
-    border: 1px solid #424242;
-    padding: 6px
+    padding: 10px;
+    font-size: 14px
+}
+QFrame#line{
+    background-color: #424242
 }
