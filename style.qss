@@ -35,3 +35,7 @@ QRadioButton {
 QFrame#line{
     background-color: #424242
 }
+QLabel#entry {
+    padding: 10px;
+    font-size: 14px
+}
