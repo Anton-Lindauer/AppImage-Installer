@@ -33,7 +33,12 @@ class MainWindow(QMainWindow):
             layout.addWidget(radioBtn)
             itemPos = fileList.index(file)
             fileListLen = len(fileList)
+
             if not itemPos == fileListLen - 1:
+                spacer = QWidget()
+                spacer.setFixedHeight(2)
+                layout.addWidget(spacer)
+
                 line = QFrame()     # Dividers between the elements in the groupbox
                 line.setFixedHeight(1)
                 line.setFrameShape(QFrame.HLine)
