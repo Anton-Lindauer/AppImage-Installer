@@ -2,7 +2,9 @@ QLabel#title {
     font-weight: bold;
     max-height: 20px;
     min-height: 20px;
-    font-size: 14px
+    font-size: 14px;
+    margin-left: 40px;
+    margin-right: 40px
 }
 QMainWindow {
     background-color: #212121
@@ -11,10 +13,14 @@ QGroupBox {
     background-color: #2c2c2c;
     border: 1px solid #424242;
     border-radius: 10px;
+    margin-left: 40px;
+    margin-right: 40px
 }
-QPushButton#submitBtn {
+QPushButton {
     min-height: 26px;
-    max-height: 26px
+    max-height: 26px;
+    margin-left: 40px;
+    margin-right: 40px
 }
 QPushButton {
     background-color: #373737;
@@ -38,4 +44,17 @@ QFrame#line{
 QLabel#entry {
     padding: 10px;
     font-size: 14px
+}
+QLineEdit {
+    background-color: #373737;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    min-height: 24px;
+    max-height: 24px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 4px;
+    padding-left: 4px;
+    padding-right: 4px
 }

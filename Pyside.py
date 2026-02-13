@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit
 from PySide6.QtCore import Qt
 import sys
 from main import showFiles
@@ -64,16 +64,14 @@ class MainWindow(QMainWindow):
                 line.setObjectName("line")
                 layout.addWidget(line)
 
-        submitButton = QPushButton("Continue")  # Button to continue with the selected options
-        submitButton.setObjectName("submitBtn")
-        submitButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        submitBtn = QPushButton("Continue")  # Button to continue with the selected options
+        submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
 
-        page1Layout.setContentsMargins(50, 50, 50, 50)
-
-            # Add the elemts to the window
+# Adding every main element to the main window
         page1Layout.addWidget(title)
         page1Layout.addWidget(container)
-        page1Layout.addWidget(submitButton)
+        page1Layout.addWidget(submitBtn)
 
         page1Layout.addStretch()
 
@@ -83,13 +81,17 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         page2Layout = QVBoxLayout(widget)
 
-        title = QLabel("Select a file to install")   # Title of the current thing the user does
+        title = QLabel("Enter the program information")   # Title of the current thing the user does
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        submitButton = QPushButton("Continue")  # Button to continue with the selected options
-        submitButton.setObjectName("submitBtn")
-        submitButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+        submitBtn = QPushButton("Continue")  # Button to continue with the selected options
+        submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+
+        backBtn = QPushButton("Back")  # Button to go back to the previously selected options
+        backBtn.setObjectName("backBtn")
+        backBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
 
         container = QGroupBox()    # Box for the options for the user
         layout = QVBoxLayout(container)
@@ -108,9 +110,11 @@ class MainWindow(QMainWindow):
                        "Enter a description for the program: ",
                        "Enter the categories the program belongs to: "]
         
-        for info in programInfo:
-            entry = QLabel(info)
+        for info in programInfo:    # Create all the element in the groupbox
+            entry = QLabel(info)    # What the user is expected to enter 
+            usrInput = QLineEdit()      # The input from the user
             layout.addWidget(entry)
+            layout.addWidget(usrInput)
             entry.setObjectName("entry")
             if programInfo.index(info) < 3:
                 spacer = QWidget()
@@ -123,9 +127,11 @@ class MainWindow(QMainWindow):
                 line.setObjectName("line")
                 layout.addWidget(line)
 
+# Adding every main element to the main window
         page2Layout.addWidget(title)
         page2Layout.addWidget(container)
-        page2Layout.addWidget(submitButton)
+        page2Layout.addWidget(submitBtn)
+        page2Layout.addWidget(backBtn)
 
         page2Layout.addStretch()
 
@@ -135,12 +141,16 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         page3Layout = QVBoxLayout(widget)
 
-        submitButton = QPushButton("Install another program")  # Button to continue with the selected options
-        submitButton.setObjectName("submitBtn")
-        submitButton.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        title = QLabel("Finished installing the program")
+        title.setObjectName("title")
 
-        page3Layout.addWidget(QLabel("Finished installing the program"))
-        page3Layout.addWidget(submitButton)
+        submitBtn = QPushButton("Install another program")  # Button to continue with the selected options
+        submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+
+# Adding every main element to the main window
+        page3Layout.addWidget(title)
+        page3Layout.addWidget(submitBtn)
 
         page3Layout.addStretch()
         return widget
