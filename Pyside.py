@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt
 import sys
 from main import showFiles
@@ -37,21 +37,23 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        container = QGroupBox()    # Box for the options for the user
-        layout = QVBoxLayout(container)
+        self.page1GropBox = QGroupBox()    # Box for the options for the user
+        layout = QVBoxLayout(self.page1GropBox)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        container.setLayout(layout)
+        self.page1GropBox.setLayout(layout)
 
         fileList = showFiles()
-        fileListLen = fileList.__len__
+        fileListLen = len(fileList)
+
+        self.groupPage1 = QButtonGroup(self)
 
         for file in fileList:
+            itemPos = fileList.index(file)
             radioBtn = QRadioButton(file)
             layout.addWidget(radioBtn)
-            itemPos = fileList.index(file)
-            fileListLen = len(fileList)
-
+            self.groupPage1.addButton(radioBtn)
+            
             if not itemPos == fileListLen - 1:
                 spacer = QWidget()
                 spacer.setFixedHeight(2)
@@ -64,20 +66,26 @@ class MainWindow(QMainWindow):
                 line.setObjectName("line")
                 layout.addWidget(line)
 
+        def findSeletedRadioBtn():  # Function to find out which file was selected by the user and the user can only continue with a file selected
+            selected = self.groupPage1.checkedButton()
+            if selected is not None:
+                print(selected.text())  # Only for testing porpuses
+                self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
+
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        submitBtn.clicked.connect(findSeletedRadioBtn)
 
 # Adding every main element to the main window
         page1Layout.addWidget(title)
-        page1Layout.addWidget(container)
+        page1Layout.addWidget(self.page1GropBox)
         page1Layout.addWidget(submitBtn)
 
-        page1Layout.addStretch()
+        page1Layout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return widget
         
-    def createPage2(self):
+    def createPage2(self):  # Window two
         widget = QWidget()
         page2Layout = QVBoxLayout(widget)
 
@@ -87,7 +95,8 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+#        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+        submitBtn.clicked.connect(self.clearPages)
 
         backBtn = QPushButton("Back")  # Button to go back to the previously selected options
         backBtn.setObjectName("backBtn")
@@ -105,19 +114,19 @@ class MainWindow(QMainWindow):
         line.setFrameShadow(QFrame.Sunken)
         line.setObjectName("line")
 
-        programInfo = ["Enter a command to execute the file from the terminal: ",
+        programInfo = ["Enter a command to execute the file from the terminal: ",   # All the things the user has to enter
                        "Enter the name of the program in the startmenu: ",
                        "Enter a description for the program: ",
                        "Enter the categories the program belongs to: "]
         
         for info in programInfo:    # Create all the element in the groupbox
             entry = QLabel(info)    # What the user is expected to enter 
-            usrInput = QLineEdit()      # The input from the user
+            usrInput = QLineEdit()      # The input from the user (only for testing porpuses for now)
             layout.addWidget(entry)
             layout.addWidget(usrInput)
             entry.setObjectName("entry")
             if programInfo.index(info) < 3:
-                spacer = QWidget()
+                spacer = QWidget()  # For some reason you need this or the bottom divider is 2px thick, idk why
                 spacer.setFixedHeight(2)
                 layout.addWidget(spacer)
                 line = QFrame()     # Dividers between the elements in the groupbox
@@ -133,18 +142,25 @@ class MainWindow(QMainWindow):
         page2Layout.addWidget(submitBtn)
         page2Layout.addWidget(backBtn)
 
-        page2Layout.addStretch()
+        page2Layout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return widget
+    
+    def clearPages(self):   # Unselect the selected radiobutton
+            self.groupPage1.setExclusive(False)     # Disable the one radiobutton has to be selected rule
+            for button in self.groupPage1.buttons():
+                button.setChecked(False)    # Set every radiobutton to not selected
+            self.groupPage1.setExclusive(True)      # Enable the one radiobutton has to be selected rule 
+            self.stackedWidget.setCurrentIndex(2)   # Switch to window 3
     
     def createPage3(self):
         widget = QWidget()
         page3Layout = QVBoxLayout(widget)
 
-        title = QLabel("Finished installing the program")
+        title = QLabel("Finished installing the program")   # Tells the user that the installation was successfull
         title.setObjectName("title")
 
-        submitBtn = QPushButton("Install another program")  # Button to continue with the selected options
+        submitBtn = QPushButton("Install another program")  # Button to install another program
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
 
@@ -161,7 +177,7 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
 
-    with open("/home/silas/Programmieren/AppImage-Installer/style.qss", "r") as f:
+    with open("/home/silas/Programmieren/AppImage-Installer/style.qss", "r") as f:  # Open a qss style sheet, for now only works on my machine
         _style = f.read()
         app.setStyleSheet(_style)
 
