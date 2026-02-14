@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QW
 from PySide6.QtCore import Qt
 import sys
 from main import showFiles
+import os
 
 class MainWindow(QMainWindow):
 
@@ -48,13 +49,13 @@ class MainWindow(QMainWindow):
 
         self.groupPage1 = QButtonGroup(self)
 
-        for file in fileList:
+        for file in fileList:   # Create a radiobutton for each file
             itemPos = fileList.index(file)
             radioBtn = QRadioButton(file)
             layout.addWidget(radioBtn)
             self.groupPage1.addButton(radioBtn)
             
-            if not itemPos == fileListLen - 1:
+            if not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
                 spacer = QWidget()
                 spacer.setFixedHeight(2)
                 layout.addWidget(spacer)
@@ -66,15 +67,9 @@ class MainWindow(QMainWindow):
                 line.setObjectName("line")
                 layout.addWidget(line)
 
-        def findSeletedRadioBtn():  # Function to find out which file was selected by the user and the user can only continue with a file selected
-            selected = self.groupPage1.checkedButton()
-            if selected is not None:
-                print(selected.text())  # Only for testing porpuses
-                self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
-
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(findSeletedRadioBtn)
+        submitBtn.clicked.connect(self.findSeletedRadioBtn)
 
 # Adding every main element to the main window
         page1Layout.addWidget(title)
@@ -84,6 +79,12 @@ class MainWindow(QMainWindow):
         page1Layout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return widget
+    
+    def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
+            selected = self.groupPage1.checkedButton()
+            if selected is not None:
+                print(selected.text())  # Only for testing porpuses
+                self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
         
     def createPage2(self):  # Window two
         widget = QWidget()
@@ -125,7 +126,7 @@ class MainWindow(QMainWindow):
             layout.addWidget(entry)
             layout.addWidget(usrInput)
             entry.setObjectName("entry")
-            if programInfo.index(info) < 3:
+            if programInfo.index(info) < 3:     # Only create a divider if the element isn't the last one
                 spacer = QWidget()  # For some reason you need this or the bottom divider is 2px thick, idk why
                 spacer.setFixedHeight(2)
                 layout.addWidget(spacer)
@@ -177,7 +178,10 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
 
-    with open("/home/silas/Programmieren/AppImage-Installer/style.qss", "r") as f:  # Open a qss style sheet, for now only works on my machine
+    programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
+    stylesheetPath = os.path.join(programDir, "style.qss")
+
+    with open(stylesheetPath, "r") as f:  # Open a qss style sheet, for now only works on my machine
         _style = f.read()
         app.setStyleSheet(_style)
 
