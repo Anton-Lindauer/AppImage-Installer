@@ -49,23 +49,28 @@ class MainWindow(QMainWindow):
 
         self.groupPage1 = QButtonGroup(self)
 
-        for file in fileList:   # Create a radiobutton for each file
-            itemPos = fileList.index(file)
-            radioBtn = QRadioButton(file)
-            layout.addWidget(radioBtn)
-            self.groupPage1.addButton(radioBtn)
-            
-            if not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
-                spacer = QWidget()
-                spacer.setFixedHeight(2)
-                layout.addWidget(spacer)
+        if fileListLen > 0:
+             for file in fileList:   # Create a radiobutton for each file
+                itemPos = fileList.index(file)
+                radioBtn = QRadioButton(file)
+                layout.addWidget(radioBtn)
+                self.groupPage1.addButton(radioBtn)
 
-                line = QFrame()     # Dividers between the elements in the groupbox
-                line.setFixedHeight(1)
-                line.setFrameShape(QFrame.HLine)
-                line.setFrameShadow(QFrame.Sunken)
-                line.setObjectName("line")
-                layout.addWidget(line)
+                if not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
+                    spacer = QWidget()
+                    spacer.setFixedHeight(2)
+                    layout.addWidget(spacer)
+
+                    line = QFrame()     # Dividers between the elements in the groupbox
+                    line.setFixedHeight(1)
+                    line.setFrameShape(QFrame.HLine)
+                    line.setFrameShadow(QFrame.Sunken)
+                    line.setObjectName("line")
+                    layout.addWidget(line)
+        else:
+             message = QLabel("No .AppImage file has been found in your Downloads directory")
+             message.setObjectName("message")
+             layout.addWidget(message)
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")

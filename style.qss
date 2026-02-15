@@ -58,3 +58,7 @@ QLineEdit {
     padding-left: 4px;
     padding-right: 4px
 }
+QLabel#message {
+    padding: 10px;
+    font-size: 14px
+}
