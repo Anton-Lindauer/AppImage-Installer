@@ -8,7 +8,7 @@ Everything works now, but there is still more work to do, since the code is pret
 
 ## Requirements
 
-You need Python version 3.13 or higher to use this program.
+You need Python version 3.12 or higher to use the CLI version of this tool.
 
 Pyside6 module is required for the unfinished GUI. Check the official documentation or ask ChatGPT how to install it. It's recommended to use a virtual environment.
 
@@ -31,6 +31,6 @@ main.py will from now on be used by the GUI, if you want the terminal version of
 
 This tool is still work in progress and more functionality will be added soon.
 
-The files are moved to ~/<username>/AppImages/.
+The files are moved to ~/{username}/AppImages/.
 
 If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will be ignored until I have finished cleaning up the code.

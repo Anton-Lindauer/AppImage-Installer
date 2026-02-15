@@ -101,8 +101,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
-#        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-        submitBtn.clicked.connect(self.clearPages)
+        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
 
         backBtn = QPushButton("Back")  # Button to go back to the previously selected options
         backBtn.setObjectName("backBtn")
@@ -152,13 +151,6 @@ class MainWindow(QMainWindow):
 
         return widget
     
-    def clearPages(self):   # Unselect the selected radiobutton
-            self.groupPage1.setExclusive(False)     # Disable the one radiobutton has to be selected rule
-            for button in self.groupPage1.buttons():
-                button.setChecked(False)    # Set every radiobutton to not selected
-            self.groupPage1.setExclusive(True)      # Enable the one radiobutton has to be selected rule 
-            self.stackedWidget.setCurrentIndex(2)   # Switch to window 3
-    
     def createPage3(self):
         widget = QWidget()
         page3Layout = QVBoxLayout(widget)
@@ -168,7 +160,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Install another program")  # Button to install another program
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        submitBtn.clicked.connect(self.reloadPage1)
 
 # Adding every main element to the main window
         page3Layout.addWidget(title)
@@ -176,6 +168,16 @@ class MainWindow(QMainWindow):
 
         page3Layout.addStretch()
         return widget
+    
+# Function to reload the first page, because the AppImage files in the Downloads directory change after the installation is completed
+    def reloadPage1(self):
+         oldPage1 = self.stackedWidget.widget(0)    # Remove the already existing version of the first page
+         self.stackedWidget.removeWidget(oldPage1)
+         oldPage1.deleteLater()
+
+         newPage1 = self.createPage1()      # Generate a new first page and insert it at index 0
+         self.stackedWidget.insertWidget(0, newPage1)
+         self.stackedWidget.setCurrentIndex(0)
 
 if __name__ == "__main__":
     app = QApplication()

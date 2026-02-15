@@ -4,11 +4,14 @@ QLabel#title {
     min-height: 20px;
     font-size: 14px;
     margin-left: 40px;
-    margin-right: 40px
+    margin-right: 40px;
+    color: #ffffff;
 }
+
 QMainWindow {
-    background-color: #212121
+    background-color: #212121;
 }
+
 QGroupBox {
     background-color: #2c2c2c;
     border: 1px solid #424242;
@@ -16,35 +19,81 @@ QGroupBox {
     margin-left: 40px;
     margin-right: 40px
 }
+
 QPushButton {
     min-height: 26px;
     max-height: 26px;
     margin-left: 40px;
-    margin-right: 40px
-}
-QPushButton {
+    margin-right: 40px;
+    color: #ffffff;
     background-color: #373737;
     border: none;
     border-radius: 6px;
     font-size: 14px
 }
+
 QPushButton:hover {
     background-color: #484848
 }
+
 QPushButton:pressed {
     background-color: #525252
 }
+
 QRadioButton {
     padding: 10px;
+    color: #ffffff;
     font-size: 14px
 }
+
+QRadioButton {
+    spacing: 8px;
+    font-size: 14px;
+}
+
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 10px; 
+    border: 2px solid #666666; 
+    background-color: transparent;
+}
+
+QRadioButton::indicator:unchecked:hover {
+    border: 2px solid #3281ea;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #3281ea; 
+    background-color: qradialgradient(
+        cx: 0.5, cy: 0.5, 
+        fx: 0.5, fy: 0.5, 
+        radius: 1.0, 
+        stop: 0.2 #3281ea, 
+        stop: 0.3 transparent
+    );
+}
+
+QRadioButton::indicator:checked:hover {
+    border-color: #468eed; 
+    background-color: qradialgradient(
+        cx: 0.5, cy: 0.5, 
+        fx: 0.5, fy: 0.5, 
+        radius: 1.0, 
+        stop: 0.20 #468eed, 
+        stop: 0.30 transparent
+    );
+}
+
 QFrame#line{
     background-color: #424242
 }
+
 QLabel#entry {
     padding: 10px;
     font-size: 14px
 }
+
 QLineEdit {
     background-color: #373737;
     border: none;
@@ -58,6 +107,7 @@ QLineEdit {
     padding-left: 4px;
     padding-right: 4px
 }
+
 QLabel#message {
     padding: 10px;
     font-size: 14px
