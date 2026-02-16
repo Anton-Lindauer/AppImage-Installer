@@ -20,6 +20,19 @@ QGroupBox {
     margin-right: 40px
 }
 
+QGroupBox#page3Container {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
+    background-color: #1e1e1e;
+}
+
+QLabel#terminalText {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
+}
+
 QPushButton {
     min-height: 26px;
     max-height: 26px;

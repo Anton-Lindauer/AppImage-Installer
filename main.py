@@ -1,13 +1,10 @@
 import os
-import sys
 import shutil
 import subprocess
 import pathlib
 
 def showFiles():
-
-    # Find user directory
-    userDir = pathlib.Path.home()
+    userDir = pathlib.Path.home()   # Find user directory
 
     # Filepaths to the directories for and of the .AppImage files 
     fileDest = str(userDir)+"/AppImages"
@@ -41,7 +38,6 @@ def mkExec(filePath, fileDest):
 
 # Function to create a symLink file, to execute the .AppImage file with a terminal command systemwide on your account
 def mkSymLink(filePath, cmdName): 
-#    cmdName = input("Enter the command your want to execute the .AppImage file from the terminal: ") ###########################################################
     os.system(f"ln -s ~/AppImages/{os.path.basename(filePath)}""  ~/.local/bin/"+cmdName)
     print(f"You can now use {cmdName} to execute this program from the terminal")
 
@@ -71,12 +67,8 @@ def mkStartmenuEntry(filePath, fileDest, userDir, programName, programDescr, pro
     else:
         print(f"{userDir}/.local/share/applications has been found")
 
-#    programName = input("Enter the name of the program in the startmenu: ")     # Name of the program in the startmenu
-#    programDescr = input("Enter a description for the program: ")   # Description of the program in the tooltip 
-
     print("Categories: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;")     # Startmenu categories 
     print("Use ';' to seperate them and at the end")
-#    programCategory = input("Enter the categories the program belongs to: ")
 
     # .desktop file content
     desktopFile = f"""[Desktop Entry]

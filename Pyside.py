@@ -1,8 +1,12 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup
+import sys
+import faulthandler
+faulthandler.enable()
+
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox
 from PySide6.QtCore import Qt
 import sys
-from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
 import os
+from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
 
 class MainWindow(QMainWindow):
 
@@ -26,6 +30,9 @@ class MainWindow(QMainWindow):
 
         self.page3 = self.createPage3()
         self.stackedWidget.addWidget(self.page3)
+
+        self.page4 = self.createPage4()
+        self.stackedWidget.addWidget(self.page4)
 
         mainLayout.addWidget(self.stackedWidget)
 
@@ -100,15 +107,6 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        submitBtn = QPushButton("Continue")  # Button to continue with the selected options
-        submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.installProgram)
-        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
-
-        backBtn = QPushButton("Back")  # Button to go back to the previously selected options
-        backBtn.setObjectName("backBtn")
-        backBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
-
         container = QGroupBox()    # Box for the options for the user
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -147,6 +145,14 @@ class MainWindow(QMainWindow):
                 line.setObjectName("line")
                 layout.addWidget(line)
 
+        submitBtn = QPushButton("Continue")  # Button to continue with the selected options
+        submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+
+        backBtn = QPushButton("Back")  # Button to go back to the previously selected options
+        backBtn.setObjectName("backBtn")
+        backBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+
 # Adding every main element to the main window
         page2Layout.addWidget(title)
         page2Layout.addWidget(container)
@@ -163,14 +169,89 @@ class MainWindow(QMainWindow):
         self.programDescr = self.programInfoList[2].text()
         self.programCategory = self.programInfoList[3].text()
         
-        moveFile(self.selectedFilePath, self.fileDest)
-        mkExec(self.selectedFilePath, self.fileDest)
-        mkSymLink(self.selectedFilePath, self.cmdName)
-        mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
-    
+        try:
+            moveFile(self.selectedFilePath, self.fileDest)
+            self.fileMovedMsg.show()
+            QApplication.processEvents()
+
+            mkExec(self.selectedFilePath, self.fileDest)
+            self.fileMadeExecMsg.show()
+            QApplication.processEvents()
+
+            mkSymLink(self.selectedFilePath, self.cmdName)
+            self.madeCmdMsg.show()
+            QApplication.processEvents()
+
+            mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            self.madeStartmenEntryMsg.show()
+            QApplication.processEvents()
+
+        except Exception as error:
+            print(error)
+
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setWindowTitle("Fehler")
+            msg.setText(f"This error occured:\n{error}")
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setDefaultButton(QMessageBox.Ok)
+            
+            msg.exec()
+
+            sys.exit()
+
     def createPage3(self):
         widget = QWidget()
-        page3Layout = QVBoxLayout(widget)
+        self.page3Layout = QVBoxLayout(widget)
+
+        title = QLabel("Installationprocess")
+        title.setObjectName("title")
+
+        container = QGroupBox()    # Box for the options for the user
+        self.terminalLayout = QVBoxLayout(container)
+        self.terminalLayout.setContentsMargins(0, 0, 0, 0)
+        self.terminalLayout.setSpacing(0)
+        container.setLayout(self.terminalLayout)
+        container.setMinimumHeight(200)
+        container.setObjectName("page3Container")
+
+        self.fileMovedMsg = QLabel("The file has been moved succesfully")
+        self.fileMadeExecMsg = QLabel("The file has been made executable")
+        self.madeCmdMsg = QLabel("A terminal command to open the program has been created")
+        self.madeStartmenEntryMsg = QLabel("A startmenu entry has been made for the program")
+
+        self.fileMovedMsg.hide()
+        self.fileMadeExecMsg.hide()
+        self.madeCmdMsg.hide()
+        self.madeStartmenEntryMsg.hide()
+
+        self.fileMovedMsg.setObjectName("terminalText")
+        self.fileMadeExecMsg.setObjectName("terminalText")
+        self.madeCmdMsg.setObjectName("terminalText")
+        self.madeStartmenEntryMsg.setObjectName("terminalText")
+
+        self.terminalLayout.addWidget(self.fileMovedMsg)
+        self.terminalLayout.addWidget(self.fileMadeExecMsg)
+        self.terminalLayout.addWidget(self.madeCmdMsg)
+        self.terminalLayout.addWidget(self.madeStartmenEntryMsg)
+        self.terminalLayout.addStretch()
+
+        submitBtn = QPushButton("Start installation")  # Button to continue with the selected options
+        submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(self.installProgram)
+        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(3))
+
+        self.page3Layout.addWidget(title)
+        self.page3Layout.addWidget(container)
+        self.page3Layout.addWidget(submitBtn)
+
+        self.page3Layout.addStretch()
+
+        return widget
+
+    def createPage4(self):
+        widget = QWidget()
+        page4Layout = QVBoxLayout(widget)
 
         title = QLabel("Finished installing the program")   # Tells the user that the installation was successfull
         title.setObjectName("title")
@@ -180,10 +261,10 @@ class MainWindow(QMainWindow):
         submitBtn.clicked.connect(self.reloadPage1)
 
 # Adding every main element to the main window
-        page3Layout.addWidget(title)
-        page3Layout.addWidget(submitBtn)
+        page4Layout.addWidget(title)
+        page4Layout.addWidget(submitBtn)
 
-        page3Layout.addStretch()
+        page4Layout.addStretch()
         return widget
     
 # Function to reload the first page, because the AppImage files in the Downloads directory change after the installation is completed
