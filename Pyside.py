@@ -44,14 +44,14 @@ class MainWindow(QMainWindow):
         layout.setSpacing(0)
         self.page1GropBox.setLayout(layout)
 
-        fileList = showFiles()
-        fileListLen = len(fileList)
+        self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()
+        fileListLen = len(self.fileList)
 
         self.groupPage1 = QButtonGroup(self)
 
         if fileListLen > 0:
-             for file in fileList:   # Create a radiobutton for each file
-                itemPos = fileList.index(file)
+             for file in self.fileList:   # Create a radiobutton for each file
+                itemPos = self.fileList.index(file)
                 radioBtn = QRadioButton(file)
                 layout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
@@ -153,19 +153,20 @@ class MainWindow(QMainWindow):
         page2Layout.addWidget(submitBtn)
         page2Layout.addWidget(backBtn)
 
-        page2Layout.addStretch()    # Increases the window size without increasing the elemet sizes
+        page2Layout.addStretch()    # Increases the window size without increasing the element sizes
 
         return widget
     
     def installProgram(self):
-        for programData in self.programInfoList:    # Print all info about the program to the console
-            text = programData.text()
-            print(text)
+        self.cmdName = self.programInfoList[0].text()
+        self.programName = self.programInfoList[1].text()
+        self.programDescr = self.programInfoList[2].text()
+        self.programCategory = self.programInfoList[3].text()
         
-        moveFile(self.selectedFilePath)
-        mkExec(self.selectedFilePath)
-        mkSymLink(self.selectedFilePath)
-        mkStartmenuEntry(self.selectedFilePath)
+        moveFile(self.selectedFilePath, self.fileDest)
+        mkExec(self.selectedFilePath, self.fileDest)
+        mkSymLink(self.selectedFilePath, self.cmdName)
+        mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
     
     def createPage3(self):
         widget = QWidget()
