@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup
 from PySide6.QtCore import Qt
 import sys
-from main import showFiles
+from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
 import os
 
 class MainWindow(QMainWindow):
@@ -88,7 +88,8 @@ class MainWindow(QMainWindow):
     def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
             selected = self.groupPage1.checkedButton()
             if selected is not None:
-                print(selected.text())  # Only for testing porpuses
+                self.selectedFilePath = selected.text()
+                print(self.selectedFilePath)  # Only for testing porpuses
                 self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
         
     def createPage2(self):  # Window two
@@ -101,6 +102,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(self.installProgram)
         submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
 
         backBtn = QPushButton("Back")  # Button to go back to the previously selected options
@@ -124,12 +126,16 @@ class MainWindow(QMainWindow):
                        "Enter a description for the program: ",
                        "Enter the categories the program belongs to: "]
         
+        self.programInfoList = []
+        
         for info in programInfo:    # Create all the element in the groupbox
-            entry = QLabel(info)    # What the user is expected to enter 
+            description = QLabel(info)    # What the user is expected to enter 
+            description.setObjectName("entry")
             usrInput = QLineEdit()      # The input from the user (only for testing porpuses for now)
-            layout.addWidget(entry)
+            self.programInfoList.append(usrInput)
+            layout.addWidget(description)
             layout.addWidget(usrInput)
-            entry.setObjectName("entry")
+
             if programInfo.index(info) < 3:     # Only create a divider if the element isn't the last one
                 spacer = QWidget()  # For some reason you need this or the bottom divider is 2px thick, idk why
                 spacer.setFixedHeight(2)
@@ -150,6 +156,16 @@ class MainWindow(QMainWindow):
         page2Layout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return widget
+    
+    def installProgram(self):
+        for programData in self.programInfoList:    # Print all info about the program to the console
+            text = programData.text()
+            print(text)
+        
+        moveFile(self.selectedFilePath)
+        mkExec(self.selectedFilePath)
+        mkSymLink(self.selectedFilePath)
+        mkStartmenuEntry(self.selectedFilePath)
     
     def createPage3(self):
         widget = QWidget()

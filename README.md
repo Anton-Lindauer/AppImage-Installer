@@ -24,7 +24,7 @@ python3 mainCLI.py
 The program will guide you through the installation process. Please report any errors that may occoure.
 
 ## About the GUI
-The GUI design is almost finished, but the logic doesn't work yet. If you want to test the unfinished GUI, you will need Pyside6 (venv recommended) and execute the Pyside.py file or for now just have a look at the screenshots.
+The GUI design is almost finished, but the logic doesn't fully work yet. You can choose a file in the GUI, but everything else still has to be done in the terminal. If you want to test the unfinished GUI, you will need Pyside6 (venv recommended) and execute the Pyside.py file or for now just have a look at the screenshots.
 
 ### Selecting a file to install
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page1.png)
@@ -42,4 +42,4 @@ This tool is still work in progress and more functionality will be added soon.
 
 The files are moved to ~/{username}/AppImages/.
 
-If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will be ignored until I have finished cleaning up the code.
+If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will be ignored until I have finished the GUI.

@@ -24,66 +24,67 @@ def showFiles():
 
     fileList.sort()    # Sort the list in a alphabetic order
 
-    for file in fileList:   # Display every file
-        print(f"{fileList.index(file) + 1}. {file}")
+#    for file in fileList:   # Display every file
+#        print(f"{fileList.index(file) + 1}. {file}")
     
     return fileList
 
 # Ask user which file to install
-def userChoice():
-    fileListLen = len(fileList)
-    global choice
-    while True:
-        if fileListLen >= 2:    # Execute if there is more than one AppImage file
-            choice = int(input(f"Select a file to move (1 - {fileListLen}): ")) - 1
-            if choice >= 0:
-                fileChoice = input('Enter "y" to move this file or cancel with anything else: ').lower()
-                if fileChoice == "y":
-                    break
-                else:
-                    print("Canceling the operation")
-                    sys.exit()
-                break
-            else:
-                print(f"Please select a file from the list (1 - {fileListLen}): ")
-        elif fileListLen == 1:  # Execute if there is only one AppImage file
-            print("This .AppImage file has been found")
-            choice = 0 
-            fileChoice = input('Enter "y" to move this file or cancel with anything else: ').lower()
-            if fileChoice == "y":
-                break
-            else:
-                print("Canceling the operation")
-                sys.exit()
-        else:  # Execute if there are no AppImage files
-            print("No .AppImage file has been found")
-            sys.exit()
+#def userChoice():
+#    fileListLen = len(fileList)
+#    global choice
+#    while True:
+#        if fileListLen >= 2:    # Execute if there is more than one AppImage file
+#            choice = int(input(f"Select a file to move (1 - {fileListLen}): ")) - 1
+#            if choice >= 0:
+#                fileChoice = input('Enter "y" to move this file or cancel with anything else: ').lower()
+#                if fileChoice == "y":
+#                    break
+#                else:
+#                    print("Canceling the operation")
+#                    sys.exit()
+#                break
+#            else:
+#                print(f"Please select a file from the list (1 - {fileListLen}): ")
+#        elif fileListLen == 1:  # Execute if there is only one AppImage file
+#            print("This .AppImage file has been found")
+#            choice = 0 
+#            fileChoice = input('Enter "y" to move this file or cancel with anything else: ').lower()
+#            if fileChoice == "y":
+#                break
+#            else:
+#                print("Canceling the operation")
+#                sys.exit()
+#        else:  # Execute if there are no AppImage files
+#            print("No .AppImage file has been found")
+#            sys.exit()
         
 # Function to move the AppImage File to the right directory
-def moveFile():
-    print(f"You chose {fileList[choice]}")
+def moveFile(filePath):
+    print(f"You chose {filePath}")
     if not os.path.isdir(fileDest): # Create the directory if it doesn't exist
         os.mkdir(fileDest)
     try:    # Moving the .AppImage file
-        shutil.move(fileList[choice], fileDest)
+        shutil.move(filePath, fileDest)
         print("File moved successfully")
     except Exception as error:
         print(f"This went wrong: \n{error}")
 
 # Function to make the AppImage file executable
-def mkExec():
-    global fileName
-    fileName = os.path.basename(fileList[choice])
+def mkExec(filePath):
+    fileName = os.path.basename(filePath)
     os.system(f'chmod +x {fileDest}/{fileName}')
     print("The AppImage file can now be executed")
 
 # Function to create a symLink file, to execute the .AppImage file with a terminal command systemwide on your account
-def mkSymLink(): 
-    cmdName = input("Enter the command your want to execute the .AppImage file from the terminal: ")
-    os.system(f"ln -s ~/AppImages/{os.path.basename(fileList[choice])}""  ~/.local/bin/"+cmdName)
+def mkSymLink(filePath): 
+    cmdName = input("Enter the command your want to execute the .AppImage file from the terminal: ") ###########################################################
+    os.system(f"ln -s ~/AppImages/{os.path.basename(filePath)}""  ~/.local/bin/"+cmdName)
     print(f"You can now use {cmdName} to execute this program from the terminal")
 
-def mkStartmenuEntry():
+def mkStartmenuEntry(filePath):
+    fileName = os.path.basename(filePath)
+
     subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  # Extract AppImage in to the temporary directory
     print("Finished extracting data from the .AppImage file")
     
@@ -139,7 +140,7 @@ def mkStartmenuEntry():
 
 def main():
     showFiles()
-    userChoice()
+#    userChoice()
     moveFile()
     mkExec()
     mkSymLink()
