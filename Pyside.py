@@ -144,25 +144,29 @@ class MainWindow(QMainWindow):
                 line.setObjectName("line")
                 layout.addWidget(line)
 
-        submitBtn = QPushButton("Continue")  # Button to continue with the selected options
-        submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+        self.page2SubmitBtn = QPushButton("Continue")  # Button to continue with the selected options
+        self.page2SubmitBtn.setObjectName("submitBtn")
+        self.page2SubmitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
 
-        backBtn = QPushButton("Back")  # Button to go back to the previously selected options
-        backBtn.setObjectName("backBtn")
-        backBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.page2BackBtn = QPushButton("Back")  # Button to go back to the previously selected options
+        self.page2BackBtn.setObjectName("backBtn")
+        self.page2BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
 
 # Adding every main element to the main window
         page2Layout.addWidget(title)
         page2Layout.addWidget(container)
-        page2Layout.addWidget(submitBtn)
-        page2Layout.addWidget(backBtn)
+        page2Layout.addWidget(self.page2SubmitBtn)
+        page2Layout.addWidget(self.page2BackBtn)
 
         page2Layout.addStretch()    # Increases the window size without increasing the element sizes
 
         return widget
     
     def installProgram(self):
+# Disable the buttons on page 3 
+        self.page3SubmitBtn.setEnabled(False)
+        self.page3BackBtn.setEnabled(False)
+
 # Get program data from the QLineEdits
         self.cmdName = self.programInfoList[0].text()
         self.programName = self.programInfoList[1].text()
@@ -238,13 +242,18 @@ class MainWindow(QMainWindow):
         self.terminalLayout.addWidget(self.terminalUpdateMsg)
         self.terminalLayout.addStretch()
 
-        submitBtn = QPushButton("Start installation")  # Button to continue with the selected options
-        submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.installProgram)
+        self.page3SubmitBtn = QPushButton("Start installation")  # Button to continue with the selected options
+        self.page3SubmitBtn.setObjectName("submitBtn")
+        self.page3SubmitBtn.clicked.connect(self.installProgram)
+
+        self.page3BackBtn = QPushButton("Back")  # Button to go back to the previously selected options
+        self.page3BackBtn.setObjectName("backBtn")
+        self.page3BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
 
         self.page3Layout.addWidget(title)
         self.page3Layout.addWidget(container)
-        self.page3Layout.addWidget(submitBtn)
+        self.page3Layout.addWidget(self.page3SubmitBtn)
+        self.page3Layout.addWidget(self.page3BackBtn)
 
         self.page3Layout.addStretch()
 
