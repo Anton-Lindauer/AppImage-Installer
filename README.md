@@ -46,4 +46,8 @@ This tool is still work in progress and more functionality will be added soon.
 
 The files are moved to ~/{username}/AppImages/.
 
+The symlinks are created in ~/{username}/.local/bin/
+
+The startmenu entries are created in ~/{username}/.local/applications/
+
 If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will from now on be no longer ignored, since I finished the GUI.

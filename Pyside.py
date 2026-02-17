@@ -3,7 +3,7 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QThread, Signal
 import sys
 import os
 from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
@@ -96,7 +96,6 @@ class MainWindow(QMainWindow):
             selected = self.groupPage1.checkedButton()
             if selected is not None:
                 self.selectedFilePath = selected.text()
-                print(self.selectedFilePath)  # Only for testing porpuses
                 self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
         
     def createPage2(self):  # Window two
@@ -164,50 +163,68 @@ class MainWindow(QMainWindow):
         return widget
     
     def installProgram(self):
+# Get program data from the QLineEdits
         self.cmdName = self.programInfoList[0].text()
         self.programName = self.programInfoList[1].text()
         self.programDescr = self.programInfoList[2].text()
         self.programCategory = self.programInfoList[3].text()
+
+# Function that installs the program
+        self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)
+
+# Process status updates from the installation function
+        self.worker.progressUpdate.connect(self.workerProgress)
+        self.worker.finished.connect(self.workerFinished)
+        self.worker.error.connect(self.workerError)
+
+        self.terminalUpdateMsg.setText("Installation in process...")
+        self.terminalUpdateMsg.show()
+
+# Start the installation function
+        self.worker.start()
+
+# Function for displaying the installers progress
+    def workerProgress(self, message):
+        currentProgress = self.terminalUpdateMsg.text()
+
+        if currentProgress: 
+            newProgress = currentProgress + "\n" + message
+        else:
+            newProgress = message
+
+        self.terminalUpdateMsg.setText(newProgress)
+
+        QApplication.processEvents()
+
+# Function to process what happens, when the installation finished successfully
+    def workerFinished(self):
+        self.terminalUpdateMsg.setText("Installation finished")
+
+        self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
+
+# Function for a pop-up window if a error occurs during the installation process
+    def workerError(self, errorMsg):
+
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Critical)
+        msg.setWindowTitle("Errror! Closing application!")
+        msg.setText(f"This error occured:\n{errorMsg}")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setDefaultButton(QMessageBox.Ok)
         
-        try:
-            moveFile(self.selectedFilePath, self.fileDest)
-            self.fileMovedMsg.show()
-            QApplication.processEvents()
+        msg.exec()
 
-            mkExec(self.selectedFilePath, self.fileDest)
-            self.fileMadeExecMsg.show()
-            QApplication.processEvents()
+        sys.exit()
 
-            mkSymLink(self.selectedFilePath, self.cmdName)
-            self.madeCmdMsg.show()
-            QApplication.processEvents()
-
-            mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
-            self.madeStartmenEntryMsg.show()
-            QApplication.processEvents()
-
-        except Exception as error:
-            print(error)
-
-            msg = QMessageBox()
-            msg.setIcon(QMessageBox.Critical)
-            msg.setWindowTitle("Fehler")
-            msg.setText(f"This error occured:\n{error}")
-            msg.setStandardButtons(QMessageBox.Ok)
-            msg.setDefaultButton(QMessageBox.Ok)
-            
-            msg.exec()
-
-            sys.exit()
-
+#Function for the installation process page 
     def createPage3(self):
         widget = QWidget()
         self.page3Layout = QVBoxLayout(widget)
 
-        title = QLabel("Installationprocess")
+        title = QLabel("Installation process")
         title.setObjectName("title")
 
-        container = QGroupBox()    # Box for the options for the user
+        container = QGroupBox()    # QGroupBox thats used as a terminal for the status updates, that the user receives
         self.terminalLayout = QVBoxLayout(container)
         self.terminalLayout.setContentsMargins(0, 0, 0, 0)
         self.terminalLayout.setSpacing(0)
@@ -215,31 +232,15 @@ class MainWindow(QMainWindow):
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
 
-        self.fileMovedMsg = QLabel("The file has been moved succesfully")
-        self.fileMadeExecMsg = QLabel("The file has been made executable")
-        self.madeCmdMsg = QLabel("A terminal command to open the program has been created")
-        self.madeStartmenEntryMsg = QLabel("A startmenu entry has been made for the program")
+        self.terminalUpdateMsg = QLabel()
+        self.terminalUpdateMsg.setObjectName("terminalText")
 
-        self.fileMovedMsg.hide()
-        self.fileMadeExecMsg.hide()
-        self.madeCmdMsg.hide()
-        self.madeStartmenEntryMsg.hide()
-
-        self.fileMovedMsg.setObjectName("terminalText")
-        self.fileMadeExecMsg.setObjectName("terminalText")
-        self.madeCmdMsg.setObjectName("terminalText")
-        self.madeStartmenEntryMsg.setObjectName("terminalText")
-
-        self.terminalLayout.addWidget(self.fileMovedMsg)
-        self.terminalLayout.addWidget(self.fileMadeExecMsg)
-        self.terminalLayout.addWidget(self.madeCmdMsg)
-        self.terminalLayout.addWidget(self.madeStartmenEntryMsg)
+        self.terminalLayout.addWidget(self.terminalUpdateMsg)
         self.terminalLayout.addStretch()
 
         submitBtn = QPushButton("Start installation")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.installProgram)
-        submitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(3))
 
         self.page3Layout.addWidget(title)
         self.page3Layout.addWidget(container)
@@ -276,6 +277,43 @@ class MainWindow(QMainWindow):
          newPage1 = self.createPage1()      # Generate a new first page and insert it at index 0
          self.stackedWidget.insertWidget(0, newPage1)
          self.stackedWidget.setCurrentIndex(0)
+
+# Class for the installation process
+class InstallWorker(QThread):
+    progressUpdate = Signal(str)
+    finished = Signal()
+    error = Signal(str)
+
+    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName):
+        super().__init__()
+
+        self.selectedFilePath = selectedFilePath
+        self.fileDest = fileDest     
+        self.userDir = userDir
+        self.programName = programName
+        self.programDescr = programDescr
+        self.programCategory = programCategory
+        self.cmdName = cmdName
+
+# Function to install the program
+    def run(self):
+        try:
+            moveFile(self.selectedFilePath, self.fileDest)
+            self.progressUpdate.emit("File moved successfully")
+
+            mkExec(self.selectedFilePath, self.fileDest)
+            self.progressUpdate.emit("File has been made executable")
+
+            mkSymLink(self.selectedFilePath, self.cmdName)
+            self.progressUpdate.emit("Program has been made executable")
+
+            mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            self.progressUpdate.emit("Startmenu entry has been created")
+
+        except Exception as error:
+            print(error)
+
+            self.error.emit(str(error))
 
 if __name__ == "__main__":
     app = QApplication()
