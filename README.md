@@ -36,6 +36,10 @@ The program will guide you through the installation process. Please report any e
 ### Entering program info
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page2.png)
 
+### Installation process status page
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f3323b2e5c39c4fd7e564c84929f553467727177/pictures%20for%20README%20file/image3.png)
+This may take a while, especially the creation of a startmenu entry takes a while.
+
 ### Finished installation screen
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page3.png)
 
