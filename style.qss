@@ -8,6 +8,28 @@ QLabel#title {
     color: #ffffff;
 }
 
+QLabel#terminalText {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
+}
+
+QLabel#entry {
+    padding: 10px;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+QLabel#infoDescription {
+    padding: 8px;
+    font-size: 12px;
+    color: #ffffff;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 0px;
+    padding-bottom: 10px;
+}
+
 QMainWindow {
     background-color: #212121;
 }
@@ -25,12 +47,6 @@ QGroupBox#page3Container {
     color: #33ff33;
     padding: 4px;
     background-color: #1e1e1e;
-}
-
-QLabel#terminalText {
-    font-size: 14px;
-    color: #33ff33;
-    padding: 4px;
 }
 
 QPushButton {
@@ -102,22 +118,6 @@ QFrame#line{
     background-color: #424242
 }
 
-QLabel#entry {
-    padding: 10px;
-    font-size: 14px;
-    color: #ffffff;
-}
-
-QLabel#infoDescription {
-    padding: 8px;
-    font-size: 12px;
-    color: #ffffff;
-    padding-right: 10px;
-    padding-left: 10px;
-    padding-top: 0px;
-    padding-bottom: 10px;
-}
-
 QLineEdit {
     background-color: #373737;
     border: none;
@@ -132,7 +132,34 @@ QLineEdit {
     padding-right: 4px
 }
 
-QLabel#message {
-    padding: 10px;
-    font-size: 14px
+QMessageBox {
+    background-color: #212121;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+QMessageBox QLabel {
+    background-color: #212121;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+QMessageBox QPushButton {
+    min-height: 26px;
+    max-height: 26px;
+    margin-left: 40px;
+    margin-right: 40px;
+    color: #ffffff;
+    background-color: #373737;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #484848
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #525252
 }

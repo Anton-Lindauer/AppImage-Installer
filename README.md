@@ -35,6 +35,7 @@ The program will guide you through the installation process. Please report any e
 
 ### Entering program info
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page2.png)
+**Note:** In the latest version is a description on what information is expected to be entered.
 
 ### Installation process status page
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f3323b2e5c39c4fd7e564c84929f553467727177/pictures%20for%20README%20file/image3.png)
@@ -47,6 +48,8 @@ This may take a while, especially the creation of a startmenu entry takes a whil
 
 ## Other important notes
 main.py will from now on be used by the GUI, if you want the terminal version of this tool, you have to execute the mainCLI.py file.
+
+A light mode is currently not supported, only dark mode is supported.
 
 This tool is still work in progress and more functionality will be added soon.
 
