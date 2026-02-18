@@ -15,6 +15,8 @@ class MainWindow(QMainWindow):
     
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
 
+        self.setMinimumSize(600, 600)   # Minimum window size
+
         central = QWidget()     # Widget for all the elements
         self.setCentralWidget(central)
 
@@ -118,22 +120,35 @@ class MainWindow(QMainWindow):
         line.setFrameShadow(QFrame.Sunken)
         line.setObjectName("line")
 
-        programInfo = ["Enter a command to execute the file from the terminal: ",   # All the things the user has to enter
+        self.programInfo = ["Enter a command to execute the file from the terminal: ",   # All the things the user has to enter
                        "Enter the name of the program in the startmenu: ",
                        "Enter a description for the program: ",
                        "Enter the categories the program belongs to: "]
         
+        programInfoText = ["This command can later be used to launch the program from the terminal.",
+                           "The name in the icon in the startmenu",
+                           "The description of the program in the startmenu tooltip",
+                           "The startmenu category the program belongs to. Categories are: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;. You can choose multiple categories. Use ';' to separate them and at the end"]
+        
         self.programInfoList = []
         
-        for info in programInfo:    # Create all the element in the groupbox
+        for info in self.programInfo:    # Create all the element in the groupbox
             description = QLabel(info)    # What the user is expected to enter 
             description.setObjectName("entry")
-            usrInput = QLineEdit()      # The input from the user (only for testing porpuses for now)
+
+            infoText = programInfoText[self.programInfo.index(info)]     # Infotext for the user, so they know what to enter in the QlineEdit
+            infoDescription = QLabel(infoText)
+            infoDescription.setObjectName("infoDescription")
+            infoDescription.setWordWrap(True)
+
+            usrInput = QLineEdit()      # The input from the user
             self.programInfoList.append(usrInput)
+
             layout.addWidget(description)
+            layout.addWidget(infoDescription)
             layout.addWidget(usrInput)
 
-            if programInfo.index(info) < 3:     # Only create a divider if the element isn't the last one
+            if self.programInfo.index(info) < 3:     # Only create a divider if the element isn't the last one
                 spacer = QWidget()  # For some reason you need this or the bottom divider is 2px thick, idk why
                 spacer.setFixedHeight(2)
                 layout.addWidget(spacer)
@@ -269,6 +284,8 @@ class MainWindow(QMainWindow):
         submitBtn = QPushButton("Install another program")  # Button to install another program
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.reloadPage1)
+        submitBtn.clicked.connect(self.reloadPage2)
+        submitBtn.clicked.connect(self.reloadPage3)
 
 # Adding every main element to the main window
         page4Layout.addWidget(title)
@@ -285,7 +302,23 @@ class MainWindow(QMainWindow):
 
          newPage1 = self.createPage1()      # Generate a new first page and insert it at index 0
          self.stackedWidget.insertWidget(0, newPage1)
-         self.stackedWidget.setCurrentIndex(0)
+         self.stackedWidget.setCurrentIndex(0)  # Go to the first page at index 0
+    
+    def reloadPage2(self):
+         oldPage2 = self.stackedWidget.widget(1)    # Remove the already existing version of the first page
+         self.stackedWidget.removeWidget(oldPage2)
+         oldPage2.deleteLater()
+
+         newPage2 = self.createPage2()      # Generate a new first page and insert it at index 1
+         self.stackedWidget.insertWidget(1, newPage2)
+
+    def reloadPage3(self):
+         oldPage3 = self.stackedWidget.widget(2)    # Remove the already existing version of the first page
+         self.stackedWidget.removeWidget(oldPage3)
+         oldPage3.deleteLater()
+
+         newPage3 = self.createPage3()      # Generate a new first page and insert it at index 2
+         self.stackedWidget.insertWidget(2, newPage3)
 
 # Class for the installation process
 class InstallWorker(QThread):
@@ -308,16 +341,16 @@ class InstallWorker(QThread):
     def run(self):
         try:
             moveFile(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit("File moved successfully")
+            self.progressUpdate.emit("File moved successfully (1/4 tasks finished)")
 
             mkExec(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit("File has been made executable")
+            self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
 
             mkSymLink(self.selectedFilePath, self.cmdName)
-            self.progressUpdate.emit("Program has been made executable")
+            self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
 
             mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
-            self.progressUpdate.emit("Startmenu entry has been created")
+            self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
 
         except Exception as error:
             print(error)
