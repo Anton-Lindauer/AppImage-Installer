@@ -193,7 +193,7 @@ class MainWindow(QMainWindow):
 
 # Process status updates from the installation function
         self.worker.progressUpdate.connect(self.workerProgress)
-        self.worker.finished.connect(self.workerFinished)
+        self.worker.success.connect(self.workerFinished)
         self.worker.error.connect(self.workerError)
 
         self.terminalUpdateMsg.setText("Installation in process...")
@@ -225,9 +225,8 @@ class MainWindow(QMainWindow):
     def workerError(self, errorMsg):
 
         msg = QMessageBox()
-        msg.setIcon(QMessageBox.Critical)
-        msg.setWindowTitle("Errror! Closing application!")
-        msg.setText(f"This error occured:\n{errorMsg}")
+        msg.setWindowTitle("Errror!")
+        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.setDefaultButton(QMessageBox.Ok)
         
@@ -323,8 +322,8 @@ class MainWindow(QMainWindow):
 # Class for the installation process
 class InstallWorker(QThread):
     progressUpdate = Signal(str)
-    finished = Signal()
     error = Signal(str)
+    success = Signal()
 
     def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName):
         super().__init__()
@@ -351,6 +350,8 @@ class InstallWorker(QThread):
 
             mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
             self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
+
+            self.success.emit()
 
         except Exception as error:
             print(error)

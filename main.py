@@ -26,7 +26,6 @@ def moveFile(filePath, fileDest):
         os.mkdir(fileDest)
     try:    # Moving the .AppImage file
         shutil.move(filePath, fileDest)
-        print("File moved successfully")
     except Exception as error:
         print(f"This went wrong: \n{error}")
 
@@ -34,7 +33,6 @@ def moveFile(filePath, fileDest):
 def mkExec(filePath, fileDest):
     fileName = os.path.basename(filePath)
     os.system(f'chmod +x {fileDest}/{fileName}')
-    print("The AppImage file can now be executed")
 
 # Function to create a symLink file, to execute the .AppImage file with a terminal command systemwide on your account
 def mkSymLink(filePath, cmdName): 
@@ -90,8 +88,6 @@ def mkStartmenuEntry(filePath, fileDest, userDir, programName, programDescr, pro
     
     subprocess.run(["chmod", "+x", str(desktopEntry)], check=True) # Make the .desktop file executable
     print("Made the .desktop file executable")
-
-    print("Everyting has finished successfully, try loging out and back in if the program doesn't show up in the startmenu")
 
 def main():
     showFiles()
