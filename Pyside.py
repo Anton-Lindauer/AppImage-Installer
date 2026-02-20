@@ -1,8 +1,7 @@
-import sys
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QSizePolicy
 from PySide6.QtCore import Qt, QThread, Signal
 import sys
 import os
@@ -15,7 +14,7 @@ class MainWindow(QMainWindow):
     
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
 
-        self.setMinimumSize(600, 600)   # Minimum window size
+        self.setMinimumSize(750, 600)   # Minimum window size
 
         central = QWidget()     # Widget for all the elements
         self.setCentralWidget(central)
@@ -47,11 +46,18 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        self.page1GropBox = QGroupBox()    # Box for the options for the user
-        layout = QVBoxLayout(self.page1GropBox)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        self.page1GropBox.setLayout(layout)
+        scroll = QScrollArea()
+        scroll.setObjectName("page1ScrollArea")
+        scroll.setWidgetResizable(True)
+        scroll.setMaximumHeight(250)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.rbContainer = QWidget()
+        self.rbContainer.setObjectName("rbContainer")
+
+        self.rbLayout = QVBoxLayout(self.rbContainer)
+        self.rbLayout.setContentsMargins(0, 0, 0, 0,)
+        self.rbLayout.setSpacing(0)
 
         self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()
         fileListLen = len(self.fileList)
@@ -62,24 +68,37 @@ class MainWindow(QMainWindow):
              for file in self.fileList:   # Create a radiobutton for each file
                 itemPos = self.fileList.index(file)
                 radioBtn = QRadioButton(file)
-                layout.addWidget(radioBtn)
+                
+                self.rbLayout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
 
                 if not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
-                    spacer = QWidget()
-                    spacer.setFixedHeight(2)
-                    layout.addWidget(spacer)
-
-                    line = QFrame()     # Dividers between the elements in the groupbox
-                    line.setFixedHeight(1)
-                    line.setFrameShape(QFrame.HLine)
-                    line.setFrameShadow(QFrame.Sunken)
-                    line.setObjectName("line")
-                    layout.addWidget(line)
+                    radioBtn.setProperty("isLast", "true")
+                else:
+                    radioBtn.setProperty("isLast", "false")
         else:
-             message = QLabel("No .AppImage file has been found in your Downloads directory")
-             message.setObjectName("message")
-             layout.addWidget(message)
+            message = QLabel("No .AppImage file has been found in your Downloads directory")
+            message.setObjectName("message")
+            self.rbLayout.addWidget(message)
+
+# Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
+        if fileListLen <= 1:
+            scroll.setMaximumHeight(40)
+            scroll.setMinimumHeight(40)
+        elif fileListLen == 2:
+            scroll.setMaximumHeight(80)
+            scroll.setMinimumHeight(80)
+        elif fileListLen == 3:
+            scroll.setMaximumHeight(120)
+            scroll.setMinimumHeight(120)
+        elif fileListLen == 4:
+            scroll.setMaximumHeight(160)
+            scroll.setMinimumHeight(160)
+        elif fileListLen >= 5:
+            scroll.setMaximumHeight(200)
+            scroll.setMinimumHeight(200)
+
+        scroll.setWidget(self.rbContainer)
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected options
         submitBtn.setObjectName("submitBtn")
@@ -87,7 +106,7 @@ class MainWindow(QMainWindow):
 
 # Adding every main element to the main window
         page1Layout.addWidget(title)
-        page1Layout.addWidget(self.page1GropBox)
+        page1Layout.addWidget(scroll)
         page1Layout.addWidget(submitBtn)
 
         page1Layout.addStretch()    # Increases the window size without increasing the elemet sizes

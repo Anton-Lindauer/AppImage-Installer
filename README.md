@@ -35,10 +35,13 @@ The program will guide you through the installation process. Please report any e
 
 ### Entering program info
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/1c46881a2dbc691cec0b3f207b48ec1a6a896685/pictures%20for%20README%20file/page2.png)
+Example of installing Ultimaker Cura.
 
 ### Installation process status page
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/1c46881a2dbc691cec0b3f207b48ec1a6a896685/pictures%20for%20README%20file/page3.png)
 This may take a while, especially the creation of a startmenu entry takes a while. 
+
+Example error message pop up window also included in the picture.
 
 ### Finished installation screen
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page3.png)
@@ -47,6 +50,8 @@ This may take a while, especially the creation of a startmenu entry takes a whil
 main.py will from now on be used by the GUI, if you want the terminal version of this tool, you have to execute the mainCLI.py file.
 
 A light mode is currently not supported, only dark mode is supported.
+
+The GUI design is inspired by linux mint with orchis dark compact theme, it's not a 1:1 replica, because Qt hates doing what it should do and there is no mint menu with a similar layout.
 
 This tool is still work in progress and more functionality will be added soon.
 
