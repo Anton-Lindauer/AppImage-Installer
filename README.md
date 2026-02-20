@@ -31,10 +31,10 @@ python3 Pyside.py
 The program will guide you through the installation process. Please report any errors that may occoure.
 
 ### Selecting a file to install
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page1.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page1.png)
 
 ### Entering program info
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/1c46881a2dbc691cec0b3f207b48ec1a6a896685/pictures%20for%20README%20file/page2.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page2.png)
 Example of installing Ultimaker Cura.
 
 ### Installation process status page

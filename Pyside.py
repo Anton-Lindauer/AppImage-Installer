@@ -46,23 +46,24 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
+# QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         scroll = QScrollArea()
         scroll.setObjectName("page1ScrollArea")
         scroll.setWidgetResizable(True)
         scroll.setMaximumHeight(250)
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        self.rbContainer = QWidget()
+        self.rbContainer = QWidget() # Container in the QScrollArea
         self.rbContainer.setObjectName("rbContainer")
 
-        self.rbLayout = QVBoxLayout(self.rbContainer)
+        self.rbLayout = QVBoxLayout(self.rbContainer)   # Layout in the QScrollArea
         self.rbLayout.setContentsMargins(0, 0, 0, 0,)
         self.rbLayout.setSpacing(0)
 
-        self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()
+        self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()     # Gathers all the AppImage files information in the Downloads directory
         fileListLen = len(self.fileList)
 
-        self.groupPage1 = QButtonGroup(self)
+        self.groupPage1 = QButtonGroup(self)    # Group for all QRadioButtons to later find out which one is checked
 
         if fileListLen > 0:
              for file in self.fileList:   # Create a radiobutton for each file
@@ -100,7 +101,7 @@ class MainWindow(QMainWindow):
 
         scroll.setWidget(self.rbContainer)
 
-        submitBtn = QPushButton("Continue")  # Button to continue with the selected options
+        submitBtn = QPushButton("Continue")  # Button to continue with the selected file
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.findSeletedRadioBtn)
 
@@ -116,10 +117,10 @@ class MainWindow(QMainWindow):
     def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
             selected = self.groupPage1.checkedButton()
             if selected is not None:
-                self.selectedFilePath = selected.text()
+                self.selectedFilePath = selected.text()     ## Read out the file path from the selected QRadioButton
                 self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
         
-    def createPage2(self):  # Window two
+    def createPage2(self):  # Page two
         widget = QWidget()
         page2Layout = QVBoxLayout(widget)
 
@@ -144,7 +145,7 @@ class MainWindow(QMainWindow):
                        "Enter a description for the program: ",
                        "Enter the categories the program belongs to: "]
         
-        programInfoText = ["This command can later be used to launch the program from the terminal.",
+        programInfoText = ["This command can later be used to launch the program from the terminal.",       # More information on what to enter for the user
                            "The name in the icon in the startmenu",
                            "The description of the program in the startmenu tooltip",
                            "The startmenu category the program belongs to. Categories are: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;. You can choose multiple categories. Use ';' to separate them and at the end"]
@@ -269,7 +270,7 @@ class MainWindow(QMainWindow):
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
 
-        self.terminalUpdateMsg = QLabel()
+        self.terminalUpdateMsg = QLabel()     # Updates that are displayed in the GUIs terminal like UI element
         self.terminalUpdateMsg.setObjectName("terminalText")
 
         self.terminalLayout.addWidget(self.terminalUpdateMsg)
@@ -301,7 +302,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Install another program")  # Button to install another program
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.reloadPage1)
+        submitBtn.clicked.connect(self.reloadPage1)     # Reload all pages if the user wants to install another program
         submitBtn.clicked.connect(self.reloadPage2)
         submitBtn.clicked.connect(self.reloadPage3)
 
@@ -386,7 +387,7 @@ if __name__ == "__main__":
     programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
     stylesheetPath = os.path.join(programDir, "style.qss")
 
-    with open(stylesheetPath, "r") as f:  # Open a qss style sheet, for now only works on my machine
+    with open(stylesheetPath, "r") as f:  # Open a qss style sheet
         _style = f.read()
         app.setStyleSheet(_style)
 
