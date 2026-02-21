@@ -1,0 +1,219 @@
+QLabel#title {
+    font-weight: bold;
+    max-height: 20px;
+    min-height: 20px;
+    font-size: 14px;
+    margin-left: 40px;
+    margin-right: 40px;
+    color: #EEEEEE;
+}
+
+QLabel#message {
+    color: #EEEEEE;
+    font-size: 14px;
+    padding: 4px;
+}
+
+QLabel#terminalText {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
+}
+
+QLabel#entry {
+    padding: 10px;
+    font-size: 14px;
+    color: #EEEEEE;
+}
+
+QLabel#infoDescription {
+    padding: 8px;
+    font-size: 12px;
+    color: #EEEEEE;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 0px;
+    padding-bottom: 10px;
+}
+
+QMainWindow {
+    background-color: #212121;
+}
+
+QGroupBox {
+    background-color: #2c2c2c;
+    border: 1px solid #424242;
+    border-radius: 10px;
+    margin-left: 40px;
+    margin-right: 40px
+}
+
+QGroupBox#page3Container {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
+    background-color: #1e1e1e;
+}
+
+QPushButton {
+    min-height: 26px;
+    max-height: 26px;
+    margin-left: 40px;
+    margin-right: 40px;
+    color: #EEEEEE;
+    background-color: #373737;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px
+}
+
+QPushButton:hover {
+    background-color: #484848
+}
+
+QPushButton:pressed {
+    background-color: #525252
+}
+
+QRadioButton {
+    padding: 8px;
+    color: #EEEEEE;
+    font-size: 14px;
+    border-bottom: 1px solid #424242
+}
+
+QRadioButton[isLast="false"] {
+    border-bottom: none;
+}
+
+QRadioButton::indicator {
+    width: 18px;
+    height: 18px;
+    border-radius: 10px; 
+    border: 2px solid #666666; 
+    background-color: transparent;
+}
+
+QRadioButton::indicator:unchecked:hover {
+    border: 2px solid #3281ea;
+}
+
+QRadioButton::indicator:checked {
+    border: 2px solid #3281ea; 
+    background-color: qradialgradient(
+        cx: 0.5, cy: 0.5, 
+        fx: 0.5, fy: 0.5, 
+        radius: 1.0, 
+        stop: 0.2 #3281ea, 
+        stop: 0.3 transparent
+    );
+}
+
+QRadioButton::indicator:checked:hover {
+    border-color: #468eed; 
+    background-color: qradialgradient(
+        cx: 0.5, cy: 0.5, 
+        fx: 0.5, fy: 0.5, 
+        radius: 1.0, 
+        stop: 0.20 #468eed, 
+        stop: 0.30 transparent
+    );
+}
+
+QRadioButton:hover {
+    background-color: #3d3d3d;
+}
+
+QFrame#line{
+    background-color: #424242;
+    margin: 0px;
+    border: none;
+    max-height: 1px; 
+}
+
+QLineEdit {
+    background-color: #373737;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    min-height: 24px;
+    max-height: 24px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 4px;
+    padding-left: 4px;
+    padding-right: 4px
+}
+
+QMessageBox {
+    background-color: #212121;
+    color: #EEEEEE;
+    font-size: 14px;
+}
+
+QMessageBox QLabel {
+    background-color: #212121;
+    color: #EEEEEE;
+    font-size: 14px;
+}
+
+QMessageBox QPushButton {
+    min-height: 26px;
+    max-height: 26px;
+    margin-left: 0px;
+    margin-right: 0px;
+    color: #EEEEEE;
+    background-color: #373737;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #484848
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #525252
+}
+
+QScrollArea#page1ScrollArea {
+    background-color: #2c2c2c;
+    border: 1px solid #424242;
+    border-radius: 10px;
+    margin-left: 40px;
+    margin-right: 40px
+}
+
+QScrollArea#page1ScrollArea QWidget#rbContainer {
+    background-color: transparent;
+}
+
+QScrollArea#page1ScrollArea > QWidget > QWidget {
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #212121;
+    width: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #424242;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: rgba(255, 255, 255, 0.30)
+}
+
+QScrollBar::handle:vertical:pressed {
+    background-color: rgba(255, 255, 255, 0.60);
+}

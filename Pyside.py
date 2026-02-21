@@ -105,6 +105,15 @@ class MainWindow(QMainWindow):
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.findSeletedRadioBtn)
 
+        lightModeBtn = QPushButton("Light Mode")
+        lightModeBtn.clicked.connect(self.lightMode)
+
+        darkModeBtn = QPushButton("Dark Mode")
+        darkModeBtn.clicked.connect(self.darkMode)
+
+        page1Layout.addWidget(lightModeBtn)
+        page1Layout.addWidget(darkModeBtn)
+
 # Adding every main element to the main window
         page1Layout.addWidget(title)
         page1Layout.addWidget(scroll)
@@ -113,6 +122,22 @@ class MainWindow(QMainWindow):
         page1Layout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return widget
+    
+    def lightMode(self):
+        programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
+        stylesheetPath = os.path.join(programDir, "lightStyle.qss")
+
+        with open(stylesheetPath, "r") as f:  # Open a qss style sheet
+            _style = f.read()
+            app.setStyleSheet(_style)
+
+    def darkMode(self):
+        programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
+        stylesheetPath = os.path.join(programDir, "darkStyle.qss")
+
+        with open(stylesheetPath, "r") as f:  # Open a qss style sheet
+            _style = f.read()
+            app.setStyleSheet(_style)
     
     def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
             selected = self.groupPage1.checkedButton()
@@ -146,8 +171,8 @@ class MainWindow(QMainWindow):
                        "Enter the categories the program belongs to: "]
         
         programInfoText = ["This command can later be used to launch the program from the terminal.",       # More information on what to enter for the user
-                           "The name in the icon in the startmenu",
-                           "The description of the program in the startmenu tooltip",
+                           "The name in the icon in the startmenu.",
+                           "The description of the program in the startmenu tooltip.",
                            "The startmenu category the program belongs to. Categories are: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;. You can choose multiple categories. Use ';' to separate them and at the end"]
         
         self.programInfoList = []
@@ -385,7 +410,7 @@ if __name__ == "__main__":
     window.show()
 
     programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-    stylesheetPath = os.path.join(programDir, "style.qss")
+    stylesheetPath = os.path.join(programDir, "darkStyle.qss")
 
     with open(stylesheetPath, "r") as f:  # Open a qss style sheet
         _style = f.read()
