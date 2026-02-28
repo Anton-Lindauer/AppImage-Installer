@@ -73,10 +73,14 @@ class MainWindow(QMainWindow):
                 self.rbLayout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
 
-                if not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
-                    radioBtn.setProperty("isLast", "true")
-                else:
+                if fileListLen == 1:
+                    radioBtn.setProperty("isFirstAndLast", "true")
+                elif not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
                     radioBtn.setProperty("isLast", "false")
+                    if itemPos == 0:
+                        radioBtn.setProperty("isFirst", "true")
+                else:
+                    radioBtn.setProperty("isLast", "true")
         else:
             message = QLabel("No .AppImage file has been found in your Downloads directory")
             message.setObjectName("message")
