@@ -193,9 +193,22 @@ class MainWindow(QMainWindow):
             usrInput = QLineEdit()      # The input from the user
             self.programInfoList.append(usrInput)
 
-            layout.addWidget(description)
-            layout.addWidget(infoDescription)
-            layout.addWidget(usrInput)
+            page2TextBox = QGroupBox()
+            page2TextBox.setObjectName("page2TextBox")
+            page2BoxLayout = QVBoxLayout(page2TextBox)
+            page2BoxLayout.setContentsMargins(0, 0, 0, 0)
+            page2BoxLayout.setSpacing(0)
+
+            if self.programInfo.index(info) == 0:
+                infoDescription.setProperty("isFirst", "true")
+            elif self.programInfo.index(info) == 3:
+                infoDescription.setProperty("isLast", "true")
+
+            page2BoxLayout.addWidget(description)
+            page2BoxLayout.addWidget(infoDescription)
+            page2BoxLayout.addWidget(usrInput)
+
+            layout.addWidget(page2TextBox)
 
             if self.programInfo.index(info) < 3:     # Only create a divider if the element isn't the last one
                 spacer = QWidget()  # For some reason you need this or the bottom divider is 2px thick, idk why

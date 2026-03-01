@@ -36,6 +36,30 @@ QLabel#infoDescription {
     padding-bottom: 10px;
 }
 
+QGroupBox#page2TextBox {
+    margin: 0px;
+    border-color: none;
+}
+
+QGroupBox#page2TextBox[isFirst="true"] {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+QGroupBox#page2TextBox[isLast="true"] {
+    border-bottom: none;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+QGroupBox#page2TextBox:hover {
+    background-color: #3d3d3d;
+}
+
 QMainWindow {
     background-color: #212121;
 }
