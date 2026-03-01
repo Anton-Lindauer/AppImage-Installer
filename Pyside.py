@@ -47,18 +47,18 @@ class MainWindow(QMainWindow):
         title.setAlignment(Qt.AlignLeft)
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
-        scroll = QScrollArea()
-        scroll.setObjectName("page1ScrollArea")
-        scroll.setWidgetResizable(True)
-        scroll.setMaximumHeight(250)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        page1QScrollArea = QScrollArea()
+        page1QScrollArea.setObjectName("page1QScrollArea")
+        page1QScrollArea.setWidgetResizable(True)
+        page1QScrollArea.setMaximumHeight(250)
+        page1QScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        self.rbContainer = QWidget() # Container in the QScrollArea
-        self.rbContainer.setObjectName("rbContainer")
+        rbContainer = QWidget() # Container in the QScrollArea
+        rbContainer.setObjectName("rbContainer")
 
-        self.rbLayout = QVBoxLayout(self.rbContainer)   # Layout in the QScrollArea
-        self.rbLayout.setContentsMargins(0, 0, 0, 0,)
-        self.rbLayout.setSpacing(0)
+        rbLayout = QVBoxLayout(rbContainer)   # Layout in the QScrollArea
+        rbLayout.setContentsMargins(0, 0, 0, 0,)
+        rbLayout.setSpacing(0)
 
         self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()     # Gathers all the AppImage files information in the Downloads directory
         fileListLen = len(self.fileList)
@@ -70,7 +70,7 @@ class MainWindow(QMainWindow):
                 itemPos = self.fileList.index(file)
                 radioBtn = QRadioButton(file)
                 
-                self.rbLayout.addWidget(radioBtn)
+                rbLayout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
 
                 if fileListLen == 1:
@@ -82,33 +82,34 @@ class MainWindow(QMainWindow):
                 else:
                     radioBtn.setProperty("isLast", "true")
         else:
-            message = QLabel("No .AppImage file has been found in your Downloads directory")
-            message.setObjectName("message")
-            self.rbLayout.addWidget(message)
+            page1NoFileMsg = QLabel("No .AppImage file has been found in your Downloads directory")
+            page1NoFileMsg.setObjectName("message")
+            rbLayout.addWidget(page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         if fileListLen <= 1:
-            scroll.setMaximumHeight(40)
-            scroll.setMinimumHeight(40)
+            page1QScrollArea.setMaximumHeight(40)
+            page1QScrollArea.setMinimumHeight(40)
         elif fileListLen == 2:
-            scroll.setMaximumHeight(80)
-            scroll.setMinimumHeight(80)
+            page1QScrollArea.setMaximumHeight(80)
+            page1QScrollArea.setMinimumHeight(80)
         elif fileListLen == 3:
-            scroll.setMaximumHeight(120)
-            scroll.setMinimumHeight(120)
+            page1QScrollArea.setMaximumHeight(120)
+            page1QScrollArea.setMinimumHeight(120)
         elif fileListLen == 4:
-            scroll.setMaximumHeight(160)
-            scroll.setMinimumHeight(160)
+            page1QScrollArea.setMaximumHeight(160)
+            page1QScrollArea.setMinimumHeight(160)
         elif fileListLen >= 5:
-            scroll.setMaximumHeight(200)
-            scroll.setMinimumHeight(200)
+            page1QScrollArea.setMaximumHeight(200)
+            page1QScrollArea.setMinimumHeight(200)
 
-        scroll.setWidget(self.rbContainer)
+        page1QScrollArea.setWidget(rbContainer)
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected file
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.findSeletedRadioBtn)
 
+# Temporary position of the buttons for the theme
         lightModeBtn = QPushButton("Light Mode")
         lightModeBtn.clicked.connect(self.lightMode)
 
@@ -120,7 +121,7 @@ class MainWindow(QMainWindow):
 
 # Adding every main element to the main window
         page1Layout.addWidget(title)
-        page1Layout.addWidget(scroll)
+        page1Layout.addWidget(page1QScrollArea)
         page1Layout.addWidget(submitBtn)
 
         page1Layout.addStretch()    # Increases the window size without increasing the elemet sizes
@@ -129,7 +130,7 @@ class MainWindow(QMainWindow):
     
     def lightMode(self):
         programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-        stylesheetPath = os.path.join(programDir, "lightStyle.qss")
+        stylesheetPath = os.path.join(programDir, "stylesheets/lightStyle.qss")
 
         with open(stylesheetPath, "r") as f:  # Open a qss style sheet
             _style = f.read()
@@ -137,7 +138,7 @@ class MainWindow(QMainWindow):
 
     def darkMode(self):
         programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-        stylesheetPath = os.path.join(programDir, "darkStyle.qss")
+        stylesheetPath = os.path.join(programDir, "stylesheets/darkStyle.qss")
 
         with open(stylesheetPath, "r") as f:  # Open a qss style sheet
             _style = f.read()
@@ -157,17 +158,11 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        container = QGroupBox()    # Box for the options for the user
+        container = QGroupBox()    # Box for the options for the user; Contains other boxes with the descriptions and a QlineEdits
         layout = QVBoxLayout(container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         container.setLayout(layout)
-
-        line = QFrame()     # Dividers between the elements in the groupbox
-        line.setFixedHeight(1)
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
-        line.setObjectName("line")
 
         self.programInfo = ["Enter a command to execute the file from the terminal: ",   # All the things the user has to enter
                        "Enter the name of the program in the startmenu: ",
@@ -182,6 +177,19 @@ class MainWindow(QMainWindow):
         self.programInfoList = []
         
         for info in self.programInfo:    # Create all the element in the groupbox
+
+            page2InnerBox = QWidget()    # Boxes with the descriptions and the QLineEdits
+            page2InnerBox.setObjectName("page2InnerBox")
+
+            page2BoxLayout = QVBoxLayout(page2InnerBox)
+            page2BoxLayout.setContentsMargins(0, 0, 0, 0)
+            page2BoxLayout.setSpacing(0)
+
+            if self.programInfo.index(info) == 0:   # Give properties to the first and last boxes in the main box; Used in QSS for rounded corners
+                page2InnerBox.setProperty("isFirst", "true")
+            elif self.programInfo.index(info) == 3:
+                page2InnerBox.setProperty("isLast", "true")
+            
             description = QLabel(info)    # What the user is expected to enter 
             description.setObjectName("entry")
 
@@ -193,33 +201,12 @@ class MainWindow(QMainWindow):
             usrInput = QLineEdit()      # The input from the user
             self.programInfoList.append(usrInput)
 
-            page2TextBox = QGroupBox()
-            page2TextBox.setObjectName("page2TextBox")
-            page2BoxLayout = QVBoxLayout(page2TextBox)
-            page2BoxLayout.setContentsMargins(0, 0, 0, 0)
-            page2BoxLayout.setSpacing(0)
-
-            if self.programInfo.index(info) == 0:
-                infoDescription.setProperty("isFirst", "true")
-            elif self.programInfo.index(info) == 3:
-                infoDescription.setProperty("isLast", "true")
-
+# Add everything to the box in the main box
             page2BoxLayout.addWidget(description)
             page2BoxLayout.addWidget(infoDescription)
             page2BoxLayout.addWidget(usrInput)
 
-            layout.addWidget(page2TextBox)
-
-            if self.programInfo.index(info) < 3:     # Only create a divider if the element isn't the last one
-                spacer = QWidget()  # For some reason you need this or the bottom divider is 2px thick, idk why
-                spacer.setFixedHeight(2)
-                layout.addWidget(spacer)
-                line = QFrame()     # Dividers between the elements in the groupbox
-                line.setFixedHeight(1)
-                line.setFrameShape(QFrame.HLine)
-                line.setFrameShadow(QFrame.Sunken)
-                line.setObjectName("line")
-                layout.addWidget(line)
+            layout.addWidget(page2InnerBox)  # Add each box to the main box
 
         self.page2SubmitBtn = QPushButton("Continue")  # Button to continue with the selected options
         self.page2SubmitBtn.setObjectName("submitBtn")
@@ -427,7 +414,7 @@ if __name__ == "__main__":
     window.show()
 
     programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-    stylesheetPath = os.path.join(programDir, "darkStyle.qss")
+    stylesheetPath = os.path.join(programDir, "stylesheets/darkStyle.qss")
 
     with open(stylesheetPath, "r") as f:  # Open a qss style sheet
         _style = f.read()

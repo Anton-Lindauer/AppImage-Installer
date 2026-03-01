@@ -1,3 +1,10 @@
+/* The stylesheet for a dark mode theme, similar to orchis dark on Linux Mint */
+
+/* General stuff for all pages with these elements */
+QMainWindow {
+    background-color: #212121;
+}
+
 QLabel#title {
     font-weight: bold;
     max-height: 20px;
@@ -8,95 +15,12 @@ QLabel#title {
     color: #EEEEEE;
 }
 
-QLabel#message {
-    color: #EEEEEE;
-    font-size: 14px;
-    padding: 4px;
-}
-
-QLabel#terminalText {
-    font-size: 14px;
-    color: #33ff33;
-    padding: 4px;
-}
-
-QLabel#entry {
-    padding: 10px;
-    font-size: 14px;
-    color: #EEEEEE;
-}
-
-QLabel#infoDescription {
-    padding: 8px;
-    font-size: 12px;
-    color: #EEEEEE;
-    padding-right: 10px;
-    padding-left: 10px;
-    padding-top: 0px;
-    padding-bottom: 10px;
-}
-
-QGroupBox#page2TextBox {
-    margin: 0px;
-    border-color: none;
-}
-
-QGroupBox#page2TextBox[isFirst="true"] {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-QGroupBox#page2TextBox[isLast="true"] {
-    border-bottom: none;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-}
-
-QGroupBox#page2TextBox:hover {
-    background-color: #3d3d3d;
-}
-
-QMainWindow {
-    background-color: #212121;
-}
-
 QGroupBox {
     background-color: #2c2c2c;
     border: 1px solid #424242;
     border-radius: 10px;
     margin-left: 40px;
     margin-right: 40px
-}
-
-QGroupBox#page3Container {
-    font-size: 14px;
-    color: #33ff33;
-    padding: 4px;
-    background-color: #1e1e1e;
-}
-
-QPushButton {
-    min-height: 26px;
-    max-height: 26px;
-    margin-left: 40px;
-    margin-right: 40px;
-    color: #EEEEEE;
-    background-color: #373737;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px
-}
-
-QPushButton:hover {
-    background-color: #484848
-}
-
-QPushButton:pressed {
-    background-color: #525252
 }
 
 QRadioButton {
@@ -167,13 +91,6 @@ QRadioButton:hover {
     background-color: #3d3d3d;
 }
 
-QFrame#line{
-    background-color: #424242;
-    margin: 0px;
-    border: none;
-    max-height: 1px; 
-}
-
 QLineEdit {
     background-color: #373737;
     border: none;
@@ -186,6 +103,14 @@ QLineEdit {
     margin-bottom: 4px;
     padding-left: 4px;
     padding-right: 4px
+}
+
+QLineEdit:hover {
+    border: 2px solid #525252;
+}
+
+QLineEdit:focus {
+    border: 2px solid #468eed;
 }
 
 QMessageBox {
@@ -220,7 +145,28 @@ QMessageBox QPushButton:pressed {
     background-color: #525252
 }
 
-QScrollArea#page1ScrollArea {
+QPushButton {
+    min-height: 26px;
+    max-height: 26px;
+    margin-left: 40px;
+    margin-right: 40px;
+    color: #EEEEEE;
+    background-color: #373737;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px
+}
+
+QPushButton:hover {
+    background-color: #484848
+}
+
+QPushButton:pressed {
+    background-color: #525252
+}
+
+/* Everything that's only for page one */
+QScrollArea#page1QScrollArea {
     background-color: #2c2c2c;
     border: 1px solid #424242;
     border-radius: 10px;
@@ -228,11 +174,11 @@ QScrollArea#page1ScrollArea {
     margin-right: 40px
 }
 
-QScrollArea#page1ScrollArea QWidget#rbContainer {
+QScrollArea#page1QScrollArea QWidget#rbContainer {
     background-color: transparent;
 }
 
-QScrollArea#page1ScrollArea > QWidget > QWidget {
+QScrollArea#page1QScrollArea > QWidget > QWidget {
     background-color: transparent;
 }
 
@@ -259,4 +205,65 @@ QScrollBar::handle:vertical:hover {
 
 QScrollBar::handle:vertical:pressed {
     background-color: rgba(255, 255, 255, 0.60);
+}
+
+QLabel#page1NoFileMsg {
+    color: #EEEEEE;
+    font-size: 14px;
+    padding: 4px;
+}
+
+/* Everything that's only for page two */
+#page2InnerBox {
+    margin: 0px;
+    border-bottom: 1px solid #424242;
+}
+
+#page2InnerBox[isFirst="true"] {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+#page2InnerBox[isLast="true"] {
+    border-bottom: none;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#page2InnerBox:hover {
+    background-color: #3d3d3d;
+}
+
+QLabel#entry {
+    padding: 10px;
+    font-size: 14px;
+    color: #EEEEEE;
+}
+
+QLabel#infoDescription {
+    padding: 8px;
+    font-size: 12px;
+    color: #EEEEEE;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 0px;
+    padding-bottom: 10px;
+}
+
+/* Everything that's only for page three */
+QGroupBox#page3Container {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
+    background-color: #1e1e1e;
+}
+
+QLabel#terminalText {
+    font-size: 14px;
+    color: #33ff33;
+    padding: 4px;
 }
