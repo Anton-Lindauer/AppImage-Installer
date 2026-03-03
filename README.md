@@ -2,7 +2,7 @@
 
 ## A GUI or CLI tool to easily install AppImage files on Linux.
 
-This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, launch it from the terminal and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages.
+This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, launch it from the terminal and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages. The AppImages files are expected to be in your downloads directory.
 
 ## Requirements
 
@@ -13,7 +13,7 @@ Pyside6 module is required for the GUI version. Check the official documentation
 Should work on any **Linux** Distro, doesn't work on Windows.
 
 ## How to install and launch the CLI tool
-Download this directory as a .ZIP file, decompress it, open a terminal in the decompressed folder and type in this command:
+Download this directory, open a terminal in the folder and type in this command:
 
 ```
 python3 mainCLI.py
@@ -22,7 +22,7 @@ python3 mainCLI.py
 The program will guide you through the installation process. Please report any errors that may occoure.
 
 ## How to install and launch the GUI tool
-Download this directory as a .ZIP file, decompress it, install Pyside6 in a virtual environment in that directory and launch the GUI with this command:
+Download this directory, install Pyside6 in a virtual environment in that directory and launch the GUI with this command:
 
 ```
 python3 Pyside.py
@@ -49,16 +49,16 @@ Example error message pop up window also included in the picture.
 ## Other important notes
 main.py will from now on be used by the GUI, if you want the terminal version of this tool, you have to execute the mainCLI.py file.
 
-A light mode is currently not supported, only dark mode is supported.
+A light mode is also supported, the dark mode is the default.
 
-The GUI design is inspired by linux mint with orchis dark compact theme, it's not a 1:1 replica, because Qt hates doing what it should do and there is no mint menu with a similar layout.
+The GUI design is inspired by linux mint with orchis dark/light compact themes, it's not a 1:1 replica, because Qt hates doing what it should do and there is no mint menu with a similar layout.
 
 This tool is still work in progress and more functionality will be added soon.
 
-The files are moved to ~/{username}/AppImages/.
+The AppImage files are moved to ~/{username}/AppImages/.
 
 The symlinks are created in ~/{username}/.local/bin/
 
 The startmenu entries are created in ~/{username}/.local/applications/
 
-If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will from now on be no longer ignored, since I finished the GUI.
+If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will from now on be no longer ignored, since I finished the core GUI.

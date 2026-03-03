@@ -3,6 +3,8 @@ faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QSizePolicy
 from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtGui import QGuiApplication
+
 import sys
 import os
 from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
@@ -13,7 +15,6 @@ class MainWindow(QMainWindow):
         super().__init__()
     
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
-
         self.setMinimumSize(750, 600)   # Minimum window size
 
         central = QWidget()     # Widget for all the elements
@@ -36,6 +37,15 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.page4)
 
         mainLayout.addWidget(self.stackedWidget)
+
+# Experimental detection if a light or dark system theme is selected; Doesn't have functionality yet, only for testing purposes for now
+        app = QGuiApplication.instance()
+        scheme = app.styleHints().colorScheme()
+
+        if scheme == Qt.ColorScheme.Dark:
+            print("Dark mode selected")
+        elif scheme == Qt.ColorScheme.Light:
+            print("Light mode selected")
 
     def createPage1(self):
 
