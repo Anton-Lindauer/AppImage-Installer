@@ -19,7 +19,7 @@ Download this directory, open a terminal in the folder and type in this command:
 python3 mainCLI.py
 ```
 
-The program will guide you through the installation process. Please report any errors that may occoure.
+The program will guide you through the installation process. Please report any errors that may occure.
 
 ## How to install and launch the GUI tool
 Download this directory, install Pyside6 in a virtual environment in that directory and launch the GUI with this command:
@@ -28,7 +28,7 @@ Download this directory, install Pyside6 in a virtual environment in that direct
 python3 Pyside.py
 ```
 
-The program will guide you through the installation process. Please report any errors that may occoure.
+The program will guide you through the installation process. Please report any errors that may occure.
 
 ### Selecting a file to install
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page1.png)
@@ -49,7 +49,7 @@ Example error message pop up window also included in the picture.
 ## Other important notes
 main.py will from now on be used by the GUI, if you want the terminal version of this tool, you have to execute the mainCLI.py file.
 
-A light mode is also supported, the dark mode is the default.
+A light mode is also supported, the program picks your system themen when launched.
 
 The GUI design is inspired by linux mint with orchis dark/light compact themes, it's not a 1:1 replica, because Qt hates doing what it should do and there is no mint menu with a similar layout.
 
@@ -61,4 +61,9 @@ The symlinks are created in ~/{username}/.local/bin/
 
 The startmenu entries are created in ~/{username}/.local/applications/
 
-If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will from now on be no longer ignored, since I finished the core GUI.
+If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will from now on be no longer ignored, since I finished the core GUI. Just make sure to check the known issues section before opening a new issue.
+
+## Known issues
+The divider lines in the boxes don't look the same because of how Qt renders them, there isn't really a fix for this.
+
+The program only adapts to your system theme when launched, since there isn't a easy way to read the theme out and change it while the program is running. If you want to change it, you have to press on the buttons on the first page or relaunch the program.

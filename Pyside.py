@@ -2,9 +2,10 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QSizePolicy
-from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtCore import Qt, QThread, Signal, QFileSystemWatcher, QTimer
 from PySide6.QtGui import QGuiApplication
 
+import configparser
 import sys
 import os
 from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
@@ -37,15 +38,6 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.page4)
 
         mainLayout.addWidget(self.stackedWidget)
-
-# Experimental detection if a light or dark system theme is selected; Doesn't have functionality yet, only for testing purposes for now
-        app = QGuiApplication.instance()
-        scheme = app.styleHints().colorScheme()
-
-        if scheme == Qt.ColorScheme.Dark:
-            print("Dark mode selected")
-        elif scheme == Qt.ColorScheme.Light:
-            print("Light mode selected")
 
     def createPage1(self):
 
@@ -424,10 +416,17 @@ if __name__ == "__main__":
     window.show()
 
     programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-    stylesheetPath = os.path.join(programDir, "stylesheets/darkStyle.qss")
+    darkStylesheetPath = os.path.join(programDir, "stylesheets/darkStyle.qss")
+    lightStylesheetPath = os.path.join(programDir, "stylesheets/lightStyle.qss")
 
-    with open(stylesheetPath, "r") as f:  # Open a qss style sheet
-        _style = f.read()
-        app.setStyleSheet(_style)
+    sysStyle = QGuiApplication.instance().styleHints().colorScheme()
+    if sysStyle == Qt.ColorScheme.Dark:
+        with open(darkStylesheetPath, "r") as f:  # Open a qss style sheet
+            _style = f.read()
+            app.setStyleSheet(_style)
+    else:
+        with open(lightStylesheetPath, "r") as f:  # Open a qss style sheet
+            _style = f.read()
+            app.setStyleSheet(_style)
 
     sys.exit(app.exec())
