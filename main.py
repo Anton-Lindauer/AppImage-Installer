@@ -1,3 +1,5 @@
+# This file provides the Python functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
+
 import os
 import shutil
 import subprocess
@@ -88,13 +90,3 @@ def mkStartmenuEntry(filePath, fileDest, userDir, programName, programDescr, pro
     
     subprocess.run(["chmod", "+x", str(desktopEntry)], check=True) # Make the .desktop file executable
     print("Made the .desktop file executable")
-
-def main():
-    showFiles()
-    moveFile()
-    mkExec()
-    mkSymLink()
-    mkStartmenuEntry()
-
-if __name__ == "__main__":
-    main()

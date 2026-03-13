@@ -8,7 +8,7 @@ This project is **still in development**, but you can already do the following t
 
 You need Python version 3.12 or higher to use the GUI or CLI version of this tool.
 
-Pyside6 module is required for the GUI version. Check the official documentation or ask ChatGPT how to install it. It's recommended to use a virtual environment.
+Pyside6 module is required for the GUI version.
 
 Should work on any **Linux** Distro, doesn't work on Windows.
 
@@ -23,13 +23,17 @@ Then go in the AppImage-Installer directory:
 cd AppImage-Installer
 ```
 
-**CLI**
+**CLI:**
+
 If you only want the CLI version, then enter this command to launch it:
 ```
 python3 mainCLI.py
 ```
 
 **GUI:**
+
+If you want the GUI version, follow these steps
+
 Create a virtual environment:
 ```
 python3 -m venv venv
@@ -51,6 +55,8 @@ python3 Pyside.py
 ```
 
 The program will guide you through the installation process. Please report any errors that may occure.
+
+## Have a look at the GUI version
 
 ### Selecting a file to install
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page1.png)

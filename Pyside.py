@@ -1,11 +1,10 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QFrame, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QSizePolicy
-from PySide6.QtCore import Qt, QThread, Signal, QFileSystemWatcher, QTimer
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea
+from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QGuiApplication
 
-import configparser
 import sys
 import os
 from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
@@ -18,11 +17,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
         self.setMinimumSize(750, 600)   # Minimum window size
 
-        central = QWidget()     # Widget for all the elements
+        central = QWidget()     # QWidget for everything
         self.setCentralWidget(central)
 
-        mainLayout = QVBoxLayout(central)   # Layout of the entiry window
+        mainLayout = QVBoxLayout(central)   # Layout for the QStackedWidget
 
+        # The QStackedWidget that contains all pages 
         self.stackedWidget = QStackedWidget()
 
         self.page1 = self.createPage1()
@@ -37,42 +37,39 @@ class MainWindow(QMainWindow):
         self.page4 = self.createPage4()
         self.stackedWidget.addWidget(self.page4)
 
-        mainLayout.addWidget(self.stackedWidget)
+        mainLayout.addWidget(self.stackedWidget)    # Add the QStackedWidget to the main windows layout
 
     def createPage1(self):
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
 
-        widget = QWidget()
-        page1Layout = QVBoxLayout(widget)
-
-        title = QLabel("Select a file to install")   # Title of the current thing the user does
+        title = QLabel("Select a file to install")   # Title telling the user what to do
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-# QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
-        page1QScrollArea = QScrollArea()
-        page1QScrollArea.setObjectName("page1QScrollArea")
-        page1QScrollArea.setWidgetResizable(True)
-        page1QScrollArea.setMaximumHeight(250)
-        page1QScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
+        containerScrollArea = QScrollArea()
+        containerScrollArea.setWidgetResizable(True)
+        containerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        rbContainer = QWidget() # Container in the QScrollArea
-        rbContainer.setObjectName("rbContainer")
+        container = QWidget() # Container in the QScrollArea
+        containerScrollArea.setWidget(container)
 
-        rbLayout = QVBoxLayout(rbContainer)   # Layout in the QScrollArea
-        rbLayout.setContentsMargins(0, 0, 0, 0,)
-        rbLayout.setSpacing(0)
+        containerLayout = QVBoxLayout(container)   # Set the layout in the Container in the QScrollArea
+        containerLayout.setContentsMargins(0, 0, 0, 0,)
+        containerLayout.setSpacing(0)
 
-        self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()     # Gathers all the AppImage files information in the Downloads directory
+        self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()     # Return all file paths needed
         fileListLen = len(self.fileList)
 
         self.groupPage1 = QButtonGroup(self)    # Group for all QRadioButtons to later find out which one is checked
 
         if fileListLen > 0:
-             for file in self.fileList:   # Create a radiobutton for each file
+             for file in self.fileList:   # Create a QRadioButton for each file
                 itemPos = self.fileList.index(file)
                 radioBtn = QRadioButton(file)
                 
-                rbLayout.addWidget(radioBtn)
+                containerLayout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
 
                 if fileListLen == 1:
@@ -86,49 +83,47 @@ class MainWindow(QMainWindow):
         else:
             page1NoFileMsg = QLabel("No .AppImage file has been found in your Downloads directory")
             page1NoFileMsg.setObjectName("message")
-            rbLayout.addWidget(page1NoFileMsg)
+            containerLayout.addWidget(page1NoFileMsg)
 
-# Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
+        # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         if fileListLen <= 1:
-            page1QScrollArea.setMaximumHeight(40)
-            page1QScrollArea.setMinimumHeight(40)
+            containerScrollArea.setMaximumHeight(40)
+            containerScrollArea.setMinimumHeight(40)
         elif fileListLen == 2:
-            page1QScrollArea.setMaximumHeight(80)
-            page1QScrollArea.setMinimumHeight(80)
+            containerScrollArea.setMaximumHeight(80)
+            containerScrollArea.setMinimumHeight(80)
         elif fileListLen == 3:
-            page1QScrollArea.setMaximumHeight(120)
-            page1QScrollArea.setMinimumHeight(120)
+            containerScrollArea.setMaximumHeight(120)
+            containerScrollArea.setMinimumHeight(120)
         elif fileListLen == 4:
-            page1QScrollArea.setMaximumHeight(160)
-            page1QScrollArea.setMinimumHeight(160)
+            containerScrollArea.setMaximumHeight(160)
+            containerScrollArea.setMinimumHeight(160)
         elif fileListLen >= 5:
-            page1QScrollArea.setMaximumHeight(200)
-            page1QScrollArea.setMinimumHeight(200)
-
-        page1QScrollArea.setWidget(rbContainer)
+            containerScrollArea.setMaximumHeight(200)
+            containerScrollArea.setMinimumHeight(200)
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected file
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.findSeletedRadioBtn)
 
-# Temporary position of the buttons for the theme
+# Temporary position of the buttons for the theme selection
         lightModeBtn = QPushButton("Light Mode")
         lightModeBtn.clicked.connect(self.lightMode)
 
         darkModeBtn = QPushButton("Dark Mode")
         darkModeBtn.clicked.connect(self.darkMode)
 
-        page1Layout.addWidget(lightModeBtn)
-        page1Layout.addWidget(darkModeBtn)
+        mainLayout.addWidget(lightModeBtn)
+        mainLayout.addWidget(darkModeBtn)
 
 # Adding every main element to the main window
-        page1Layout.addWidget(title)
-        page1Layout.addWidget(page1QScrollArea)
-        page1Layout.addWidget(submitBtn)
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(containerScrollArea)
+        mainLayout.addWidget(submitBtn)
 
-        page1Layout.addStretch()    # Increases the window size without increasing the elemet sizes
+        mainLayout.addStretch()    # Increases the window size without increasing the elemet sizes
 
-        return widget
+        return mainWidget
     
     def lightMode(self):
         programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
@@ -153,18 +148,18 @@ class MainWindow(QMainWindow):
                 self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
         
     def createPage2(self):  # Page two
-        widget = QWidget()
-        page2Layout = QVBoxLayout(widget)
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
 
         title = QLabel("Enter the program information")   # Title of the current thing the user does
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
         container = QGroupBox()    # Box for the options for the user; Contains other boxes with the descriptions and a QlineEdits
-        layout = QVBoxLayout(container)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        container.setLayout(layout)
+        
+        containerLayout = QVBoxLayout(container) # Set the layout in the container
+        containerLayout.setContentsMargins(0, 0, 0, 0)
+        containerLayout.setSpacing(0)
 
         self.programInfo = ["Enter a command to execute the file from the terminal: ",   # All the things the user has to enter
                        "Enter the name of the program in the startmenu: ",
@@ -180,17 +175,17 @@ class MainWindow(QMainWindow):
         
         for info in self.programInfo:    # Create all the element in the groupbox
 
-            page2InnerBox = QWidget()    # Boxes with the descriptions and the QLineEdits
-            page2InnerBox.setObjectName("page2InnerBox")
+            containerTile = QWidget()    # Boxes with the descriptions and the QLineEdits
+            containerTile.setObjectName("page2InnerBox")
 
-            page2BoxLayout = QVBoxLayout(page2InnerBox)
-            page2BoxLayout.setContentsMargins(0, 0, 0, 0)
-            page2BoxLayout.setSpacing(0)
+            tileLayout = QVBoxLayout(containerTile)
+            tileLayout.setContentsMargins(0, 0, 0, 0)
+            tileLayout.setSpacing(0)
 
-            if self.programInfo.index(info) == 0:   # Give properties to the first and last boxes in the main box; Used in QSS for rounded corners
-                page2InnerBox.setProperty("isFirst", "true")
+            if self.programInfo.index(info) == 0:   # Give properties to the first and last tiles in the main box; Used in QSS for rounded corners
+                containerTile.setProperty("isFirst", "true")
             elif self.programInfo.index(info) == 3:
-                page2InnerBox.setProperty("isLast", "true")
+                containerTile.setProperty("isLast", "true")
             
             description = QLabel(info)    # What the user is expected to enter 
             description.setObjectName("entry")
@@ -203,12 +198,12 @@ class MainWindow(QMainWindow):
             usrInput = QLineEdit()      # The input from the user
             self.programInfoList.append(usrInput)
 
-# Add everything to the box in the main box
-            page2BoxLayout.addWidget(description)
-            page2BoxLayout.addWidget(infoDescription)
-            page2BoxLayout.addWidget(usrInput)
+            # Add everything to the layout in a tile in the container
+            tileLayout.addWidget(description)
+            tileLayout.addWidget(infoDescription)
+            tileLayout.addWidget(usrInput)
 
-            layout.addWidget(page2InnerBox)  # Add each box to the main box
+            containerLayout.addWidget(containerTile)  # Add each tile to the container layout
 
         self.page2SubmitBtn = QPushButton("Continue")  # Button to continue with the selected options
         self.page2SubmitBtn.setObjectName("submitBtn")
@@ -219,14 +214,14 @@ class MainWindow(QMainWindow):
         self.page2BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
 
 # Adding every main element to the main window
-        page2Layout.addWidget(title)
-        page2Layout.addWidget(container)
-        page2Layout.addWidget(self.page2SubmitBtn)
-        page2Layout.addWidget(self.page2BackBtn)
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(container)
+        mainLayout.addWidget(self.page2SubmitBtn)
+        mainLayout.addWidget(self.page2BackBtn)
 
-        page2Layout.addStretch()    # Increases the window size without increasing the element sizes
+        mainLayout.addStretch()    # Increases the window size without increasing the element sizes
 
-        return widget
+        return mainWidget
     
     def installProgram(self):
 # Disable the buttons on page 3 
@@ -287,25 +282,24 @@ class MainWindow(QMainWindow):
 
 #Function for the installation process page 
     def createPage3(self):
-        widget = QWidget()
-        self.page3Layout = QVBoxLayout(widget)
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
 
         title = QLabel("Installation process")
         title.setObjectName("title")
 
         container = QGroupBox()    # QGroupBox thats used as a terminal for the status updates, that the user receives
-        self.terminalLayout = QVBoxLayout(container)
-        self.terminalLayout.setContentsMargins(0, 0, 0, 0)
-        self.terminalLayout.setSpacing(0)
-        container.setLayout(self.terminalLayout)
+        terminalLayout = QVBoxLayout(container)
+        terminalLayout.setContentsMargins(0, 0, 0, 0)
+        terminalLayout.setSpacing(0)
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
 
         self.terminalUpdateMsg = QLabel()     # Updates that are displayed in the GUIs terminal like UI element
         self.terminalUpdateMsg.setObjectName("terminalText")
 
-        self.terminalLayout.addWidget(self.terminalUpdateMsg)
-        self.terminalLayout.addStretch()
+        terminalLayout.addWidget(self.terminalUpdateMsg)
+        terminalLayout.addStretch()
 
         self.page3SubmitBtn = QPushButton("Start installation")  # Button to continue with the selected options
         self.page3SubmitBtn.setObjectName("submitBtn")
@@ -315,21 +309,22 @@ class MainWindow(QMainWindow):
         self.page3BackBtn.setObjectName("backBtn")
         self.page3BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
 
-        self.page3Layout.addWidget(title)
-        self.page3Layout.addWidget(container)
-        self.page3Layout.addWidget(self.page3SubmitBtn)
-        self.page3Layout.addWidget(self.page3BackBtn)
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(container)
+        mainLayout.addWidget(self.page3SubmitBtn)
+        mainLayout.addWidget(self.page3BackBtn)
 
-        self.page3Layout.addStretch()
+        mainLayout.addStretch()
 
-        return widget
+        return mainWidget
 
     def createPage4(self):
-        widget = QWidget()
-        page4Layout = QVBoxLayout(widget)
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
 
         title = QLabel("Finished installing the program")   # Tells the user that the installation was successfull
         title.setObjectName("title")
+        title.setAlignment(Qt.AlignLeft)
 
         submitBtn = QPushButton("Install another program")  # Button to install another program
         submitBtn.setObjectName("submitBtn")
@@ -338,11 +333,11 @@ class MainWindow(QMainWindow):
         submitBtn.clicked.connect(self.reloadPage3)
 
 # Adding every main element to the main window
-        page4Layout.addWidget(title)
-        page4Layout.addWidget(submitBtn)
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(submitBtn)
 
-        page4Layout.addStretch()
-        return widget
+        mainLayout.addStretch()
+        return mainWidget
     
 # Function to reload the first page, because the AppImage files in the Downloads directory change after the installation is completed
     def reloadPage1(self):

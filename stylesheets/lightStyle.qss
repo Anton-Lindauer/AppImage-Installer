@@ -15,6 +15,43 @@ QLabel#title {
     color: #212121;
 }
 
+QScrollArea {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-left: 40px;
+    margin-right: 40px
+}
+
+QScrollArea QWidget {
+    background-color: transparent;
+}
+
+QScrollBar:vertical {
+    border: none;
+    background: #212121;
+    width: 8px;
+    margin: 0px;
+}
+
+QScrollBar::handle:vertical {
+    background: #bcbcbc;
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+
+QScrollBar::handle:vertical:hover {
+    background-color: #9d9d9d;
+}
+
+QScrollBar::handle:vertical:pressed {
+    background-color: #666666;
+}
+
 QGroupBox {
     background-color: #ffffff;
     border: 1px solid #f0f0f0;
@@ -166,47 +203,6 @@ QPushButton:pressed {
 }
 
 /* Everything that's only for page one */
-QScrollArea#page1QScrollArea {
-    background-color: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    margin-left: 40px;
-    margin-right: 40px
-}
-
-QScrollArea#page1QScrollArea QWidget#rbContainer {
-    background-color: transparent;
-}
-
-QScrollArea#page1QScrollArea > QWidget > QWidget {
-    background-color: transparent;
-}
-
-QScrollBar:vertical {
-    border: none;
-    background: #212121;
-    width: 8px;
-    margin: 0px;
-}
-
-QScrollBar::handle:vertical {
-    background: #bcbcbc;
-    min-height: 20px;
-    border-radius: 4px;
-}
-
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-    height: 0px;
-}
-
-QScrollBar::handle:vertical:hover {
-    background-color: #9d9d9d;
-}
-
-QScrollBar::handle:vertical:pressed {
-    background-color: #666666;
-}
-
 QLabel#page1NoFileMsg {
     color: #212121;
     font-size: 14px;
