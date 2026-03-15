@@ -29,9 +29,15 @@ QScrollArea QWidget {
 
 QScrollBar:vertical {
     border: none;
-    background: #212121;
+    background: transparent;
     width: 8px;
     margin: 0px;
+}
+
+QScrollBar:vertical:hover {
+    background: #fefefe;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 QScrollBar::handle:vertical {

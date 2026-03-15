@@ -95,3 +95,5 @@ If you want to contribute, make suggestions on how to make the program more perf
 The divider lines in the boxes don't look the same because of how Qt renders them, there isn't really a fix for this.
 
 The program only adapts to your system theme when launched, since there isn't a easy way to read the theme out and change it while the program is running. If you want to change it, you have to press on the buttons on the first page or relaunch the program.
+
+The handle of the scroll areas won't get bigger when hovered over it, because QSS doesn't care about a new width when accessing the hover selector.

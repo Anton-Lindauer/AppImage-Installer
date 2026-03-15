@@ -2,18 +2,23 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea
-from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtCore import Qt, QThread, Signal, QTimer
 from PySide6.QtGui import QGuiApplication
 
 import sys
 import os
-from main import showFiles, moveFile, mkExec, mkSymLink, mkStartmenuEntry
+import pathlib
+from main import installer, startmenuEntry
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
     
+        self.userDir = pathlib.Path.home()   # User home directory
+        self.fileDest = str(self.userDir)+"/AppImages"   # Directory for the AppImages
+        self.downloadsDir = os.path.join(str(self.userDir), "Downloads")     # Downloads directory; The AppImages will be extracted from there
+
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
         self.setMinimumSize(750, 600)   # Minimum window size
 
@@ -59,7 +64,7 @@ class MainWindow(QMainWindow):
         containerLayout.setContentsMargins(0, 0, 0, 0,)
         containerLayout.setSpacing(0)
 
-        self.fileList, self.fileDest, self.userDir, self.downloadsDir = showFiles()     # Return all file paths needed
+        self.fileList = installer.files(self, self.downloadsDir)     # Return all file paths needed
         fileListLen = len(self.fileList)
 
         self.groupPage1 = QButtonGroup(self)    # Group for all QRadioButtons to later find out which one is checked
@@ -222,63 +227,6 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()    # Increases the window size without increasing the element sizes
 
         return mainWidget
-    
-    def installProgram(self):
-# Disable the buttons on page 3 
-        self.page3SubmitBtn.setEnabled(False)
-        self.page3BackBtn.setEnabled(False)
-
-# Get program data from the QLineEdits
-        self.cmdName = self.programInfoList[0].text()
-        self.programName = self.programInfoList[1].text()
-        self.programDescr = self.programInfoList[2].text()
-        self.programCategory = self.programInfoList[3].text()
-
-# Function that installs the program
-        self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)
-
-# Process status updates from the installation function
-        self.worker.progressUpdate.connect(self.workerProgress)
-        self.worker.success.connect(self.workerFinished)
-        self.worker.error.connect(self.workerError)
-
-        self.terminalUpdateMsg.setText("Installation in process...")
-        self.terminalUpdateMsg.show()
-
-# Start the installation function
-        self.worker.start()
-
-# Function for displaying the installers progress
-    def workerProgress(self, message):
-        currentProgress = self.terminalUpdateMsg.text()
-
-        if currentProgress: 
-            newProgress = currentProgress + "\n" + message
-        else:
-            newProgress = message
-
-        self.terminalUpdateMsg.setText(newProgress)
-
-        QApplication.processEvents()
-
-# Function to process what happens, when the installation finished successfully
-    def workerFinished(self):
-        self.terminalUpdateMsg.setText("Installation finished")
-
-        self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
-
-# Function for a pop-up window if a error occurs during the installation process
-    def workerError(self, errorMsg):
-
-        msg = QMessageBox()
-        msg.setWindowTitle("Errror!")
-        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.setDefaultButton(QMessageBox.Ok)
-        
-        msg.exec()
-
-        sys.exit()
 
 #Function for the installation process page 
     def createPage3(self):
@@ -317,6 +265,66 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()
 
         return mainWidget
+    
+    def installProgram(self):
+# Disable the buttons on page 3 
+        self.page3SubmitBtn.setEnabled(False)
+        self.page3BackBtn.setEnabled(False)
+
+# Get program data from the QLineEdits
+        self.cmdName = self.programInfoList[0].text()
+        self.programName = self.programInfoList[1].text()
+        self.programDescr = self.programInfoList[2].text()
+        self.programCategory = self.programInfoList[3].text()
+
+# Function that installs the program
+        self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)
+
+# Process status updates from the installation function
+        self.worker.progressUpdate.connect(self.workerProgress)
+        self.worker.success.connect(self.workerFinished)
+        self.worker.error.connect(self.workerError)
+
+        self.terminalUpdateMsg.setText("Installation in process...")
+        self.terminalUpdateMsg.show()
+
+# Start the installation function
+        self.worker.start()
+
+# Wait 2s to let the user see the last step beeing completed
+        QTimer.singleShot(2000)
+
+# Function for displaying the installers progress
+    def workerProgress(self, message):
+        currentProgress = self.terminalUpdateMsg.text()
+
+        if currentProgress: 
+            newProgress = currentProgress + "\n" + message
+        else:
+            newProgress = message
+
+        self.terminalUpdateMsg.setText(newProgress)
+
+        QApplication.processEvents()
+
+# Function to process what happens, when the installation finished successfully
+    def workerFinished(self):
+        self.terminalUpdateMsg.setText("Installation finished")
+
+        self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
+
+# Function for a pop-up window if a error occurs during the installation process
+    def workerError(self, errorMsg):
+
+        msg = QMessageBox()
+        msg.setWindowTitle("Errror!")
+        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.setDefaultButton(QMessageBox.Ok)
+        
+        msg.exec()
+
+        sys.exit()
 
     def createPage4(self):
         mainWidget = QWidget()
@@ -385,16 +393,16 @@ class InstallWorker(QThread):
 # Function to install the program
     def run(self):
         try:
-            moveFile(self.selectedFilePath, self.fileDest)
+            installer.moveFile(self, self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File moved successfully (1/4 tasks finished)")
 
-            mkExec(self.selectedFilePath, self.fileDest)
+            installer.mkExec(self, self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
 
-            mkSymLink(self.selectedFilePath, self.cmdName)
+            installer.mkSymLink(self, self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
             self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
 
-            mkStartmenuEntry(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            startmenuEntry.create(self, self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
             self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
 
             self.success.emit()
