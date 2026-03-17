@@ -5,6 +5,48 @@ QMainWindow {
     background-color: #212121;
 }
 
+QMenuBar {
+    background: #2c2c2c;
+    border-bottom: 1px solid #484848;
+    color: #CCCCCC;
+}
+
+QMenuBar::item {
+    background: transparent;
+    border-radius: 4px;
+    padding: 3px;
+    margin: 0px;
+    margin-bottom: 2px;
+}
+
+QMenuBar::item:pressed {
+    background: #3c3c3c;
+    color: #EEEEEE
+}
+
+QMenu {
+    background-color: #333333;
+    padding: 4px;
+    border-radius: 10px;
+    color: #EEEEEE;
+}
+
+QMenu::item {
+    background: #333333;
+    padding: 4px;
+    margin-top: 1px;
+}
+
+QMenu::item:selected {
+    background: #4c4c4c;
+    border-radius: 5px;
+}
+
+QMenu::separator {
+    background-color: #5c5c5c;
+    height: 1px;
+}
+
 QLabel#title {
     font-weight: bold;
     max-height: 20px;
@@ -136,6 +178,7 @@ QRadioButton:hover {
 
 QLineEdit {
     background-color: #373737;
+    color: #EEEEEE;
     border: none;
     border-radius: 10px;
     font-size: 14px;

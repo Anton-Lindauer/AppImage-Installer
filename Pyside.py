@@ -19,6 +19,10 @@ class MainWindow(QMainWindow):
         self.fileDest = str(self.userDir)+"/AppImages"   # Directory for the AppImages
         self.downloadsDir = os.path.join(str(self.userDir), "Downloads")     # Downloads directory; The AppImages will be extracted from there
 
+        programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheets
+        self.lightStylePath = os.path.join(programDir, "stylesheets/lightStyle.qss")
+        self.darkStylePath = os.path.join(programDir, "stylesheets/darkStyle.qss")
+        
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
         self.setMinimumSize(750, 600)   # Minimum window size
 
@@ -43,6 +47,31 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.page4)
 
         mainLayout.addWidget(self.stackedWidget)    # Add the QStackedWidget to the main windows layout
+
+        optionsBar = self.menuBar()
+
+        themeMenu = optionsBar.addMenu("Theme")
+        helpMenu = optionsBar.addMenu("Help")
+
+# Hides the box around the box with the menues
+        themeMenu.setWindowFlags(themeMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
+        themeMenu.setAttribute(Qt.WA_TranslucentBackground)
+
+        theme1 = themeMenu.addAction("System theme")
+        themeMenu.addSeparator()
+        theme2 = themeMenu.addAction("Mint Orchis Dark")
+        themeMenu.addSeparator()
+        theme3 = themeMenu.addAction("Mint Orchis Light")
+
+        theme1.triggered.connect(lambda: self.loadTheme("sysTheme"))
+        theme2.triggered.connect(lambda: self.loadTheme("darkTheme"))
+        theme3.triggered.connect(lambda: self.loadTheme("lightTheme"))
+
+# Future feature to be implemented at some point in time
+        helpMenu.addAction("Coming soon...")
+
+        helpMenu.setWindowFlags(helpMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
+        helpMenu.setAttribute(Qt.WA_TranslucentBackground)
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -111,16 +140,6 @@ class MainWindow(QMainWindow):
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.findSeletedRadioBtn)
 
-# Temporary position of the buttons for the theme selection
-        lightModeBtn = QPushButton("Light Mode")
-        lightModeBtn.clicked.connect(self.lightMode)
-
-        darkModeBtn = QPushButton("Dark Mode")
-        darkModeBtn.clicked.connect(self.darkMode)
-
-        mainLayout.addWidget(lightModeBtn)
-        mainLayout.addWidget(darkModeBtn)
-
 # Adding every main element to the main window
         mainLayout.addWidget(title)
         mainLayout.addWidget(containerScrollArea)
@@ -129,22 +148,6 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return mainWidget
-    
-    def lightMode(self):
-        programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-        stylesheetPath = os.path.join(programDir, "stylesheets/lightStyle.qss")
-
-        with open(stylesheetPath, "r") as f:  # Open a qss style sheet
-            _style = f.read()
-            app.setStyleSheet(_style)
-
-    def darkMode(self):
-        programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-        stylesheetPath = os.path.join(programDir, "stylesheets/darkStyle.qss")
-
-        with open(stylesheetPath, "r") as f:  # Open a qss style sheet
-            _style = f.read()
-            app.setStyleSheet(_style)
     
     def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
             selected = self.groupPage1.checkedButton()
@@ -373,6 +376,30 @@ class MainWindow(QMainWindow):
          newPage3 = self.createPage3()      # Generate a new first page and insert it at index 2
          self.stackedWidget.insertWidget(2, newPage3)
 
+    def loadTheme(self, selectedTheme):
+        match selectedTheme:
+# Open the qss style sheet with the same theme as the system
+            case "sysTheme":
+                sysStyle = QGuiApplication.instance().styleHints().colorScheme()
+                if sysStyle == Qt.ColorScheme.Dark:
+                    with open(self.darkStylePath, "r") as f:
+                        _style = f.read()
+                        app.setStyleSheet(_style)
+                else:
+                    with open(self.lightStylePath, "r") as f:  # Open a qss style sheet
+                        _style = f.read()
+                        app.setStyleSheet(_style)
+# Open the qss style sheet with the dark theme
+            case "darkTheme":
+                with open(self.darkStylePath, "r") as f:  # Open a qss style sheet
+                        _style = f.read()
+                        app.setStyleSheet(_style)
+# Open the qss style sheet with the light theme
+            case "lightTheme":  
+                with open(self.lightStylePath, "r") as f:  # Open a qss style sheet
+                        _style = f.read()
+                        app.setStyleSheet(_style)
+
 # Class for the installation process
 class InstallWorker(QThread):
     progressUpdate = Signal(str)
@@ -418,18 +445,6 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
 
-    programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheet
-    darkStylesheetPath = os.path.join(programDir, "stylesheets/darkStyle.qss")
-    lightStylesheetPath = os.path.join(programDir, "stylesheets/lightStyle.qss")
-
-    sysStyle = QGuiApplication.instance().styleHints().colorScheme()
-    if sysStyle == Qt.ColorScheme.Dark:
-        with open(darkStylesheetPath, "r") as f:  # Open a qss style sheet
-            _style = f.read()
-            app.setStyleSheet(_style)
-    else:
-        with open(lightStylesheetPath, "r") as f:  # Open a qss style sheet
-            _style = f.read()
-            app.setStyleSheet(_style)
+    window.loadTheme("sysTheme")
 
     sys.exit(app.exec())

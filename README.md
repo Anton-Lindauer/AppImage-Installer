@@ -58,6 +58,8 @@ The program will guide you through the installation process. Please report any e
 
 ## Have a look at the GUI version
 
+**Note:** The pictures are not 100% up to date and small visual changes are not worth the effort to update them.
+
 ### Selecting a file to install
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page1.png)
 
