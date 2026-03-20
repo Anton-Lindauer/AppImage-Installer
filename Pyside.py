@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
             self,
             "Pick a AppImage file to install",
             f"{self.userDir}",
-            "AppImage files (*.AppImage);;All files (*)"
+            "AppImage files (*.AppImage)"
         )
 
         if pickedPath:
