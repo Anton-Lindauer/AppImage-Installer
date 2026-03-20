@@ -71,15 +71,17 @@ Example of installing Ultimaker Cura.
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/1c46881a2dbc691cec0b3f207b48ec1a6a896685/pictures%20for%20README%20file/page3.png)
 This may take a while, especially the creation of a startmenu entry takes a while. 
 
-Example error message pop up window also included in the picture.
+Example error message pop up window also included in the picture. If you encounter a error message, check the terminal you used to launch the program from for more details.
 
 ### Finished installation screen
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page3.png)
 
 ## Other important notes
+If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
+
 main.py will from now on be used by the GUI, if you want the terminal version of this tool, you have to execute the mainCLI.py file.
 
-A light mode is also supported, the program picks your system themen when launched.
+A light mode is also supported, the program uses your system themen when launched.
 
 The GUI design is inspired by linux mint with orchis dark/light compact themes, it's not a 1:1 replica, because Qt hates doing what it should do and there is no mint menu with a similar layout.
 

@@ -1,9 +1,9 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea
-from PySide6.QtCore import Qt, QThread, Signal, QTimer
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog
+from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
+from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
 import os
@@ -50,10 +50,18 @@ class MainWindow(QMainWindow):
 
         optionsBar = self.menuBar()
 
+        fileMenu = optionsBar.addMenu("File")
         themeMenu = optionsBar.addMenu("Theme")
         helpMenu = optionsBar.addMenu("Help")
 
-# Hides the box around the box with the menues
+# Hides the box around the box with the menues; Has to be declared for every menu
+        fileMenu.setWindowFlags(fileMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
+        fileMenu.setAttribute(Qt.WA_TranslucentBackground)
+
+        file1 = fileMenu.addAction("Pick a different file")
+
+        file1.triggered.connect(self.userPick)
+
         themeMenu.setWindowFlags(themeMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
         themeMenu.setAttribute(Qt.WA_TranslucentBackground)
 
@@ -67,11 +75,15 @@ class MainWindow(QMainWindow):
         theme2.triggered.connect(lambda: self.loadTheme("darkTheme"))
         theme3.triggered.connect(lambda: self.loadTheme("lightTheme"))
 
-# Future feature to be implemented at some point in time
-        helpMenu.addAction("Coming soon...")
-
         helpMenu.setWindowFlags(helpMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
         helpMenu.setAttribute(Qt.WA_TranslucentBackground)
+
+        help1 = helpMenu.addAction("Github Repo")
+
+        help1.triggered.connect(self.openRepo)
+
+    def openRepo(self):
+        QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -80,6 +92,9 @@ class MainWindow(QMainWindow):
         title = QLabel("Select a file to install")   # Title telling the user what to do
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
+
+        filedialogBtn = QPushButton("Pick a file")
+        filedialogBtn.clicked.connect(self.userPick)
 
         # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         containerScrollArea = QScrollArea()
@@ -142,12 +157,27 @@ class MainWindow(QMainWindow):
 
 # Adding every main element to the main window
         mainLayout.addWidget(title)
+        mainLayout.addWidget(filedialogBtn)
         mainLayout.addWidget(containerScrollArea)
         mainLayout.addWidget(submitBtn)
 
         mainLayout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return mainWidget
+    
+    def userPick(self):
+        pickedPath, _ = QFileDialog.getOpenFileName(
+            self,
+            "Pick a AppImage file to install",
+            f"{self.userDir}",
+            "AppImage files (*.AppImage);;All files (*)"
+        )
+
+        if pickedPath:
+            print(f"{pickedPath}")
+
+            self.selectedFilePath = pickedPath
+            self.stackedWidget.setCurrentIndex(1)
     
     def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
             selected = self.groupPage1.checkedButton()
@@ -294,9 +324,6 @@ class MainWindow(QMainWindow):
 # Start the installation function
         self.worker.start()
 
-# Wait 2s to let the user see the last step beeing completed
-        QTimer.singleShot(2000)
-
 # Function for displaying the installers progress
     def workerProgress(self, message):
         currentProgress = self.terminalUpdateMsg.text()
@@ -313,6 +340,9 @@ class MainWindow(QMainWindow):
 # Function to process what happens, when the installation finished successfully
     def workerFinished(self):
         self.terminalUpdateMsg.setText("Installation finished")
+
+# Wait 2s to let the user see the last step beeing completed
+        QTimer.singleShot(2000)
 
         self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
 
