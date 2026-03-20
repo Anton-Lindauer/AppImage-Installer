@@ -61,20 +61,20 @@ The program will guide you through the installation process. Please report any e
 **Note:** The pictures are not 100% up to date and small visual changes are not worth the effort to update them.
 
 ### Selecting a file to install
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page1.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page1.png)
 
 ### Entering program info
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/5f7a11217f12e39c7ce1630993b787c879e0bbff/pictures%20for%20README%20file/page2.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page2.png)
 Example of installing Ultimaker Cura.
 
 ### Installation process status page
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/1c46881a2dbc691cec0b3f207b48ec1a6a896685/pictures%20for%20README%20file/page3.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page3.png)
 This may take a while, especially the creation of a startmenu entry takes a while. 
 
-Example error message pop up window also included in the picture. If you encounter a error message, check the terminal you used to launch the program from for more details.
+If you encounter a error message, check the terminal you used to launch the program from for more details.
 
 ### Finished installation screen
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f14feb2ef58f4b6dcdb579f0e8fe16d1b458bedb/pictures%20for%20README%20file/Page3.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page4.png)
 
 ## Other important notes
 If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
