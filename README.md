@@ -36,12 +36,12 @@ If you want the GUI version, follow these steps
 
 Create a virtual environment:
 ```
-python3 -m venv venv
+python3 -m venv .venv
 ```
 
 Activate the virtual environment (activation needs to be done each time you want to launch the GUI version):
 ```
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 Install all requirements:

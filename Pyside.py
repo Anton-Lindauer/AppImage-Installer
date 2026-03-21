@@ -1,7 +1,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -93,6 +93,21 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
+        self.categorySel = QComboBox()
+
+        self.categorySel.setPlaceholderText("Pick Categories (NOT DOING ANYTHING YET, JUST IGNORE THIS FOR NOW)")
+
+
+        self.categorySel.addItems(["Pick Categories", "AudioVideo", "Audio", "Video", "Development", "Education", "Game", "Graphics", "Network", "Office", "Science", "Settings", "System", "Utility"])
+
+        self.categorySel.setItemData(0, 0, Qt.UserRole - 1)
+        
+        self.categorySel.currentTextChanged.connect(self.findCategories)
+
+        self.pickedCategories = QLabel()
+
+        self.pickedCategoriesList = []
+
         filedialogBtn = QPushButton("Pick a file")
         filedialogBtn.clicked.connect(self.userPick)
 
@@ -157,6 +172,8 @@ class MainWindow(QMainWindow):
 
 # Adding every main element to the main window
         mainLayout.addWidget(title)
+        mainLayout.addWidget(self.categorySel)
+        mainLayout.addWidget(self.pickedCategories)
         mainLayout.addWidget(filedialogBtn)
         mainLayout.addWidget(containerScrollArea)
         mainLayout.addWidget(submitBtn)
@@ -164,6 +181,20 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return mainWidget
+    
+    def findCategories(self, pickedOption):
+
+        if not pickedOption or pickedOption == "Pick Categories":
+            return
+
+        if pickedOption not in self.pickedCategoriesList:
+            self.pickedCategoriesList.append(pickedOption)
+
+        allOptions = ";".join(self.pickedCategoriesList) + ";"
+
+        self.pickedCategories.setText(allOptions)
+
+        self.categorySel.setCurrentIndex(-1) 
     
     def userPick(self):
         pickedPath, _ = QFileDialog.getOpenFileName(
