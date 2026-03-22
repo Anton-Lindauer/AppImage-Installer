@@ -64,7 +64,7 @@ The program will guide you through the installation process. Please report any e
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page1.png)
 
 ### Entering program info
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page2.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/0e3eed5762493db1baa4c7875a3571ad668bc522/pictures%20for%20README%20file/page2.png)
 Example of installing Ultimaker Cura.
 
 ### Installation process status page
