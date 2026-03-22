@@ -203,16 +203,16 @@ class MainWindow(QMainWindow):
         containerLayout.setSpacing(0)
 
 # All the things the user has to enter
-        self.programInfo = ["Enter a command to execute the file from the terminal: ",
-                            "Enter the name of the program in the startmenu: ",
-                            "Enter a description for the program: ",
-                            "Pick the categories the program belongs to: "]
+        self.programInfo = ["Terminal Command:",
+                            "Display Name:",
+                            "Short Description:",
+                            "Categories:"]
         
 # More information on what to enter for the user
-        programInfoText = ["This command can later be used to launch the program from the terminal.",
-                           "The name in the icon in the startmenu.",
-                           "The description of the program in the startmenu tooltip.",
-                           "The startmenu category the program belongs to. Categories are: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;. You can choose multiple categories."]
+        programInfoText = ["The command or file path used to launch the application from the terminal.",
+                           "The name that will appear in the start menu and application list.",
+                           "A brief summary of the application (displayed as a tooltip).",
+                           "Determines the placement in the start menu."]
         
         self.programInfoList = []
         
@@ -248,6 +248,9 @@ class MainWindow(QMainWindow):
             if index == 3:
                 innerTile = QWidget()
                 innerTileLayout = QHBoxLayout(innerTile)
+
+                innerTileLayout.setContentsMargins(0, 0, 0, 0)
+                innerTileLayout.setSpacing(0)
 
                 self.allCategories = ""
                 rmvCategory = QPushButton("Remove last Category")
