@@ -199,6 +199,45 @@ QLineEdit:focus {
     border: 2px solid #468eed;
 }
 
+QComboBox {
+    background-color: #373737;
+    color: #EEEEEE;
+    border: 2px solid #373737;
+    border-radius: 10px;
+    font-size: 14px;
+    padding: 4px;
+    margin: 6px;
+    combobox-popup: 0;
+}
+
+QComboBox:hover {
+    border: 2px solid #525252;
+    font-size: 14px;
+}
+
+QComboBox:on {
+    border: 2px solid #468eed;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #424242;
+    padding: 4px;
+    border-radius: 8px;
+    outline: none;
+}
+
+QComboBox QAbstractItemView::item {
+    background-color: transparent;
+    padding: 4px;
+    margin-top: 1px;
+    color: #EEEEEE;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #525252;
+    border-radius: 5px;
+}
+
 QMessageBox {
     background-color: #212121;
     color: #EEEEEE;
@@ -289,6 +328,21 @@ QLabel#entry {
     color: #EEEEEE;
 }
 
+QLabel#pickedCategories {
+    background-color: #373737;
+    color: #EEEEEE;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    min-height: 24px;
+    max-height: 24px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 4px;
+    padding-left: 4px;
+    padding-right: 4px
+}
+
 QLabel#infoDescription {
     padding: 8px;
     font-size: 12px;
@@ -297,6 +351,11 @@ QLabel#infoDescription {
     padding-left: 10px;
     padding-top: 0px;
     padding-bottom: 10px;
+}
+
+QPushButton#rmvCategory {
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 /* Everything that's only for page three */

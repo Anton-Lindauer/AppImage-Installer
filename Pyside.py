@@ -1,7 +1,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -93,21 +93,6 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        self.categorySel = QComboBox()
-
-        self.categorySel.setPlaceholderText("Pick Categories (NOT DOING ANYTHING YET, JUST IGNORE THIS FOR NOW)")
-
-
-        self.categorySel.addItems(["Pick Categories", "AudioVideo", "Audio", "Video", "Development", "Education", "Game", "Graphics", "Network", "Office", "Science", "Settings", "System", "Utility"])
-
-        self.categorySel.setItemData(0, 0, Qt.UserRole - 1)
-        
-        self.categorySel.currentTextChanged.connect(self.findCategories)
-
-        self.pickedCategories = QLabel()
-
-        self.pickedCategoriesList = []
-
         filedialogBtn = QPushButton("Pick a file")
         filedialogBtn.clicked.connect(self.userPick)
 
@@ -172,8 +157,6 @@ class MainWindow(QMainWindow):
 
 # Adding every main element to the main window
         mainLayout.addWidget(title)
-        mainLayout.addWidget(self.categorySel)
-        mainLayout.addWidget(self.pickedCategories)
         mainLayout.addWidget(filedialogBtn)
         mainLayout.addWidget(containerScrollArea)
         mainLayout.addWidget(submitBtn)
@@ -181,20 +164,6 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()    # Increases the window size without increasing the elemet sizes
 
         return mainWidget
-    
-    def findCategories(self, pickedOption):
-
-        if not pickedOption or pickedOption == "Pick Categories":
-            return
-
-        if pickedOption not in self.pickedCategoriesList:
-            self.pickedCategoriesList.append(pickedOption)
-
-        allOptions = ";".join(self.pickedCategoriesList) + ";"
-
-        self.pickedCategories.setText(allOptions)
-
-        self.categorySel.setCurrentIndex(-1) 
     
     def userPick(self):
         pickedPath, _ = QFileDialog.getOpenFileName(
@@ -216,69 +185,114 @@ class MainWindow(QMainWindow):
                 self.selectedFilePath = selected.text()     ## Read out the file path from the selected QRadioButton
                 self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
         
-    def createPage2(self):  # Page two
+    def createPage2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
 
-        title = QLabel("Enter the program information")   # Title of the current thing the user does
+# Title of the current thing the user does
+        title = QLabel("Enter the program information")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
-        container = QGroupBox()    # Box for the options for the user; Contains other boxes with the descriptions and a QlineEdits
+# Box for the options for the user; Contains other boxes with the descriptions and a QlineEdits
+        container = QGroupBox()
         
-        containerLayout = QVBoxLayout(container) # Set the layout in the container
+# Set the layout in the container with no spacing
+        containerLayout = QVBoxLayout(container)
         containerLayout.setContentsMargins(0, 0, 0, 0)
         containerLayout.setSpacing(0)
 
-        self.programInfo = ["Enter a command to execute the file from the terminal: ",   # All the things the user has to enter
-                       "Enter the name of the program in the startmenu: ",
-                       "Enter a description for the program: ",
-                       "Enter the categories the program belongs to: "]
+# All the things the user has to enter
+        self.programInfo = ["Enter a command to execute the file from the terminal: ",
+                            "Enter the name of the program in the startmenu: ",
+                            "Enter a description for the program: ",
+                            "Pick the categories the program belongs to: "]
         
-        programInfoText = ["This command can later be used to launch the program from the terminal.",       # More information on what to enter for the user
+# More information on what to enter for the user
+        programInfoText = ["This command can later be used to launch the program from the terminal.",
                            "The name in the icon in the startmenu.",
                            "The description of the program in the startmenu tooltip.",
-                           "The startmenu category the program belongs to. Categories are: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;. You can choose multiple categories. Use ';' to separate them and at the end"]
+                           "The startmenu category the program belongs to. Categories are: AudioVideo;Audio;Video;Development;Education;Game;Graphics;Network;Office;Science;Settings;System;Utility;. You can choose multiple categories."]
         
         self.programInfoList = []
         
-        for info in self.programInfo:    # Create all the element in the groupbox
-
-            containerTile = QWidget()    # Boxes with the descriptions and the QLineEdits
+# Create all the element in the groupbox
+        for index, info in enumerate(self.programInfo):  
+# Boxes with the descriptions and the QLineEdits 
+            containerTile = QWidget()
             containerTile.setObjectName("page2InnerBox")
 
             tileLayout = QVBoxLayout(containerTile)
             tileLayout.setContentsMargins(0, 0, 0, 0)
             tileLayout.setSpacing(0)
 
-            if self.programInfo.index(info) == 0:   # Give properties to the first and last tiles in the main box; Used in QSS for rounded corners
+# Special properties for the first and last boxes; Used in QSS for rounded corners
+            if index == 0:
                 containerTile.setProperty("isFirst", "true")
-            elif self.programInfo.index(info) == 3:
+            elif index == 3:
                 containerTile.setProperty("isLast", "true")
             
-            description = QLabel(info)    # What the user is expected to enter 
+# What the user is expected to enter 
+            description = QLabel(info)
             description.setObjectName("entry")
 
-            infoText = programInfoText[self.programInfo.index(info)]     # Infotext for the user, so they know what to enter in the QlineEdit
-            infoDescription = QLabel(infoText)
+# More detailed description for the user
+            infoDescription = QLabel(programInfoText[index])
             infoDescription.setObjectName("infoDescription")
             infoDescription.setWordWrap(True)
 
-            usrInput = QLineEdit()      # The input from the user
-            self.programInfoList.append(usrInput)
-
-            # Add everything to the layout in a tile in the container
             tileLayout.addWidget(description)
             tileLayout.addWidget(infoDescription)
-            tileLayout.addWidget(usrInput)
 
-            containerLayout.addWidget(containerTile)  # Add each tile to the container layout
+# Add a dropdown menu only to the last box
+            if index == 3:
+                innerTile = QWidget()
+                innerTileLayout = QHBoxLayout(innerTile)
 
-        self.page2SubmitBtn = QPushButton("Continue")  # Button to continue with the selected options
+                self.allCategories = ""
+                rmvCategory = QPushButton("Remove last Category")
+                rmvCategory.clicked.connect(self.rmvLastCategory)
+                rmvCategory.setObjectName("rmvCategory")
+
+                self.categorySel = QComboBox()
+                self.categorySel.setPlaceholderText("Pick Categories")
+                self.categorySel.addItems(["AudioVideo", "Audio", "Video", "Development", "Education", "Game", "Graphics", "Network", "Office", "Science", "Settings", "System", "Utility"])
+                self.categorySel.setItemDelegate(QStyledItemDelegate())
+                self.categorySel.view().window().setAttribute(Qt.WA_TranslucentBackground)
+                self.categorySel.view().window().setWindowFlags(Qt.Popup | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+                self.categorySel.currentTextChanged.connect(self.findCategories)
+
+# Disable auto scrolling with mouse hovering
+                view = self.categorySel.view()
+                view.setAutoScroll(False)
+
+# Activate the scrollbar handle
+                view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+
+                self.pickedCategories = QLabel()
+                self.pickedCategories.setObjectName("pickedCategories")
+                self.pickedCategoriesList = []
+
+                innerTileLayout.addWidget(self.categorySel)
+                innerTileLayout.addWidget(rmvCategory)
+
+                tileLayout.addWidget(innerTile)
+                tileLayout.addWidget(self.pickedCategories)
+
+# Add QLineEdit input fields for box one to three
+            else:
+                usrInput = QLineEdit()
+                self.programInfoList.append(usrInput)
+                tileLayout.addWidget(usrInput)
+                
+
+            containerLayout.addWidget(containerTile)
+
+        self.page2SubmitBtn = QPushButton("Continue")
         self.page2SubmitBtn.setObjectName("submitBtn")
         self.page2SubmitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
 
-        self.page2BackBtn = QPushButton("Back")  # Button to go back to the previously selected options
+        self.page2BackBtn = QPushButton("Back")
         self.page2BackBtn.setObjectName("backBtn")
         self.page2BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
 
@@ -288,9 +302,32 @@ class MainWindow(QMainWindow):
         mainLayout.addWidget(self.page2SubmitBtn)
         mainLayout.addWidget(self.page2BackBtn)
 
-        mainLayout.addStretch()    # Increases the window size without increasing the element sizes
+# Increases the window size without increasing the element sizes
+        mainLayout.addStretch()    
 
         return mainWidget
+    
+    def findCategories(self, pickedOption):
+# Exit this function if the input is invalid
+        if not pickedOption or pickedOption == "Pick Categories" or pickedOption in self.pickedCategoriesList:
+            return
+
+        self.pickedCategoriesList.append(pickedOption)
+
+# Update the string with all categories
+        self.allCategories = ";".join(self.pickedCategoriesList) + ";"
+        self.pickedCategories.setText(self.allCategories)
+        self.categorySel.setCurrentIndex(-1)
+
+    def rmvLastCategory(self):
+# Only remove the last element from the list if the list has at least one element
+        if self.pickedCategoriesList: 
+            self.pickedCategoriesList.pop()
+        
+# Update the string with all categories
+        self.allCategories = ";".join(self.pickedCategoriesList) + ";" if self.pickedCategoriesList else ""
+        self.pickedCategories.setText(self.allCategories)
+        self.categorySel.setCurrentIndex(-1)
 
 #Function for the installation process page 
     def createPage3(self):
@@ -339,7 +376,7 @@ class MainWindow(QMainWindow):
         self.cmdName = self.programInfoList[0].text()
         self.programName = self.programInfoList[1].text()
         self.programDescr = self.programInfoList[2].text()
-        self.programCategory = self.programInfoList[3].text()
+        self.programCategory = self.allCategories
 
 # Function that installs the program
         self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)
@@ -373,7 +410,7 @@ class MainWindow(QMainWindow):
         self.terminalUpdateMsg.setText("Installation finished")
 
 # Wait 2s to let the user see the last step beeing completed
-        QTimer.singleShot(2000)
+        #QTimer.singleShot(2000)
 
         self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
 
