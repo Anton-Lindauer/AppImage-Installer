@@ -8,7 +8,7 @@ from PySide6.QtGui import QGuiApplication, QDesktopServices
 import sys
 import os
 import pathlib
-from main import installer, startmenuEntry
+from main import Installer, StartmenuEntry
 
 class MainWindow(QMainWindow):
 
@@ -17,7 +17,6 @@ class MainWindow(QMainWindow):
     
         self.userDir = pathlib.Path.home()   # User home directory
         self.fileDest = str(self.userDir)+"/AppImages"   # Directory for the AppImages
-        self.downloadsDir = os.path.join(str(self.userDir), "Downloads")     # Downloads directory; The AppImages will be extracted from there
 
         programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheets
         self.lightStylePath = os.path.join(programDir, "stylesheets/lightStyle.qss")
@@ -108,7 +107,7 @@ class MainWindow(QMainWindow):
         containerLayout.setContentsMargins(0, 0, 0, 0,)
         containerLayout.setSpacing(0)
 
-        self.fileList = installer.files(self, self.downloadsDir)     # Return all file paths needed
+        self.fileList = Installer.listFiles(self, self.userDir)     # Return all file paths needed
         fileListLen = len(self.fileList)
 
         self.groupPage1 = QButtonGroup(self)    # Group for all QRadioButtons to later find out which one is checked
@@ -203,10 +202,10 @@ class MainWindow(QMainWindow):
         containerLayout.setSpacing(0)
 
 # All the things the user has to enter
-        self.programInfo = ["Terminal Command:",
-                            "Display Name:",
-                            "Short Description:",
-                            "Categories:"]
+        self.programInfo = ["Terminal Command",
+                            "Display Name",
+                            "Short Description",
+                            "Categories"]
         
 # More information on what to enter for the user
         programInfoText = ["The command or file path used to launch the application from the terminal.",
@@ -521,16 +520,16 @@ class InstallWorker(QThread):
 # Function to install the program
     def run(self):
         try:
-            installer.moveFile(self, self.selectedFilePath, self.fileDest)
+            Installer.moveFile(self, self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File moved successfully (1/4 tasks finished)")
 
-            installer.mkExec(self, self.selectedFilePath, self.fileDest)
+            Installer.mkExec(self, self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
 
-            installer.mkSymLink(self, self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
+            Installer.mkSymLink(self, self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
             self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
 
-            startmenuEntry.create(self, self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            StartmenuEntry.create(self, self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
             self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
 
             self.success.emit()

@@ -5,16 +5,17 @@ import shutil
 import subprocess
 import pathlib
 
-class installer():
+class Installer():
 
 # Put every AppImage file into a list
-    def files(self, downloadsDir):
+    def listFiles(self, userDir):
+        downloadsDir = os.path.join(str(userDir), "Downloads")
+
         self.fileList = [file.path 
                     for file in os.scandir(downloadsDir) 
                     if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
 
-        self.fileList.sort()    # Sort the list in a alphabetic order
-
+        self.fileList.sort()
         return self.fileList
        
 # Function to move the AppImage File to the right directory
@@ -38,7 +39,7 @@ class installer():
 
         subprocess.run(["ln", "-s", f"{fileDest}/{os.path.basename(selectedFilePath)}", f"{userDir}/.local/bin/"+cmdName], check=True)
 
-class startmenuEntry():
+class StartmenuEntry():
 
     def create(self, selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
         fileName = os.path.basename(selectedFilePath)

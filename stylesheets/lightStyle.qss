@@ -326,6 +326,7 @@ QLabel#page1NoFileMsg {
 QLabel#entry {
     padding: 10px;
     font-size: 14px;
+    font: bold;
     color: #212121;
 }
 
