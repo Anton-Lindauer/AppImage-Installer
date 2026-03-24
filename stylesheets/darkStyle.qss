@@ -330,22 +330,6 @@ QLabel#entry {
     color: #EEEEEE;
 }
 
-QLabel#pickedCategories {
-    background-color: #373737;
-    color: #EEEEEE;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    min-height: 24px;
-    max-height: 24px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 8px;
-    margin-bottom: 4px;
-    padding-left: 4px;
-    padding-right: 4px
-}
-
 QLabel#infoDescription {
     padding: 8px;
     font-size: 12px;
@@ -356,10 +340,8 @@ QLabel#infoDescription {
     padding-bottom: 10px;
 }
 
-QPushButton#rmvCategory {
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 0px;
+QRadioButton#categorySel {
+    border: none;
 }
 
 /* Everything that's only for page three */

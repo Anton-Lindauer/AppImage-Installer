@@ -1,7 +1,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
         self.darkStylePath = os.path.join(programDir, "stylesheets/darkStyle.qss")
         
         self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
-        self.setMinimumSize(750, 600)   # Minimum window size
+        self.setMinimumSize(750, 700)   # Minimum window size
 
         central = QWidget()     # QWidget for everything
         self.setCentralWidget(central)
@@ -88,7 +88,7 @@ class MainWindow(QMainWindow):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
 
-        title = QLabel("Select a file to install")   # Title telling the user what to do
+        title = QLabel("AppImage selection")   # Title telling the user what to do
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         mainLayout = QVBoxLayout(mainWidget)
 
 # Title of the current thing the user does
-        title = QLabel("Enter the program information")
+        title = QLabel("Program information")
         title.setObjectName("title")
         title.setAlignment(Qt.AlignLeft)
 
@@ -211,7 +211,7 @@ class MainWindow(QMainWindow):
         programInfoText = ["The command or file path used to launch the application from the terminal.",
                            "The name that will appear in the start menu and application list.",
                            "A brief summary of the application (displayed as a tooltip).",
-                           "Determines the placement in the start menu."]
+                           "Determines the placement in the start menu. Some categories can't be combined; combined they create a different category."]
         
         self.programInfoList = []
         
@@ -246,40 +246,29 @@ class MainWindow(QMainWindow):
 # Add a dropdown menu only to the last box
             if index == 3:
                 innerTile = QWidget()
-                innerTileLayout = QHBoxLayout(innerTile)
+                innerTileLayout = QGridLayout(innerTile)
 
                 innerTileLayout.setContentsMargins(0, 0, 0, 0)
                 innerTileLayout.setSpacing(0)
 
                 self.allCategories = ""
-                rmvCategory = QPushButton("Remove last Category")
-                rmvCategory.clicked.connect(self.rmvLastCategory)
-                rmvCategory.setObjectName("rmvCategory")
+                self.page2RadioBtns = QButtonGroup()
+                self.page2RadioBtns.setExclusive(False)
+                self.categoryList = ["Accessibility;Utility", "Education", "Office", "Development", "Graphics", "Network", "Graphics", "AudioVideo", "Utility", "Game", "System", "Science;Education", "Utility", "Settings", "System;Settings"]
 
-                self.categorySel = QComboBox()
-                self.categorySel.setPlaceholderText("Pick Categories")
-                self.categorySel.addItems(["AudioVideo", "Audio", "Video", "Development", "Education", "Game", "Graphics", "Network", "Office", "Science", "Settings", "System", "Utility"])
-                self.categorySel.setItemDelegate(QStyledItemDelegate())
-                self.categorySel.view().window().setAttribute(Qt.WA_TranslucentBackground)
-                self.categorySel.view().window().setWindowFlags(Qt.Popup | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
-                self.categorySel.currentTextChanged.connect(self.findCategories)
+# Create a QRadioButton for all 15 categories
+                for i in range(15):
+                    radioBtn = QRadioButton(self.categoryList[i])
+                    radioBtn.setObjectName("categorySel")
+                    radioBtn.setAutoExclusive(False)
+                    self.page2RadioBtns.addButton(radioBtn)
 
-# Disable auto scrolling with mouse hovering
-                view = self.categorySel.view()
-                view.setAutoScroll(False)
+                    row = i // 3
+                    column = i % 3
 
-# Activate the scrollbar handle
-                view.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-
-                self.pickedCategories = QLabel()
-                self.pickedCategories.setObjectName("pickedCategories")
-                self.pickedCategoriesList = []
-
-                innerTileLayout.addWidget(self.categorySel)
-                innerTileLayout.addWidget(rmvCategory)
+                    innerTileLayout.addWidget(radioBtn, row, column)
 
                 tileLayout.addWidget(innerTile)
-                tileLayout.addWidget(self.pickedCategories)
 
 # Add QLineEdit input fields for box one to three
             else:
@@ -308,28 +297,6 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()    
 
         return mainWidget
-    
-    def findCategories(self, pickedOption):
-# Exit this function if the input is invalid
-        if not pickedOption or pickedOption == "Pick Categories" or pickedOption in self.pickedCategoriesList:
-            return
-
-        self.pickedCategoriesList.append(pickedOption)
-
-# Update the string with all categories
-        self.allCategories = ";".join(self.pickedCategoriesList) + ";"
-        self.pickedCategories.setText(self.allCategories)
-        self.categorySel.setCurrentIndex(-1)
-
-    def rmvLastCategory(self):
-# Only remove the last element from the list if the list has at least one element
-        if self.pickedCategoriesList: 
-            self.pickedCategoriesList.pop()
-        
-# Update the string with all categories
-        self.allCategories = ";".join(self.pickedCategoriesList) + ";" if self.pickedCategoriesList else ""
-        self.pickedCategories.setText(self.allCategories)
-        self.categorySel.setCurrentIndex(-1)
 
 #Function for the installation process page 
     def createPage3(self):
@@ -378,7 +345,16 @@ class MainWindow(QMainWindow):
         self.cmdName = self.programInfoList[0].text()
         self.programName = self.programInfoList[1].text()
         self.programDescr = self.programInfoList[2].text()
-        self.programCategory = self.allCategories
+
+# Get all selected categories
+        self.programCategory = ""
+        allCategories = self.page2RadioBtns.buttons()
+
+        selected = [rb.text() for rb in allCategories if rb.isChecked()]
+
+        if selected:
+            self.programCategory = ";".join(selected)
+            print(self.programCategory)
 
 # Function that installs the program
         self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)

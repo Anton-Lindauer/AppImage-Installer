@@ -330,22 +330,6 @@ QLabel#entry {
     color: #212121;
 }
 
-QLabel#pickedCategories {
-    background-color: #F2F2F2;
-    color: #212121;
-    border: none;
-    border-radius: 10px;
-    font-size: 14px;
-    min-height: 24px;
-    max-height: 24px;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top: 8px;
-    margin-bottom: 4px;
-    padding-left: 4px;
-    padding-right: 4px
-}
-
 QLabel#infoDescription {
     padding: 8px;
     font-size: 12px;
@@ -354,6 +338,10 @@ QLabel#infoDescription {
     padding-left: 10px;
     padding-top: 0px;
     padding-bottom: 10px;
+}
+
+QRadioButton#categorySel {
+    border: none;
 }
 
 QPushButton#rmvCategory {
