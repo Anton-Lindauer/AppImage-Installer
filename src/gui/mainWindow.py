@@ -7,25 +7,35 @@ from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
 import os
-import pathlib
-from main import Installer, StartmenuEntry
+from pathlib import Path
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from src.core.logic import Installer, StartmenuEntry
+
+from components import openRepo, loadTheme
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
     
-        self.userDir = pathlib.Path.home()   # User home directory
+        self.userDir = Path.home()   # User home directory
         self.fileDest = str(self.userDir)+"/AppImages"   # Directory for the AppImages
 
-        programDir = os.path.dirname(os.path.abspath(__file__))     # Find the path for the stylesheets
-        self.lightStylePath = os.path.join(programDir, "stylesheets/lightStyle.qss")
-        self.darkStylePath = os.path.join(programDir, "stylesheets/darkStyle.qss")
-        
-        self.setWindowTitle("AppImage-Installer")   # Window name in the top bar
-        self.setMinimumSize(750, 700)   # Minimum window size
+# Find the path for the stylesheets
+        fileDir = Path(__file__).resolve()
+        projectRoot = fileDir.parent.parent.parent
+        self.lightStylePath = projectRoot / "assets" / "stylesheets" / "lightStyle.qss"
+        self.darkStylePath = projectRoot / "assets" / "stylesheets" / "darkStyle.qss"
 
-        central = QWidget()     # QWidget for everything
+# Initially use the system theme
+        loadTheme(self, "sysTheme")
+        
+        self.setWindowTitle("AppImage-Installer")
+        self.setMinimumSize(750, 700)
+
+# QWidget for everything
+        central = QWidget()
         self.setCentralWidget(central)
 
         mainLayout = QVBoxLayout(central)   # Layout for the QStackedWidget
@@ -70,19 +80,16 @@ class MainWindow(QMainWindow):
         themeMenu.addSeparator()
         theme3 = themeMenu.addAction("Mint Orchis Light")
 
-        theme1.triggered.connect(lambda: self.loadTheme("sysTheme"))
-        theme2.triggered.connect(lambda: self.loadTheme("darkTheme"))
-        theme3.triggered.connect(lambda: self.loadTheme("lightTheme"))
+        theme1.triggered.connect(lambda: loadTheme(self, "sysTheme"))
+        theme2.triggered.connect(lambda: loadTheme(self, "darkTheme"))
+        theme3.triggered.connect(lambda: loadTheme(self, "lightTheme"))
 
         helpMenu.setWindowFlags(helpMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
         helpMenu.setAttribute(Qt.WA_TranslucentBackground)
 
         help1 = helpMenu.addAction("Github Repo")
 
-        help1.triggered.connect(self.openRepo)
-
-    def openRepo(self):
-        QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
+        help1.triggered.connect(openRepo)
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -452,30 +459,6 @@ class MainWindow(QMainWindow):
          newPage3 = self.createPage3()      # Generate a new first page and insert it at index 2
          self.stackedWidget.insertWidget(2, newPage3)
 
-    def loadTheme(self, selectedTheme):
-        match selectedTheme:
-# Open the qss style sheet with the same theme as the system
-            case "sysTheme":
-                sysStyle = QGuiApplication.instance().styleHints().colorScheme()
-                if sysStyle == Qt.ColorScheme.Dark:
-                    with open(self.darkStylePath, "r") as f:
-                        _style = f.read()
-                        app.setStyleSheet(_style)
-                else:
-                    with open(self.lightStylePath, "r") as f:  # Open a qss style sheet
-                        _style = f.read()
-                        app.setStyleSheet(_style)
-# Open the qss style sheet with the dark theme
-            case "darkTheme":
-                with open(self.darkStylePath, "r") as f:  # Open a qss style sheet
-                        _style = f.read()
-                        app.setStyleSheet(_style)
-# Open the qss style sheet with the light theme
-            case "lightTheme":  
-                with open(self.lightStylePath, "r") as f:  # Open a qss style sheet
-                        _style = f.read()
-                        app.setStyleSheet(_style)
-
 # Class for the installation process
 class InstallWorker(QThread):
     progressUpdate = Signal(str)
@@ -520,7 +503,5 @@ if __name__ == "__main__":
 
     window = MainWindow()
     window.show()
-
-    window.loadTheme("sysTheme")
 
     sys.exit(app.exec())
