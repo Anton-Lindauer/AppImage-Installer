@@ -27,7 +27,7 @@ cd AppImage-Installer
 
 If you only want the CLI version, then enter this command to launch it:
 ```
-python3 mainCLI.py
+python3 src/cli/mainCLI.py
 ```
 
 **GUI:**
@@ -51,7 +51,7 @@ pip install -r requirements.txt
 
 Launch the GUI version:
 ```
-python3 Pyside.py
+python3 src/gui/mainWindow.py
 ```
 
 The program will guide you through the installation process. Please report any errors that may occure.
