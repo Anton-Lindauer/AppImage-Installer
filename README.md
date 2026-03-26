@@ -2,7 +2,7 @@
 
 ## A GUI or CLI tool to easily install AppImage files on Linux.
 
-This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, launch it from the terminal and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages. The AppImages files are expected to be in your downloads directory.
+This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, make a symlink (to launch it from the terminal) and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages. The AppImages files are expected to be in your downloads directory.
 
 ## Requirements
 
@@ -49,9 +49,9 @@ Install all requirements:
 pip install -r requirements.txt
 ```
 
-Launch the GUI version:
+Launch the GUI version via the terminal or click the run button in VS Code if you have done everything in VS Code:
 ```
-python3 src/gui/mainWindow.py
+python3 -m src.gui.mainWindow
 ```
 
 The program will guide you through the installation process. Please report any errors that may occure.
@@ -78,8 +78,6 @@ If you encounter a error message, check the terminal you used to launch the prog
 
 ## Other important notes
 If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
-
-main.py will from now on be used by the GUI, if you want the terminal version of this tool, you have to execute the mainCLI.py file.
 
 A light mode is also supported, the program uses your system themen when launched.
 

@@ -9,18 +9,16 @@ import sys
 import os
 from pathlib import Path
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.core.logic import Installer, StartmenuEntry
-
-from components import openRepo, loadTheme
+from src.gui.components import General, Page1Logic
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
     
-        self.userDir = Path.home()   # User home directory
-        self.fileDest = str(self.userDir)+"/AppImages"   # Directory for the AppImages
+        self.userDir = Path.home()
+        self.fileDest = self.userDir / "AppImages"
 
 # Find the path for the stylesheets
         fileDir = Path(__file__).resolve()
@@ -29,7 +27,7 @@ class MainWindow(QMainWindow):
         self.darkStylePath = projectRoot / "assets" / "stylesheets" / "darkStyle.qss"
 
 # Initially use the system theme
-        loadTheme(self, "sysTheme")
+        General.loadTheme(self, "sysTheme")
         
         self.setWindowTitle("AppImage-Installer")
         self.setMinimumSize(750, 700)
@@ -69,7 +67,7 @@ class MainWindow(QMainWindow):
 
         file1 = fileMenu.addAction("Pick a different file")
 
-        file1.triggered.connect(self.userPick)
+        file1.triggered.connect(self.page1Validator)
 
         themeMenu.setWindowFlags(themeMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
         themeMenu.setAttribute(Qt.WA_TranslucentBackground)
@@ -80,16 +78,16 @@ class MainWindow(QMainWindow):
         themeMenu.addSeparator()
         theme3 = themeMenu.addAction("Mint Orchis Light")
 
-        theme1.triggered.connect(lambda: loadTheme(self, "sysTheme"))
-        theme2.triggered.connect(lambda: loadTheme(self, "darkTheme"))
-        theme3.triggered.connect(lambda: loadTheme(self, "lightTheme"))
+        theme1.triggered.connect(lambda: General.loadTheme(self, "sysTheme"))
+        theme2.triggered.connect(lambda: General.loadTheme(self, "darkTheme"))
+        theme3.triggered.connect(lambda: General.loadTheme(self, "lightTheme"))
 
         helpMenu.setWindowFlags(helpMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
         helpMenu.setAttribute(Qt.WA_TranslucentBackground)
 
         help1 = helpMenu.addAction("Github Repo")
 
-        help1.triggered.connect(openRepo)
+        help1.triggered.connect(General.openRepo)
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -100,7 +98,10 @@ class MainWindow(QMainWindow):
         title.setAlignment(Qt.AlignLeft)
 
         filedialogBtn = QPushButton("Pick a file")
-        filedialogBtn.clicked.connect(self.userPick)
+        
+        self.page1Handler = Page1Logic()
+        self.page1Handler.pickedFile.connect(self.page1Worker)
+        filedialogBtn.clicked.connect(lambda: self.page1Handler.userPick(self))
 
         # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         containerScrollArea = QScrollArea()
@@ -159,7 +160,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Continue")  # Button to continue with the selected file
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.findSeletedRadioBtn)
+        submitBtn.clicked.connect(lambda: self.page1Handler.findSeletedRadioBtn(self.groupPage1))
 
 # Adding every main element to the main window
         mainLayout.addWidget(title)
@@ -171,26 +172,16 @@ class MainWindow(QMainWindow):
 
         return mainWidget
     
-    def userPick(self):
-        pickedPath, _ = QFileDialog.getOpenFileName(
-            self,
-            "Pick a AppImage file to install",
-            f"{self.userDir}",
-            "AppImage files (*.AppImage)"
-        )
-
-        if pickedPath:
-            print(f"{pickedPath}")
-
-            self.selectedFilePath = pickedPath
-            self.stackedWidget.setCurrentIndex(1)
-    
-    def findSeletedRadioBtn(self):  # Function to find out which file was selected by the user and the user can only continue with a file selected
-            selected = self.groupPage1.checkedButton()
-            if selected is not None:
-                self.selectedFilePath = selected.text()     ## Read out the file path from the selected QRadioButton
-                self.stackedWidget.setCurrentIndex(1)   # Continue with the next window
+    def page1Validator(self):
+        if self.stackedWidget.currentIndex() == 0:
+            self.page1Handler.userPick(self)
         
+    def page1Worker(self, path):
+        self.stackedWidget.setCurrentIndex(1)
+        self.selectedFilePath = path
+
+
+
     def createPage2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
@@ -305,7 +296,8 @@ class MainWindow(QMainWindow):
 
         return mainWidget
 
-#Function for the installation process page 
+
+
     def createPage3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
@@ -403,7 +395,7 @@ class MainWindow(QMainWindow):
     def workerError(self, errorMsg):
 
         msg = QMessageBox()
-        msg.setWindowTitle("Errror!")
+        msg.setWindowTitle("Error!")
         msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.setDefaultButton(QMessageBox.Ok)
@@ -411,6 +403,8 @@ class MainWindow(QMainWindow):
         msg.exec()
 
         sys.exit()
+
+
 
     def createPage4(self):
         mainWidget = QWidget()
