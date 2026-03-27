@@ -1,5 +1,4 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
-# Yes I know that OOP is missing, but getting this far already was a pain.
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl, QObject
@@ -35,8 +34,8 @@ class General():
                             _style = f.read()
                             app.setStyleSheet(_style)
 
-#All functions for page 1
 
+#All functions for page 1
 class Page1Logic(QObject):
     pickedFile = Signal(str)
 

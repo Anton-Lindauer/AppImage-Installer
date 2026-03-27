@@ -6,7 +6,6 @@ from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
-import os
 from pathlib import Path
 
 from src.core.logic import Installer, StartmenuEntry
@@ -36,41 +35,32 @@ class MainWindow(QMainWindow):
         central = QWidget()
         self.setCentralWidget(central)
 
-        mainLayout = QVBoxLayout(central)   # Layout for the QStackedWidget
+        mainLayout = QVBoxLayout(central)
 
-        # The QStackedWidget that contains all pages 
+# The QStackedWidget that contains all pages 
         self.stackedWidget = QStackedWidget()
 
         self.page1 = self.createPage1()
-        self.stackedWidget.addWidget(self.page1)
-
         self.page2 = self.createPage2()
-        self.stackedWidget.addWidget(self.page2)
-
         self.page3 = self.createPage3()
-        self.stackedWidget.addWidget(self.page3)
-
         self.page4 = self.createPage4()
+
+        self.stackedWidget.addWidget(self.page1)
+        self.stackedWidget.addWidget(self.page2)
+        self.stackedWidget.addWidget(self.page3)
         self.stackedWidget.addWidget(self.page4)
 
         mainLayout.addWidget(self.stackedWidget)    # Add the QStackedWidget to the main windows layout
 
+# All of the remaining code in this function is for the QMenuBar
         optionsBar = self.menuBar()
 
         fileMenu = optionsBar.addMenu("File")
         themeMenu = optionsBar.addMenu("Theme")
         helpMenu = optionsBar.addMenu("Help")
 
-# Hides the box around the box with the menues; Has to be declared for every menu
-        fileMenu.setWindowFlags(fileMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
-        fileMenu.setAttribute(Qt.WA_TranslucentBackground)
-
         file1 = fileMenu.addAction("Pick a different file")
-
         file1.triggered.connect(self.page1Validator)
-
-        themeMenu.setWindowFlags(themeMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
-        themeMenu.setAttribute(Qt.WA_TranslucentBackground)
 
         theme1 = themeMenu.addAction("System theme")
         themeMenu.addSeparator()
@@ -82,12 +72,18 @@ class MainWindow(QMainWindow):
         theme2.triggered.connect(lambda: General.loadTheme(self, "darkTheme"))
         theme3.triggered.connect(lambda: General.loadTheme(self, "lightTheme"))
 
-        helpMenu.setWindowFlags(helpMenu.windowFlags() | Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint | Qt.Popup)
-        helpMenu.setAttribute(Qt.WA_TranslucentBackground)
-
         help1 = helpMenu.addAction("Github Repo")
-
         help1.triggered.connect(General.openRepo)
+
+# Hides the box around the box with the menues; Has to be declared for every menu
+        for menu in (fileMenu, themeMenu, helpMenu):
+            menu.setWindowFlags(
+                menu.windowFlags()
+                | Qt.FramelessWindowHint
+                | Qt.NoDropShadowWindowHint
+                | Qt.Popup
+            )
+            menu.setAttribute(Qt.WA_TranslucentBackground)
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -154,7 +150,7 @@ class MainWindow(QMainWindow):
         elif fileListLen == 4:
             containerScrollArea.setMaximumHeight(160)
             containerScrollArea.setMinimumHeight(160)
-        elif fileListLen >= 5:
+        else:
             containerScrollArea.setMaximumHeight(200)
             containerScrollArea.setMinimumHeight(200)
 
