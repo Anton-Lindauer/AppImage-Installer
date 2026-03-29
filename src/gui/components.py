@@ -15,17 +15,14 @@ class General():
     def loadTheme(self, selectedTheme):
             app = QApplication.instance()
             match selectedTheme:
-# Open the qss style sheet with the same theme as the system
                 case "sysTheme":
                     sysStyle = QGuiApplication.instance().styleHints().colorScheme()
                     if sysStyle == Qt.ColorScheme.Dark:
                         themeToLoad = self.darkStylePath
                     else:
                         themeToLoad = self.lightStylePath
-# Load path for the dark theme
                 case "darkTheme":
                     themeToLoad = self.darkStylePath
-# Load path for the light theme
                 case "lightTheme":  
                     themeToLoad = self.lightStylePath
 
@@ -55,7 +52,7 @@ class Page1Logic(QObject):
         if pickedPath:
             self.pickedFile.emit(pickedPath)
 
-# Find out which file was selected by the user and the user can only continue with a file selected
+# Find the selected file and the user can only continue with a file selected
     def findSeletedRadioBtn(self, groupPage1):
             selected = groupPage1.checkedButton()
             if selected is not None:

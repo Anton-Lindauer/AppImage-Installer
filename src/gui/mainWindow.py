@@ -19,13 +19,12 @@ class MainWindow(QMainWindow):
         self.userDir = Path.home()
         self.fileDest = self.userDir / "AppImages"
 
-# Find the path for the stylesheets
+# Stylesheets paths
         fileDir = Path(__file__).resolve()
         projectRoot = fileDir.parent.parent.parent
         self.lightStylePath = projectRoot / "assets" / "stylesheets" / "lightStyle.qss"
         self.darkStylePath = projectRoot / "assets" / "stylesheets" / "darkStyle.qss"
 
-# Initially use the system theme
         General.loadTheme(self, "sysTheme")
         
         self.setWindowTitle("AppImage-Installer")
@@ -50,7 +49,8 @@ class MainWindow(QMainWindow):
         self.stackedWidget.addWidget(self.page3)
         self.stackedWidget.addWidget(self.page4)
 
-        mainLayout.addWidget(self.stackedWidget)    # Add the QStackedWidget to the main windows layout
+# Add the QStackedWidget to the main windows layout
+        mainLayout.addWidget(self.stackedWidget)    
 
 # All of the remaining code in this function is for the QMenuBar
         optionsBar = self.menuBar()
@@ -89,82 +89,69 @@ class MainWindow(QMainWindow):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
 
-        title = QLabel("AppImage selection")   # Title telling the user what to do
+        title = QLabel("AppImage selection")   
         title.setObjectName("title")
-        title.setAlignment(Qt.AlignLeft)
 
+# Let the user pick a AppImage from anywhere
         filedialogBtn = QPushButton("Pick a file")
         
         self.page1Handler = Page1Logic()
         self.page1Handler.pickedFile.connect(self.page1Worker)
         filedialogBtn.clicked.connect(lambda: self.page1Handler.userPick(self))
 
-        # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
+# QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         containerScrollArea = QScrollArea()
         containerScrollArea.setWidgetResizable(True)
         containerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        container = QWidget() # Container in the QScrollArea
+# Container in the QScrollArea
+        container = QWidget() 
         containerScrollArea.setWidget(container)
 
-        containerLayout = QVBoxLayout(container)   # Set the layout in the Container in the QScrollArea
+        containerLayout = QVBoxLayout(container)   
         containerLayout.setContentsMargins(0, 0, 0, 0,)
         containerLayout.setSpacing(0)
 
-        self.fileList = Installer.listFiles(self, self.userDir)     # Return all file paths needed
+# All paths of AppImage files in the Downloads directory
+        self.fileList = Installer.listFiles(self.userDir)     
         fileListLen = len(self.fileList)
 
-        self.groupPage1 = QButtonGroup(self)    # Group for all QRadioButtons to later find out which one is checked
+# Group for all QRadioButtons to later find out which one is checked
+        self.groupPage1 = QButtonGroup(self) 
 
+# Create a QRadioButton for each file
         if fileListLen > 0:
-             for file in self.fileList:   # Create a QRadioButton for each file
-                itemPos = self.fileList.index(file)
+             for itemPos, file in enumerate(self.fileList):
                 radioBtn = QRadioButton(file)
-                
                 containerLayout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
 
-                if fileListLen == 1:
+# Only create a divider if the element isn't the last one and add rounded corners to the first and last element
+                suffix = "" if fileListLen <= 5 else "Scroll"
+
+                if fileListLen == 1 and fileListLen <= 5:
                     radioBtn.setProperty("isFirstAndLast", "true")
-                elif not itemPos == fileListLen - 1:     # Only create a divider if the element isn't the last one
-                    radioBtn.setProperty("isLast", "false")
-                    if itemPos == 0:
-                        radioBtn.setProperty("isFirst", "true")
-                else:
-                    radioBtn.setProperty("isLast", "true")
+                elif itemPos == 0:
+                    radioBtn.setProperty(f"isFirst{suffix}", "true")
+                elif itemPos == fileListLen - 1:
+                    radioBtn.setProperty(f"isLast{suffix}", "true")
         else:
             page1NoFileMsg = QLabel("No .AppImage file has been found in your Downloads directory")
             page1NoFileMsg.setObjectName("message")
             containerLayout.addWidget(page1NoFileMsg)
 
-        # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        if fileListLen <= 1:
-            containerScrollArea.setMaximumHeight(40)
-            containerScrollArea.setMinimumHeight(40)
-        elif fileListLen == 2:
-            containerScrollArea.setMaximumHeight(80)
-            containerScrollArea.setMinimumHeight(80)
-        elif fileListLen == 3:
-            containerScrollArea.setMaximumHeight(120)
-            containerScrollArea.setMinimumHeight(120)
-        elif fileListLen == 4:
-            containerScrollArea.setMaximumHeight(160)
-            containerScrollArea.setMinimumHeight(160)
-        else:
-            containerScrollArea.setMaximumHeight(200)
-            containerScrollArea.setMinimumHeight(200)
+# Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
+        containerScrollArea.setFixedHeight(min(fileListLen, 5) * 40)
 
-        submitBtn = QPushButton("Continue")  # Button to continue with the selected file
+        submitBtn = QPushButton("Continue")  
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.page1Handler.findSeletedRadioBtn(self.groupPage1))
 
-# Adding every main element to the main window
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
         mainLayout.addWidget(containerScrollArea)
         mainLayout.addWidget(submitBtn)
-
-        mainLayout.addStretch()    # Increases the window size without increasing the elemet sizes
+        mainLayout.addStretch()
 
         return mainWidget
     
@@ -182,10 +169,8 @@ class MainWindow(QMainWindow):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
 
-# Title of the current thing the user does
         title = QLabel("Program information")
         title.setObjectName("title")
-        title.setAlignment(Qt.AlignLeft)
 
 # Box for the options for the user; Contains other boxes with the descriptions and a QlineEdits
         container = QGroupBox()
@@ -301,24 +286,28 @@ class MainWindow(QMainWindow):
         title = QLabel("Installation process")
         title.setObjectName("title")
 
-        container = QGroupBox()    # QGroupBox thats used as a terminal for the status updates, that the user receives
+# QGroupBox thats used as a terminal for the status updates, that the user receives
+        container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
         terminalLayout.setContentsMargins(0, 0, 0, 0)
         terminalLayout.setSpacing(0)
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
 
-        self.terminalUpdateMsg = QLabel()     # Updates that are displayed in the GUIs terminal like UI element
+# Updates that are displayed in the GUIs terminal like UI element
+        self.terminalUpdateMsg = QLabel()     
         self.terminalUpdateMsg.setObjectName("terminalText")
 
         terminalLayout.addWidget(self.terminalUpdateMsg)
         terminalLayout.addStretch()
 
-        self.page3SubmitBtn = QPushButton("Start installation")  # Button to continue with the selected options
+# Button to continue with the selected options
+        self.page3SubmitBtn = QPushButton("Start installation")  
         self.page3SubmitBtn.setObjectName("submitBtn")
         self.page3SubmitBtn.clicked.connect(self.installProgram)
 
-        self.page3BackBtn = QPushButton("Back")  # Button to go back to the previously selected options
+# Button to go back to the previously selected options
+        self.page3BackBtn = QPushButton("Back")  
         self.page3BackBtn.setObjectName("backBtn")
         self.page3BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
 
@@ -382,7 +371,7 @@ class MainWindow(QMainWindow):
     def workerFinished(self):
         self.terminalUpdateMsg.setText("Installation finished")
 
-# Wait 2s to let the user see the last step beeing completed
+# Wait 2s to let the user see the last step beeing completed  (will be fixed in the future)
         #QTimer.singleShot(2000)
 
         self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
@@ -406,13 +395,13 @@ class MainWindow(QMainWindow):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
 
-        title = QLabel("Finished installing the program")   # Tells the user that the installation was successfull
+        title = QLabel("Finished installing the program")
         title.setObjectName("title")
-        title.setAlignment(Qt.AlignLeft)
 
-        submitBtn = QPushButton("Install another program")  # Button to install another program
+# Reload all pages if the user wants to install another program
+        submitBtn = QPushButton("Install another program")
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.reloadPage1)     # Reload all pages if the user wants to install another program
+        submitBtn.clicked.connect(self.reloadPage1)     
         submitBtn.clicked.connect(self.reloadPage2)
         submitBtn.clicked.connect(self.reloadPage3)
 
@@ -421,32 +410,33 @@ class MainWindow(QMainWindow):
         mainLayout.addWidget(submitBtn)
 
         mainLayout.addStretch()
+        
         return mainWidget
     
-# Function to reload the first page, because the AppImage files in the Downloads directory change after the installation is completed
+# Function to reload all pages, to remove all previous user input
     def reloadPage1(self):
-         oldPage1 = self.stackedWidget.widget(0)    # Remove the already existing version of the first page
+         oldPage1 = self.stackedWidget.widget(0)
          self.stackedWidget.removeWidget(oldPage1)
          oldPage1.deleteLater()
 
-         newPage1 = self.createPage1()      # Generate a new first page and insert it at index 0
+         newPage1 = self.createPage1()
          self.stackedWidget.insertWidget(0, newPage1)
-         self.stackedWidget.setCurrentIndex(0)  # Go to the first page at index 0
+         self.stackedWidget.setCurrentIndex(0)
     
     def reloadPage2(self):
-         oldPage2 = self.stackedWidget.widget(1)    # Remove the already existing version of the first page
+         oldPage2 = self.stackedWidget.widget(1)
          self.stackedWidget.removeWidget(oldPage2)
          oldPage2.deleteLater()
 
-         newPage2 = self.createPage2()      # Generate a new first page and insert it at index 1
+         newPage2 = self.createPage2()
          self.stackedWidget.insertWidget(1, newPage2)
 
     def reloadPage3(self):
-         oldPage3 = self.stackedWidget.widget(2)    # Remove the already existing version of the first page
+         oldPage3 = self.stackedWidget.widget(2)
          self.stackedWidget.removeWidget(oldPage3)
          oldPage3.deleteLater()
 
-         newPage3 = self.createPage3()      # Generate a new first page and insert it at index 2
+         newPage3 = self.createPage3()
          self.stackedWidget.insertWidget(2, newPage3)
 
 # Class for the installation process
@@ -469,16 +459,16 @@ class InstallWorker(QThread):
 # Function to install the program
     def run(self):
         try:
-            Installer.moveFile(self, self.selectedFilePath, self.fileDest)
+            Installer.moveFile(self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File moved successfully (1/4 tasks finished)")
 
-            Installer.mkExec(self, self.selectedFilePath, self.fileDest)
+            Installer.mkExec(self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
 
-            Installer.mkSymLink(self, self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
+            Installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
             self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
 
-            StartmenuEntry.create(self, self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            StartmenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
             self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
 
             self.success.emit()
@@ -487,11 +477,3 @@ class InstallWorker(QThread):
             print(error)
 
             self.error.emit(str(error))
-
-if __name__ == "__main__":
-    app = QApplication()
-
-    window = MainWindow()
-    window.show()
-
-    sys.exit(app.exec())

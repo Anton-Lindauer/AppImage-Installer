@@ -51,7 +51,7 @@ pip install -r requirements.txt
 
 Launch the GUI version via the terminal or click the run button in VS Code if you have done everything in VS Code:
 ```
-python3 -m src.gui.mainWindow
+python3 main.py
 ```
 
 The program will guide you through the installation process. Please report any errors that may occure.

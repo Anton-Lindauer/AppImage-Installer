@@ -127,6 +127,21 @@ QRadioButton[isLast="true"] {
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
     border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+QRadioButton[isFirstScroll="true"] {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+QRadioButton[isLast="true"] {
+    border-bottom: none;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 10px;
     border-bottom-right-radius: 0px;
 }
 

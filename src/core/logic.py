@@ -8,40 +8,45 @@ import pathlib
 class Installer():
 
 # Put every AppImage file into a list
-    def listFiles(self, userDir):
+    @staticmethod
+    def listFiles(userDir):
         downloadsDir = os.path.join(str(userDir), "Downloads")
 
-        self.fileList = [file.path 
+        fileList = [file.path 
                     for file in os.scandir(downloadsDir) 
                     if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
 
-        self.fileList.sort()
-        return self.fileList
+        fileList.sort()
+        return fileList
        
 # Function to move the AppImage File to the right directory
-    def moveFile(self, selectedFilePath, fileDest):
-        if not os.path.isdir(fileDest): # Create the directory if it doesn't exist
+    @staticmethod
+    def moveFile(selectedFilePath, fileDest):
+        if not os.path.isdir(fileDest):
             os.mkdir(fileDest)
 # Moving the .AppImage file
         shutil.move(selectedFilePath, fileDest)
 
 
 # Function to make the AppImage file executable
-    def mkExec(self, selectedFilePath, fileDest):
+    @staticmethod
+    def mkExec(selectedFilePath, fileDest):
         fileName = os.path.basename(selectedFilePath)
         path = f"{fileDest}/{fileName}"
         subprocess.run([f"chmod", "+x", path], check=True)
 
 # Function to create a symLink file, to execute the .AppImage file with a terminal command systemwide on your account
-    def mkSymLink(self, selectedFilePath, cmdName, fileDest, userDir):
-        if not os.path.isdir(f"{userDir}/.local/bin/"): # Create the directory if it doesn't exist
+    @staticmethod
+    def mkSymLink(selectedFilePath, cmdName, fileDest, userDir):
+        if not os.path.isdir(f"{userDir}/.local/bin/"):
             os.mkdir(f"{userDir}/.local/bin/")
 
         subprocess.run(["ln", "-s", f"{fileDest}/{os.path.basename(selectedFilePath)}", f"{userDir}/.local/bin/"+cmdName], check=True)
 
 class StartmenuEntry():
 
-    def create(self, selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
+    @staticmethod
+    def create(selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
         fileName = os.path.basename(selectedFilePath)
 
         subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  # Extract AppImage in to the temporary directory
