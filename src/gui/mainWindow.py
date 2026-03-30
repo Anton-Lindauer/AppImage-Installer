@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from src.core.logic import Installer, StartmenuEntry
-from src.gui.components import General, Page1Logic
+from src.gui.components import General, Page1Logic, InstallWorker
 
 class MainWindow(QMainWindow):
 
@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
         title = QLabel("Program information")
         title.setObjectName("title")
 
-# Box for the options for the user; Contains other boxes with the descriptions and a QlineEdits
+# Box for the options for the user; Contains other boxes with the descriptions and QlineEdits
         container = QGroupBox()
         
 # Set the layout in the container with no spacing
@@ -191,6 +191,12 @@ class MainWindow(QMainWindow):
                            "The name that will appear in the start menu and application list.",
                            "A brief summary of the application (displayed as a tooltip).",
                            "Determines the placement in the start menu. Some categories can't be combined; combined they create a different category."]
+        
+        self.categoryList = ["Accessibility;Utility", "Education", "Office", 
+                             "Development", "Graphics", "Network", 
+                             "AudioVideo", "Utility", "Game", 
+                             "System", "Science;Education", "Utility", 
+                             "Settings", "System;Settings"]
         
         self.programInfoList = []
         
@@ -222,8 +228,8 @@ class MainWindow(QMainWindow):
             tileLayout.addWidget(description)
             tileLayout.addWidget(infoDescription)
 
-# Add a dropdown menu only to the last box
-            if index == 3:
+# Add QRadioButtons only to the last box, QlineEdits for all other boxes
+            if index == index == len(self.programInfo) - 1:
                 innerTile = QWidget()
                 innerTileLayout = QGridLayout(innerTile)
 
@@ -233,11 +239,10 @@ class MainWindow(QMainWindow):
                 self.allCategories = ""
                 self.page2RadioBtns = QButtonGroup()
                 self.page2RadioBtns.setExclusive(False)
-                self.categoryList = ["Accessibility;Utility", "Education", "Office", "Development", "Graphics", "Network", "Graphics", "AudioVideo", "Utility", "Game", "System", "Science;Education", "Utility", "Settings", "System;Settings"]
 
-# Create a QRadioButton for all 15 categories
-                for i in range(15):
-                    radioBtn = QRadioButton(self.categoryList[i])
+# Create a QRadioButton for all 14 categories
+                for i, category in enumerate(self.categoryList):
+                    radioBtn = QRadioButton(category)
                     radioBtn.setObjectName("categorySel")
                     radioBtn.setAutoExclusive(False)
                     self.page2RadioBtns.addButton(radioBtn)
@@ -266,13 +271,10 @@ class MainWindow(QMainWindow):
         self.page2BackBtn.setObjectName("backBtn")
         self.page2BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
 
-# Adding every main element to the main window
         mainLayout.addWidget(title)
         mainLayout.addWidget(container)
         mainLayout.addWidget(self.page2SubmitBtn)
         mainLayout.addWidget(self.page2BackBtn)
-
-# Increases the window size without increasing the element sizes
         mainLayout.addStretch()    
 
         return mainWidget
@@ -301,12 +303,10 @@ class MainWindow(QMainWindow):
         terminalLayout.addWidget(self.terminalUpdateMsg)
         terminalLayout.addStretch()
 
-# Button to continue with the selected options
         self.page3SubmitBtn = QPushButton("Start installation")  
         self.page3SubmitBtn.setObjectName("submitBtn")
         self.page3SubmitBtn.clicked.connect(self.installProgram)
 
-# Button to go back to the previously selected options
         self.page3BackBtn = QPushButton("Back")  
         self.page3BackBtn.setObjectName("backBtn")
         self.page3BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
@@ -315,7 +315,6 @@ class MainWindow(QMainWindow):
         mainLayout.addWidget(container)
         mainLayout.addWidget(self.page3SubmitBtn)
         mainLayout.addWidget(self.page3BackBtn)
-
         mainLayout.addStretch()
 
         return mainWidget
@@ -338,7 +337,6 @@ class MainWindow(QMainWindow):
 
         if selected:
             self.programCategory = ";".join(selected)
-            print(self.programCategory)
 
 # Function that installs the program
         self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)
@@ -351,13 +349,12 @@ class MainWindow(QMainWindow):
         self.terminalUpdateMsg.setText("Installation in process...")
         self.terminalUpdateMsg.show()
 
-# Start the installation function
         self.worker.start()
 
-# Function for displaying the installers progress
     def workerProgress(self, message):
         currentProgress = self.terminalUpdateMsg.text()
 
+# Update the terminal if a new progress update arrived
         if currentProgress: 
             newProgress = currentProgress + "\n" + message
         else:
@@ -367,18 +364,17 @@ class MainWindow(QMainWindow):
 
         QApplication.processEvents()
 
-# Function to process what happens, when the installation finished successfully
     def workerFinished(self):
         self.terminalUpdateMsg.setText("Installation finished")
 
-# Wait 2s to let the user see the last step beeing completed  (will be fixed in the future)
-        #QTimer.singleShot(2000)
+# Rebuild page four to display the program name
+# Easier to maintain to just rebuild the entire page than updating every element one by one
+        self.reloadPage4()
 
         self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
 
-# Function for a pop-up window if a error occurs during the installation process
     def workerError(self, errorMsg):
-
+# A pop-up window if a error occurs during the installation process
         msg = QMessageBox()
         msg.setWindowTitle("Error!")
         msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}")
@@ -395,7 +391,7 @@ class MainWindow(QMainWindow):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
 
-        title = QLabel("Finished installing the program")
+        title = QLabel(f"Finished installing {self.programInfoList[1].text()}")
         title.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
@@ -405,75 +401,43 @@ class MainWindow(QMainWindow):
         submitBtn.clicked.connect(self.reloadPage2)
         submitBtn.clicked.connect(self.reloadPage3)
 
-# Adding every main element to the main window
         mainLayout.addWidget(title)
         mainLayout.addWidget(submitBtn)
-
         mainLayout.addStretch()
         
         return mainWidget
     
-# Function to reload all pages, to remove all previous user input
+# Functions to rebuild all pages; to remove all previous user input
+# Easier to maintain than to clear all elements one by one
     def reloadPage1(self):
-         oldPage1 = self.stackedWidget.widget(0)
-         self.stackedWidget.removeWidget(oldPage1)
-         oldPage1.deleteLater()
+        oldPage1 = self.stackedWidget.widget(0)
+        self.stackedWidget.removeWidget(oldPage1)
+        oldPage1.deleteLater()
 
-         newPage1 = self.createPage1()
-         self.stackedWidget.insertWidget(0, newPage1)
-         self.stackedWidget.setCurrentIndex(0)
+        newPage1 = self.createPage1()
+        self.stackedWidget.insertWidget(0, newPage1)
+        self.stackedWidget.setCurrentIndex(0)
     
     def reloadPage2(self):
-         oldPage2 = self.stackedWidget.widget(1)
-         self.stackedWidget.removeWidget(oldPage2)
-         oldPage2.deleteLater()
+        oldPage2 = self.stackedWidget.widget(1)
+        self.stackedWidget.removeWidget(oldPage2)
+        oldPage2.deleteLater()
 
-         newPage2 = self.createPage2()
-         self.stackedWidget.insertWidget(1, newPage2)
+        newPage2 = self.createPage2()
+        self.stackedWidget.insertWidget(1, newPage2)
 
     def reloadPage3(self):
-         oldPage3 = self.stackedWidget.widget(2)
-         self.stackedWidget.removeWidget(oldPage3)
-         oldPage3.deleteLater()
+        oldPage3 = self.stackedWidget.widget(2)
+        self.stackedWidget.removeWidget(oldPage3)
+        oldPage3.deleteLater()
 
-         newPage3 = self.createPage3()
-         self.stackedWidget.insertWidget(2, newPage3)
+        newPage3 = self.createPage3()
+        self.stackedWidget.insertWidget(2, newPage3)
 
-# Class for the installation process
-class InstallWorker(QThread):
-    progressUpdate = Signal(str)
-    error = Signal(str)
-    success = Signal()
+    def reloadPage4(self):
+        oldPage4 = self.stackedWidget.widget(3)
+        self.stackedWidget.removeWidget(oldPage4)
+        oldPage4.deleteLater()
 
-    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName):
-        super().__init__()
-
-        self.selectedFilePath = selectedFilePath
-        self.fileDest = fileDest     
-        self.userDir = userDir
-        self.programName = programName
-        self.programDescr = programDescr
-        self.programCategory = programCategory
-        self.cmdName = cmdName
-
-# Function to install the program
-    def run(self):
-        try:
-            Installer.moveFile(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit("File moved successfully (1/4 tasks finished)")
-
-            Installer.mkExec(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
-
-            Installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
-            self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
-
-            StartmenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
-            self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
-
-            self.success.emit()
-
-        except Exception as error:
-            print(error)
-
-            self.error.emit(str(error))
+        newPage4 = self.createPage4()
+        self.stackedWidget.insertWidget(3, newPage4)

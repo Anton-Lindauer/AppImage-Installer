@@ -19,7 +19,7 @@ class Installer():
         fileList.sort()
         return fileList
        
-# Function to move the AppImage File to the right directory
+# Move the AppImage File to the right directory
     @staticmethod
     def moveFile(selectedFilePath, fileDest):
         if not os.path.isdir(fileDest):
@@ -28,14 +28,14 @@ class Installer():
         shutil.move(selectedFilePath, fileDest)
 
 
-# Function to make the AppImage file executable
+# Make the AppImage file executable
     @staticmethod
     def mkExec(selectedFilePath, fileDest):
         fileName = os.path.basename(selectedFilePath)
         path = f"{fileDest}/{fileName}"
         subprocess.run([f"chmod", "+x", path], check=True)
 
-# Function to create a symLink file, to execute the .AppImage file with a terminal command systemwide on your account
+# Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     @staticmethod
     def mkSymLink(selectedFilePath, cmdName, fileDest, userDir):
         if not os.path.isdir(f"{userDir}/.local/bin/"):
@@ -49,30 +49,34 @@ class StartmenuEntry():
     def create(selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
         fileName = os.path.basename(selectedFilePath)
 
-        subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  # Extract AppImage in to the temporary directory
+# Extract AppImage in to the temporary directory
+        subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True)  
         print("Finished extracting data from the .AppImage file")
         
-        if not os.path.isdir(fileDest): # Create the icons directory if it doesn't exist
+        if not os.path.isdir(fileDest):
             os.mkdir(f"{userDir}/.local/share/icons")
             print(f"Created {userDir}/.local/share/icons")
         else:
             print(f"{userDir}/.local/share/icons/ has been found")
 
-        programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))   # Find the name of the icon.png file; Used later in the .desktop file 
+# Find the name of the icon.png file; Used later in the .desktop file 
+        programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))
         
-        subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True) # Copy Icon to icons directory
+# Copy Icon to icons directory
+        subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True)
         print("Finished copying the icon to the icons directory")
         
-        subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True)    # Delete squashfs-root; This is a temporary directory and the app icon is extracted to this directory
+# Delete squashfs-root; This is a temporary directory and the app icon is extracted to this directory
+        subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True)
         print("Finished deleting the squashfs-root")
         
-        if not os.path.isdir(f"{userDir}/.local/share/applications/"): # Create the applications directory if it doesn't exist
+        if not os.path.isdir(f"{userDir}/.local/share/applications/"):
             os.mkdir(f"{userDir}/.local/share/applications")
             print(f"Created {userDir}/.local/share/applications")
         else:
             print(f"{userDir}/.local/share/applications has been found")
 
-        # .desktop file content
+# .desktop file content
         desktopFile = f"""[Desktop Entry]
                         Type=Application
                         Name={programName}
@@ -86,9 +90,10 @@ class StartmenuEntry():
         
         home = pathlib.Path.home()
         appsDir = home/".local/share/applications"
-        desktopEntry = appsDir/f"{programName}.desktop" # Write the .desktop file
+        desktopEntry = appsDir/f"{programName}.desktop"
         desktopEntry.write_text(desktopFile)
         print("Finished creating the .desktop file")
         
-        subprocess.run(["chmod", "+x", str(desktopEntry)], check=True) # Make the .desktop file executable
+# Make the .desktop file executable
+        subprocess.run(["chmod", "+x", str(desktopEntry)], check=True)
         print("Made the .desktop file executable")
