@@ -374,13 +374,14 @@ class MainWindow(QMainWindow):
         self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
 
     def workerError(self, errorMsg):
+        logDir = Path.home() / ".local" / "share" / "AppImage-Installer" / "logs"
 # A pop-up window if a error occurs during the installation process
         msg = QMessageBox()
         msg.setWindowTitle("Error!")
-        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}")
+        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}\nA more detailed log can be found in {logDir}.")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.setDefaultButton(QMessageBox.Ok)
-        
+         
         msg.exec()
 
         sys.exit()

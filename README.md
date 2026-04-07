@@ -85,6 +85,8 @@ The GUI design is inspired by linux mint with orchis dark/light compact themes, 
 
 This tool is still work in progress and more functionality will be added soon.
 
+Error log are stored in ~/{username}/.local/share/AppImage-Installer/logs
+
 The AppImage files are moved to ~/{username}/AppImages/.
 
 The symlinks are created in ~/{username}/.local/bin/

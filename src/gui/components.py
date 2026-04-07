@@ -71,6 +71,9 @@ class InstallWorker(QThread):
     def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName):
         super().__init__()
 
+        self.installer = Installer()
+        self.startMenuEntry = StartmenuEntry()
+
         self.selectedFilePath = selectedFilePath
         self.fileDest = fileDest     
         self.userDir = userDir
@@ -82,16 +85,16 @@ class InstallWorker(QThread):
 # All installation steps with progress updates
     def run(self):
         try:
-            Installer.moveFile(self.selectedFilePath, self.fileDest)
+            self.installer.moveFile(self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File moved successfully (1/4 tasks finished)")
 
-            Installer.mkExec(self.selectedFilePath, self.fileDest)
+            self.installer.mkExec(self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
 
-            Installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
+            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
             self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
 
-            StartmenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            self.startMenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
             self.progressUpdate.emit("Startmenu entry has been created (4/4 tasks finished)")
 
 # Wait 2s to let the user see that everything has been completed
