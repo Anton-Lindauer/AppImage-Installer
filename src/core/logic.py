@@ -9,8 +9,8 @@ from datetime import datetime
 
 class Installer():
     
-    def __init__(self):
-        self.logger = Logging()
+    def __init__(self, logger):
+        self.logger = logger
 
 # Put every AppImage file into a list
     @staticmethod
@@ -58,8 +58,8 @@ class Installer():
 
 class StartmenuEntry():
 
-    def __init__(self):
-        self.logger = Logging()
+    def __init__(self, logger):
+        self.logger = logger
 
     def create(self, selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
         fileName = os.path.basename(selectedFilePath)
@@ -144,19 +144,17 @@ class Logging():
 
     def __init__(self):
         logDir = Path.home() / ".local" / "share" / "AppImage-Installer" / "logs"
-        print(logDir)
         logDir.mkdir(parents=True, exist_ok=True)
-        print(logDir.exists())
         currentDate = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.logFileName = logDir / (currentDate + "Log.txt")
+        self.logFilePath = logDir / (currentDate + "Log.txt")
 
-        with open(self.logFileName, "a") as f:
-            f.write("These log file are only there to store an error message if one occurs.\n")
+        with open(self.logFilePath, "a") as f:
+            f.write("These log files are only there to store an error message if one occurs.\n")
             f.write("Just ignore them if no error occured.\n")
             f.write("******************************************************************\n")
 
     def addCmdEntry(self, logContent):
-        with open(self.logFileName, "a") as f:
+        with open(self.logFilePath, "a") as f:
             if logContent.stderr:
                 f.write(logContent.stderr + "\n")
                 f.write("******************************************************************\n")
@@ -166,6 +164,6 @@ class Logging():
                 f.write("******************************************************************\n")
         
     def addGeneralEntry(self, logContent):
-        with open(self.logFileName, "a") as f:
+        with open(self.logFilePath, "a") as f:
                 f.write(logContent + "\n")
                 f.write("******************************************************************\n")

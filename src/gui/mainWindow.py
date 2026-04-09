@@ -1,14 +1,15 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
+import subprocess
 from pathlib import Path
 
-from src.core.logic import Installer, StartmenuEntry
+from src.core.logic import Installer, Logging
 from src.gui.components import General, Page1Logic, InstallWorker
 
 class MainWindow(QMainWindow):
@@ -84,6 +85,34 @@ class MainWindow(QMainWindow):
                 | Qt.Popup
             )
             menu.setAttribute(Qt.WA_TranslucentBackground)
+
+# Only for testing
+
+#        msgBox = QDialog()
+#        msgBox.setWindowTitle("Error!")
+#        msgBox.setFixedSize(msgBox.sizeHint())
+#
+#        msgBoxLayout = QVBoxLayout(msgBox)
+#
+#        msgText = QLabel(f"AppImage-Installer ran into an issue! \nThis error occured:\nerrorMsg\nA more detailed log can be found in logFilePath.")
+#
+#        msgBoxLayout.addWidget(msgText)
+#
+#        btnLayout = QHBoxLayout()
+#
+#        exitBtn = QPushButton("Exit")
+#        openLogBtn = QPushButton("Open Log")
+#        openLogBtn.setDefault(True)
+#        openLogBtn.setAutoDefault(True)
+#
+#        btnLayout.addWidget(exitBtn)
+#        btnLayout.addWidget(openLogBtn)
+#
+#        msgBoxLayout.addLayout(btnLayout)
+#
+#        msgBox.exec()
+#
+#        sys.exit()
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -338,8 +367,10 @@ class MainWindow(QMainWindow):
         if selected:
             self.programCategory = ";".join(selected)
 
+        self.logger = Logging()
+
 # Function that installs the program
-        self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName)
+        self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger)
 
 # Process status updates from the installation function
         self.worker.progressUpdate.connect(self.workerProgress)
@@ -371,20 +402,33 @@ class MainWindow(QMainWindow):
 # Easier to maintain to just rebuild the entire page than updating every element one by one
         self.reloadPage4()
 
-        self.stackedWidget.setCurrentIndex(3)   # Go to the installation finished page
+        self.stackedWidget.setCurrentIndex(3)
 
     def workerError(self, errorMsg):
-        logDir = Path.home() / ".local" / "share" / "AppImage-Installer" / "logs"
+        logFilePath = self.logger.logFilePath
+
+        self.logger.addGeneralEntry(errorMsg)
 # A pop-up window if a error occurs during the installation process
         msg = QMessageBox()
         msg.setWindowTitle("Error!")
-        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}\nA more detailed log can be found in {logDir}.")
-        msg.setStandardButtons(QMessageBox.Ok)
-        msg.setDefaultButton(QMessageBox.Ok)
-         
+        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}\nA more detailed log can be found in {logFilePath}.")
+
+        exitBtn = msg.addButton("Exit", QMessageBox.ActionRole)
+        openLogBtn = msg.addButton("Open Log", QMessageBox.ActionRole)
+
         msg.exec()
 
-        sys.exit()
+        if msg.clickedButton() == openLogBtn:
+# Without this subprocess configuration, the program doesn't properly close and throws warnings
+            subprocess.Popen(
+                ["xdg-open", str(logFilePath)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+
+        self.worker.quit()
+        self.worker.wait()
+        QApplication.instance().quit()
 
 
 

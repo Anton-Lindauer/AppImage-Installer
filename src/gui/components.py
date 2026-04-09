@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QW
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl, QObject
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
-from src.core.logic import Installer, StartmenuEntry
+from src.core.logic import Installer, StartmenuEntry, Logging
 
 from pathlib import Path
 import time
@@ -68,11 +68,12 @@ class InstallWorker(QThread):
     error = Signal(str)
     success = Signal()
 
-    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName):
+    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName, logger):
         super().__init__()
 
-        self.installer = Installer()
-        self.startMenuEntry = StartmenuEntry()
+        self.logger = logger
+        self.installer = Installer(self.logger)
+        self.startMenuEntry = StartmenuEntry(self.logger)
 
         self.selectedFilePath = selectedFilePath
         self.fileDest = fileDest     

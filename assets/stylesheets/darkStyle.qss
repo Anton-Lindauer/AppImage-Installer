@@ -255,13 +255,13 @@ QComboBox QAbstractItemView::item:selected {
 }
 
 QMessageBox {
-    background-color: #212121;
+    background-color: #3c3c3c;
     color: #EEEEEE;
     font-size: 14px;
 }
 
 QMessageBox QLabel {
-    background-color: #212121;
+    background-color: transparent;
     color: #EEEEEE;
     font-size: 14px;
 }
@@ -272,18 +272,58 @@ QMessageBox QPushButton {
     margin-left: 0px;
     margin-right: 0px;
     color: #EEEEEE;
-    background-color: #373737;
+    background-color: #525252;
     border: none;
     border-radius: 6px;
     font-size: 14px;
 }
 
+QMessageBox QPushButton:default {
+    border: 2px solid #606060;
+}
+
 QMessageBox QPushButton:hover {
-    background-color: #484848
+    background-color: #606060
 }
 
 QMessageBox QPushButton:pressed {
-    background-color: #525252
+    background-color: #656565
+}
+
+QDialog {
+    background-color: #3c3c3c;
+    color: #EEEEEE;
+    font-size: 14px;
+}
+
+QDialog QLabel {
+    background-color: transparent;
+    color: #EEEEEE;
+    font-size: 14px;
+}
+
+QDialog QPushButton {
+    min-height: 26px;
+    max-height: 26px;
+    margin-left: 0px;
+    margin-right: 0px;
+    color: #EEEEEE;
+    background-color: #525252;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+QDialog QPushButton:default {
+    border: 2px solid #606060;
+}
+
+QDialog QPushButton:hover {
+    background-color: #606060
+}
+
+QDialog QPushButton:pressed {
+    background-color: #656565
 }
 
 QPushButton {
