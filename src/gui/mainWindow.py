@@ -86,33 +86,7 @@ class MainWindow(QMainWindow):
             )
             menu.setAttribute(Qt.WA_TranslucentBackground)
 
-# Only for testing
-
-#        msgBox = QDialog()
-#        msgBox.setWindowTitle("Error!")
-#        msgBox.setFixedSize(msgBox.sizeHint())
-#
-#        msgBoxLayout = QVBoxLayout(msgBox)
-#
-#        msgText = QLabel(f"AppImage-Installer ran into an issue! \nThis error occured:\nerrorMsg\nA more detailed log can be found in logFilePath.")
-#
-#        msgBoxLayout.addWidget(msgText)
-#
-#        btnLayout = QHBoxLayout()
-#
-#        exitBtn = QPushButton("Exit")
-#        openLogBtn = QPushButton("Open Log")
-#        openLogBtn.setDefault(True)
-#        openLogBtn.setAutoDefault(True)
-#
-#        btnLayout.addWidget(exitBtn)
-#        btnLayout.addWidget(openLogBtn)
-#
-#        msgBoxLayout.addLayout(btnLayout)
-#
-#        msgBox.exec()
-#
-#        sys.exit()
+            
 
     def createPage1(self):
         mainWidget = QWidget()
@@ -409,26 +383,54 @@ class MainWindow(QMainWindow):
 
         self.logger.addGeneralEntry(errorMsg)
 # A pop-up window if a error occurs during the installation process
-        msg = QMessageBox()
-        msg.setWindowTitle("Error!")
-        msg.setText(f"AppImage-Installer ran into an issue! \nThis error occured:\n{errorMsg}\nA more detailed log can be found in {logFilePath}.")
+        msgBox = QDialog()
+        msgBox.setWindowTitle("Error!")
 
-        exitBtn = msg.addButton("Exit", QMessageBox.ActionRole)
-        openLogBtn = msg.addButton("Open Log", QMessageBox.ActionRole)
+        msgBoxLayout = QVBoxLayout(msgBox)
+        msgBoxLayout.setContentsMargins(0, 0, 0, 0,)
+        msgBoxLayout.setSpacing(0)
 
-        msg.exec()
+        textContainer = QWidget()
+        textContainerLayout = QVBoxLayout(textContainer)
 
-        if msg.clickedButton() == openLogBtn:
-# Without this subprocess configuration, the program doesn't properly close and throws warnings
-            subprocess.Popen(
+        msgTitle = QLabel("AppImage-Installer ran into an issue!")
+        msgTitle.setObjectName("msgTitle")
+
+        msgText = QLabel(f"This error occured:\n{errorMsg}\nA more detailed log can be found in {logFilePath}.")
+
+        textContainerLayout.addWidget(msgTitle)
+        textContainerLayout.addWidget(msgText)
+
+        msgBoxLayout.addWidget(textContainer, alignment=Qt.AlignHCenter)
+
+        btnLayout = QHBoxLayout()
+        btnLayout.setContentsMargins(0, 0, 0, 0,)
+        btnLayout.setSpacing(0)
+
+        exitBtn = QPushButton("Exit")
+        exitBtn.setObjectName("leftBtn")
+        exitBtn.clicked.connect(lambda: sys.exit())
+
+        openLogBtn = QPushButton("Open Log")
+        openLogBtn.setObjectName("rightBtn")
+        openLogBtn.setDefault(True)
+        openLogBtn.setAutoDefault(True)
+
+# I didn't want to write a function for one command
+        openLogBtn.clicked.connect(lambda: subprocess.Popen(
                 ["xdg-open", str(logFilePath)],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
-            )
+            ))
 
-        self.worker.quit()
-        self.worker.wait()
-        QApplication.instance().quit()
+        btnLayout.addWidget(exitBtn)
+        btnLayout.addWidget(openLogBtn)
+
+        msgBoxLayout.addLayout(btnLayout)
+
+        msgBox.exec()
+
+        sys.exit()
 
 
 

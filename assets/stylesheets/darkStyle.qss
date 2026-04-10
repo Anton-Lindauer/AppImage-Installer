@@ -254,42 +254,6 @@ QComboBox QAbstractItemView::item:selected {
     border-radius: 5px;
 }
 
-QMessageBox {
-    background-color: #3c3c3c;
-    color: #EEEEEE;
-    font-size: 14px;
-}
-
-QMessageBox QLabel {
-    background-color: transparent;
-    color: #EEEEEE;
-    font-size: 14px;
-}
-
-QMessageBox QPushButton {
-    min-height: 26px;
-    max-height: 26px;
-    margin-left: 0px;
-    margin-right: 0px;
-    color: #EEEEEE;
-    background-color: #525252;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-QMessageBox QPushButton:default {
-    border: 2px solid #606060;
-}
-
-QMessageBox QPushButton:hover {
-    background-color: #606060
-}
-
-QMessageBox QPushButton:pressed {
-    background-color: #656565
-}
-
 QDialog {
     background-color: #3c3c3c;
     color: #EEEEEE;
@@ -302,28 +266,46 @@ QDialog QLabel {
     font-size: 14px;
 }
 
+QDialog QLabel#msgTitle {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
 QDialog QPushButton {
     min-height: 26px;
     max-height: 26px;
-    margin-left: 0px;
-    margin-right: 0px;
+    margin: 3px;
+    margin-top: 14px;
     color: #EEEEEE;
-    background-color: #525252;
+    background-color: #484848;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
 }
 
+QDialog QPushButton#leftBtn {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+    margin-right: 0px;
+}
+
+QDialog QPushButton#rightBtn {
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
+    margin-left: 0px;
+}
+
 QDialog QPushButton:default {
-    border: 2px solid #606060;
+    border: 2px solid #555555;
 }
 
 QDialog QPushButton:hover {
-    background-color: #606060
+    background-color: #555555
 }
 
 QDialog QPushButton:pressed {
-    background-color: #656565
+    background-color: #595959
 }
 
 QPushButton {
