@@ -26,35 +26,32 @@ class Installer():
        
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
-        try:
-            if not os.path.isdir(fileDest):
-                os.mkdir(fileDest)
+        if not os.path.isdir(fileDest):
+            os.mkdir(fileDest)
 # Moving the .AppImage file
-            shutil.move(selectedFilePath, fileDest)
+        shutil.move(selectedFilePath, fileDest)
 
-            logContent = f"File successfully moved to {fileDest}"
-            self.logger.addGeneralEntry(logContent)
-
-        except Exception as error:
-            self.logger.addGeneralEntry(str(error))
-            raise Exception(error)
+        logContent = f"File successfully moved to {fileDest}"
+        self.logger.addGeneralEntry(logContent)
 
 # Make the AppImage file executable
     def mkExec(self, selectedFilePath, fileDest):
         fileName = os.path.basename(selectedFilePath)
         path = f"{fileDest}/{fileName}"
-        logContent = subprocess.run([f"chmod", "+x", path], check=True, capture_output=True, text=True)
+        subprocess.run([f"chmod", "+x", path], check=True)
 
-        self.logger.addCmdEntry(logContent)
+        logContent = f"{str(path)} has been made executable"
+        self.logger.addGeneralEntry(logContent)
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     def mkSymLink(self, selectedFilePath, cmdName, fileDest, userDir):
         if not os.path.isdir(f"{userDir}/.local/bin/"):
             os.mkdir(f"{userDir}/.local/bin/")
 
-        logContent = subprocess.run(["ln", "-s", f"{fileDest}/{os.path.basename(selectedFilePath)}", f"{userDir}/.local/bin/"+cmdName], check=True, capture_output=True, text=True)
+        subprocess.run(["ln", "-s", f"{fileDest}/{os.path.basename(selectedFilePath)}", f"{userDir}/.local/bin/"+cmdName], check=True)
 
-        self.logger.addCmdEntry(logContent)
+        logContent = f"Symlink {str(userDir)}/.local/bin/{str(cmdName)} has been created"
+        self.logger.addGeneralEntry(logContent)
 
 class StartmenuEntry():
 
@@ -69,34 +66,29 @@ class StartmenuEntry():
         self.logger.addCmdEntry(logContent)
         print("Finished extracting data from the .AppImage file")
         
-        try:
-            if not os.path.isdir(fileDest):
-                os.mkdir(f"{userDir}/.local/share/icons")
-                print(f"Created {userDir}/.local/share/icons")
-                logContent = f"Created {userDir}/.local/share/icons"
-                self.logger.addGeneralEntry(logContent)
-            else:
-                print(f"{userDir}/.local/share/icons/ has been found")
+        if not os.path.isdir(fileDest):
+            os.mkdir(f"{userDir}/.local/share/icons")
+            print(f"Created {userDir}/.local/share/icons")
+            logContent = f"Created {userDir}/.local/share/icons"
+            self.logger.addGeneralEntry(logContent)
+        else:
+            print(f"{userDir}/.local/share/icons/ has been found")
 
 # Find the name of the icon.png file; Used later in the .desktop file 
-            programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))
+        programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))
 
-            logContent = "Found the icon file name"
+        logContent = "Found the icon file name"
+        self.logger.addGeneralEntry(logContent)
+
+        if not os.path.isdir(f"{userDir}/.local/share/applications/"):
+            os.mkdir(f"{userDir}/.local/share/applications")
+            print(f"Created {userDir}/.local/share/applications")
+            logContent = f"Created {userDir}/.local/share/applications"
             self.logger.addGeneralEntry(logContent)
-
-            if not os.path.isdir(f"{userDir}/.local/share/applications/"):
-                os.mkdir(f"{userDir}/.local/share/applications")
-                print(f"Created {userDir}/.local/share/applications")
-                logContent = f"Created {userDir}/.local/share/applications"
-                self.logger.addGeneralEntry(logContent)
-            else:
-                print(f"{userDir}/.local/share/applications has been found")
-                logContent = f"{userDir}/.local/share/applications has been found"
-                self.logger.addGeneralEntry(logContent)
-        
-        except Exception as error:
-            self.logger.addGeneralEntry(str(error))
-            raise Exception(error)
+        else:
+            print(f"{userDir}/.local/share/applications has been found")
+            logContent = f"{userDir}/.local/share/applications has been found"
+            self.logger.addGeneralEntry(logContent)
         
 # Copy Icon to icons directory
         logContent = subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True, capture_output=True, text=True)
@@ -109,31 +101,26 @@ class StartmenuEntry():
         print("Finished deleting the squashfs-root")
 
 # .desktop file content
-        try:
-            desktopFile = f"""[Desktop Entry]
-                            Type=Application
-                            Name={programName}
-                            Comment={programDescr}
-                            Exec={fileDest}/{fileName}
-                            Icon={userDir}/.local/share/icons/{programIcon}
-                            Terminal=false
-                            Categories={programCategory}
-                            """
-            print("Gathered all data for .desktop file creation")
-            logContent = "Gathered all data for .desktop file creation"
-            self.logger.addGeneralEntry(logContent)
+        desktopFile = f"""[Desktop Entry]
+                        Type=Application
+                        Name={programName}
+                        Comment={programDescr}
+                        Exec={fileDest}/{fileName}
+                        Icon={userDir}/.local/share/icons/{programIcon}
+                        Terminal=false
+                        Categories={programCategory}
+                        """
+        print("Gathered all data for .desktop file creation")
+        logContent = "Gathered all data for .desktop file creation"
+        self.logger.addGeneralEntry(logContent)
 
-            home = pathlib.Path.home()
-            appsDir = home/".local/share/applications"
-            desktopEntry = appsDir/f"{programName}.desktop"
-            desktopEntry.write_text(desktopFile)
-            print("Finished creating the .desktop file")
-            logContent = "Finished creating the .desktop file"
-            self.logger.addGeneralEntry(logContent)
-
-        except Exception as error:
-            self.logger.addGeneralEntry(str(error))
-            raise Exception(error)
+        home = pathlib.Path.home()
+        appsDir = home/".local/share/applications"
+        desktopEntry = appsDir/f"{programName}.desktop"
+        desktopEntry.write_text(desktopFile)
+        print("Finished creating the .desktop file")
+        logContent = "Finished creating the .desktop file"
+        self.logger.addGeneralEntry(logContent)
 
 # Make the .desktop file executable
         logContent = subprocess.run(["chmod", "+x", str(desktopEntry)], check=True, capture_output=True, text=True)
