@@ -3,7 +3,7 @@
 import os
 import shutil
 import subprocess
-import pathlib
+import stat
 from pathlib import Path
 from datetime import datetime
 
@@ -15,7 +15,7 @@ class Installer():
 # Put every AppImage file into a list
     @staticmethod
     def listFiles(userDir):
-        downloadsDir = os.path.join(str(userDir), "Downloads")
+        downloadsDir = userDir / "Downloads"
 
         fileList = [file.path 
                     for file in os.scandir(downloadsDir) 
@@ -26,9 +26,8 @@ class Installer():
        
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
-        if not os.path.isdir(fileDest):
-            os.mkdir(fileDest)
-# Moving the .AppImage file
+        Path(fileDest).mkdir(parents=True, exist_ok=True)
+
         shutil.move(selectedFilePath, fileDest)
 
         logContent = f"File successfully moved to {fileDest}"
@@ -36,21 +35,24 @@ class Installer():
 
 # Make the AppImage file executable
     def mkExec(self, selectedFilePath, fileDest):
-        fileName = os.path.basename(selectedFilePath)
-        path = f"{fileDest}/{fileName}"
-        subprocess.run([f"chmod", "+x", path], check=True)
+        fileName = Path(selectedFilePath).name
+        path = fileDest / fileName
+        path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
-        logContent = f"{str(path)} has been made executable"
+        logContent = f"AppImage file at {path} has been made executable"
         self.logger.addGeneralEntry(logContent)
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     def mkSymLink(self, selectedFilePath, cmdName, fileDest, userDir):
-        if not os.path.isdir(f"{userDir}/.local/bin/"):
-            os.mkdir(f"{userDir}/.local/bin/")
+        symLinkDir = userDir / ".local/bin/"
+        path = fileDest / Path(selectedFilePath).name
+        symLinkPath = Path(symLinkDir) / cmdName
 
-        subprocess.run(["ln", "-s", f"{fileDest}/{os.path.basename(selectedFilePath)}", f"{userDir}/.local/bin/"+cmdName], check=True)
+        Path(symLinkDir).mkdir(parents=True, exist_ok=True)
 
-        logContent = f"Symlink {str(userDir)}/.local/bin/{str(cmdName)} has been created"
+        symLinkPath.symlink_to(path)
+
+        logContent = f"Symlink {userDir}/.local/bin/{cmdName} has been created"
         self.logger.addGeneralEntry(logContent)
 
 class StartmenuEntry():
@@ -59,46 +61,29 @@ class StartmenuEntry():
         self.logger = logger
 
     def create(self, selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
-        fileName = os.path.basename(selectedFilePath)
+        fileName = Path(selectedFilePath).name
+        iconsDir = userDir / ".local/share/icons"
+        applicationsDir = userDir / ".local/share/applications"
+
+        Path(iconsDir).mkdir(parents=True, exist_ok=True)
+        Path(applicationsDir).mkdir(parents=True, exist_ok=True)
 
 # Extract AppImage in to the temporary directory
         logContent = subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True, capture_output=True, text=True)
         self.logger.addCmdEntry(logContent)
-        print("Finished extracting data from the .AppImage file")
-        
-        if not os.path.isdir(fileDest):
-            os.mkdir(f"{userDir}/.local/share/icons")
-            print(f"Created {userDir}/.local/share/icons")
-            logContent = f"Created {userDir}/.local/share/icons"
-            self.logger.addGeneralEntry(logContent)
-        else:
-            print(f"{userDir}/.local/share/icons/ has been found")
 
 # Find the name of the icon.png file; Used later in the .desktop file 
-        programIcon = os.path.basename(next(pathlib.Path("squashfs-root").glob("*.png")))
-
+        programIcon = Path(next(Path("squashfs-root").glob("*.png"))).name
         logContent = "Found the icon file name"
         self.logger.addGeneralEntry(logContent)
-
-        if not os.path.isdir(f"{userDir}/.local/share/applications/"):
-            os.mkdir(f"{userDir}/.local/share/applications")
-            print(f"Created {userDir}/.local/share/applications")
-            logContent = f"Created {userDir}/.local/share/applications"
-            self.logger.addGeneralEntry(logContent)
-        else:
-            print(f"{userDir}/.local/share/applications has been found")
-            logContent = f"{userDir}/.local/share/applications has been found"
-            self.logger.addGeneralEntry(logContent)
         
 # Copy Icon to icons directory
-        logContent = subprocess.run(["cp" , next(pathlib.Path("squashfs-root").glob("*.png")), f"{userDir}/.local/share/icons"], check=True, capture_output=True, text=True)
+        logContent = subprocess.run(["mv" , next(Path("squashfs-root").glob("*.png")), iconsDir], check=True, capture_output=True, text=True)
         self.logger.addCmdEntry(logContent)
-        print("Finished copying the icon to the icons directory")
         
 # Delete squashfs-root; This is a temporary directory and the app icon is extracted to this directory
-        logContent = subprocess.run(["rm", "-rf", pathlib.Path("squashfs-root")], check=True, capture_output=True, text=True)
+        logContent = subprocess.run(["rm", "-rf", Path("squashfs-root")], check=True, capture_output=True, text=True)
         self.logger.addCmdEntry(logContent)
-        print("Finished deleting the squashfs-root")
 
 # .desktop file content
         desktopFile = f"""[Desktop Entry]
@@ -110,30 +95,25 @@ class StartmenuEntry():
                         Terminal=false
                         Categories={programCategory}
                         """
-        print("Gathered all data for .desktop file creation")
         logContent = "Gathered all data for .desktop file creation"
         self.logger.addGeneralEntry(logContent)
 
-        home = pathlib.Path.home()
-        appsDir = home/".local/share/applications"
-        desktopEntry = appsDir/f"{programName}.desktop"
-        desktopEntry.write_text(desktopFile)
-        print("Finished creating the .desktop file")
+        desktopEntryFile = applicationsDir / f"{programName}.desktop"
+        desktopEntryFile.write_text(desktopFile)
         logContent = "Finished creating the .desktop file"
         self.logger.addGeneralEntry(logContent)
 
 # Make the .desktop file executable
-        logContent = subprocess.run(["chmod", "+x", str(desktopEntry)], check=True, capture_output=True, text=True)
+        logContent = subprocess.run(["chmod", "+x", desktopEntryFile], check=True, capture_output=True, text=True)
         self.logger.addCmdEntry(logContent)
-        print("Made the .desktop file executable")
 
 class Logging():
 
     def __init__(self):
-        logDir = Path.home() / ".local" / "share" / "AppImage-Installer" / "logs"
-        logDir.mkdir(parents=True, exist_ok=True)
+        self.logDir = Path.home() / ".local" / "share" / "AppImage-Installer" / "logs"
+        self.logDir.mkdir(parents=True, exist_ok=True)
         currentDate = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.logFilePath = logDir / (currentDate + "Log.txt")
+        self.logFilePath = self.logDir / (currentDate + "Log.txt")
 
         with open(self.logFilePath, "a") as f:
             f.write("These log files are only there to store an error message if one occurs.\n")
@@ -154,3 +134,9 @@ class Logging():
         with open(self.logFilePath, "a") as f:
                 f.write(logContent + "\n")
                 f.write("******************************************************************\n")
+
+    def rmvOldLogs(self):
+        timeNow = datetime.now()
+        for log in Path(self.logDir).iterdir():
+            if (timeNow - datetime.fromtimestamp(log.stat().st_mtime)).days > 7:
+                log.unlink()

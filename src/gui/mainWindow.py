@@ -61,7 +61,11 @@ class MainWindow(QMainWindow):
         helpMenu = optionsBar.addMenu("Help")
 
         file1 = fileMenu.addAction("Pick a different file")
+        fileMenu.addSeparator()
+        file2 = fileMenu.addAction("Refresh downloads directory")
+
         file1.triggered.connect(self.page1Validator)
+        file2.triggered.connect(lambda:  self.reloadPage1() if self.stackedWidget.currentIndex() == 0 else None)
 
         theme1 = themeMenu.addAction("System theme")
         themeMenu.addSeparator()
@@ -190,15 +194,15 @@ class MainWindow(QMainWindow):
                             "Categories"]
         
 # More information on what to enter for the user
-        programInfoText = ["The command or file path used to launch the application from the terminal.",
+        programInfoText = ["The command used to launch the application from the terminal.",
                            "The name that will appear in the start menu and application list.",
                            "A brief summary of the application (displayed as a tooltip).",
                            "Determines the placement in the start menu. Some categories can't be combined; combined they create a different category."]
         
         self.categoryList = ["Accessibility;Utility", "Education", "Office", 
                              "Development", "Graphics", "Network", 
-                             "AudioVideo", "Utility", "Game", 
-                             "System", "Science;Education", "Utility", 
+                             "AudioVideo", "Game", "System",
+                             "Science;Education", "Utility", 
                              "Settings", "System;Settings"]
         
         self.programInfoList = []
@@ -268,7 +272,7 @@ class MainWindow(QMainWindow):
 
         self.page2SubmitBtn = QPushButton("Continue")
         self.page2SubmitBtn.setObjectName("submitBtn")
-        self.page2SubmitBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(2))
+        self.page2SubmitBtn.clicked.connect(self.page2Validator)
 
         self.page2BackBtn = QPushButton("Back")
         self.page2BackBtn.setObjectName("backBtn")
@@ -281,6 +285,10 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()    
 
         return mainWidget
+    
+    def page2Validator(self):
+        if all(edit.text().strip() for edit in self.programInfoList) and self.page2RadioBtns.checkedButton() is not None:
+            self.stackedWidget.setCurrentIndex(2)
 
 
 
@@ -342,6 +350,7 @@ class MainWindow(QMainWindow):
             self.programCategory = ";".join(selected)
 
         self.logger = Logging()
+        self.logger.rmvOldLogs()
 
 # Function that installs the program
         self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger)
