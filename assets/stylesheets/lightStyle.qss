@@ -31,6 +31,10 @@ QMenu {
     color: #212121;
 }
 
+QMenu QMenu {
+    margin: 8px;
+}
+
 QMenu::item {
     background: #ffffff;
     padding: 4px;

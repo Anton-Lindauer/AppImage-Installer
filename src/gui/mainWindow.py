@@ -7,6 +7,7 @@ from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
 import subprocess
+import time
 from pathlib import Path
 
 from src.core.logic import Installer, Logging
@@ -57,7 +58,7 @@ class MainWindow(QMainWindow):
         optionsBar = self.menuBar()
 
         fileMenu = optionsBar.addMenu("File")
-        themeMenu = optionsBar.addMenu("Theme")
+        settingsMenu = optionsBar.addMenu("Settings")
         helpMenu = optionsBar.addMenu("Help")
 
         file1 = fileMenu.addAction("Pick a different file")
@@ -67,11 +68,20 @@ class MainWindow(QMainWindow):
         file1.triggered.connect(self.page1Validator)
         file2.triggered.connect(lambda:  self.reloadPage1() if self.stackedWidget.currentIndex() == 0 else None)
 
-        theme1 = themeMenu.addAction("System theme")
-        themeMenu.addSeparator()
-        theme2 = themeMenu.addAction("Mint Orchis Dark")
-        themeMenu.addSeparator()
-        theme3 = themeMenu.addAction("Mint Orchis Light")
+        
+        setting1 = settingsMenu.addMenu("Theme")
+        settingsMenu.addSeparator()
+        setting2 = settingsMenu.addAction("Configure")
+
+# Qt doesn't immediately close a menu inside a menu when hovering over a different element.
+# Therefore you have to force Qt to do it
+        setting2.hovered.connect(lambda: setting1.hide())
+
+        theme1 = setting1.addAction("System theme")
+        setting1.addSeparator()
+        theme2 = setting1.addAction("Mint Orchis Dark")
+        setting1.addSeparator()
+        theme3 = setting1.addAction("Mint Orchis Light")
 
         theme1.triggered.connect(lambda: General.loadTheme(self, "sysTheme"))
         theme2.triggered.connect(lambda: General.loadTheme(self, "darkTheme"))
@@ -81,7 +91,7 @@ class MainWindow(QMainWindow):
         help1.triggered.connect(General.openRepo)
 
 # Hides the box around the box with the menues; Has to be declared for every menu
-        for menu in (fileMenu, themeMenu, helpMenu):
+        for menu in (fileMenu, settingsMenu, setting1, helpMenu):
             menu.setWindowFlags(
                 menu.windowFlags()
                 | Qt.FramelessWindowHint
