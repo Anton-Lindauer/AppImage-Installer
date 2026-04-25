@@ -76,6 +76,7 @@ class MainWindow(QMainWindow):
 # Qt doesn't immediately close a menu inside a menu when hovering over a different element.
 # Therefore you have to force Qt to do it
         setting2.hovered.connect(lambda: setting1.hide())
+        setting2.triggered.connect(General.settingsWindow)
 
         theme1 = setting1.addAction("System theme")
         setting1.addSeparator()

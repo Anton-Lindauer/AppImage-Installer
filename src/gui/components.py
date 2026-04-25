@@ -1,6 +1,6 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout
+from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel
 from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl, QObject
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -33,6 +33,15 @@ class General():
             with open(themeToLoad, "r") as f:  
                             _style = f.read()
                             app.setStyleSheet(_style)
+
+    def settingsWindow():
+        settingsPage = QDialog()
+        settingsPage.setWindowTitle("AppImage-Installer Settings")
+
+        settingsPageLayout = QVBoxLayout(settingsPage)
+        settingsPageLayout.addWidget(QLabel("Coming soon! (hopefully)"))
+
+        settingsPage.exec()
 
 
 #All functions for page 1
