@@ -71,17 +71,13 @@ Example of installing Ultimaker Cura.
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page3.png)
 This may take a while, especially the creation of a startmenu entry can take a while. 
 
-If you encounter a error message, check the terminal you used to launch the program from for more details.
-
 ### Finished installation screen
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page4.png)
 
 ## Other important notes
 If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
 
-A light mode is also supported, the program uses your system themen when launched.
-
-The GUI design is inspired by linux mint with orchis dark/light compact themes, it's not a 1:1 replica, because Qt hates doing what it should do and there is no mint menu with a similar layout.
+A light mode and other themes are also included.
 
 This tool is still work in progress and more functionality will be added soon.
 
@@ -93,7 +89,9 @@ The symlinks are created in ~/{username}/.local/bin/
 
 The startmenu entries are created in ~/{username}/.local/applications/
 
-If you want to contribute, make suggestions on how to make the program more performant or the code more organized - feature requests will from now on be no longer ignored, since I finished the core GUI. Just make sure to check the known issues section before opening a new issue.
+Logs are stored in ~/{username}/.local/share/AppImage-Installer/logs
+
+If you want to contribute, make suggestions on how to make the code better or the themes look better - feature requests will from now on be no longer ignored, since I finished the core GUI. Just make sure to check the known issues section before opening a new issue.
 
 ## Known issues
 The divider lines in the boxes don't look the same because of how Qt renders them, there isn't really a fix for this.

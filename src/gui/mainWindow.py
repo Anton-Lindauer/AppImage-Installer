@@ -24,8 +24,9 @@ class MainWindow(QMainWindow):
 # Stylesheets paths
         fileDir = Path(__file__).resolve()
         projectRoot = fileDir.parent.parent.parent
-        self.lightStylePath = projectRoot / "assets" / "stylesheets" / "lightStyle.qss"
-        self.darkStylePath = projectRoot / "assets" / "stylesheets" / "darkStyle.qss"
+        self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
+        self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
+        self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
 
         General.loadTheme(self, "sysTheme")
         
@@ -78,15 +79,18 @@ class MainWindow(QMainWindow):
         setting2.hovered.connect(lambda: setting1.hide())
         setting2.triggered.connect(General.settingsWindow)
 
-        theme1 = setting1.addAction("System theme")
+        theme1 = setting1.addAction("System theme (coming soon!)")
         setting1.addSeparator()
-        theme2 = setting1.addAction("Mint Orchis Dark")
+        theme2 = setting1.addAction("Modern Blue Dark")
         setting1.addSeparator()
-        theme3 = setting1.addAction("Mint Orchis Light")
+        theme3 = setting1.addAction("Modern Dark (coming soon!)")
+        setting1.addSeparator()
+        theme4 = setting1.addAction("Modern Light (coming soon!)")
 
         theme1.triggered.connect(lambda: General.loadTheme(self, "sysTheme"))
-        theme2.triggered.connect(lambda: General.loadTheme(self, "darkTheme"))
-        theme3.triggered.connect(lambda: General.loadTheme(self, "lightTheme"))
+        theme2.triggered.connect(lambda: General.loadTheme(self, "modernBlueDarkTheme"))
+        theme3.triggered.connect(lambda: General.loadTheme(self, "modernDarkTheme"))
+        theme4.triggered.connect(lambda: General.loadTheme(self, "modernLightTheme"))
 
         help1 = helpMenu.addAction("Github Repo")
         help1.triggered.connect(General.openRepo)
@@ -159,7 +163,7 @@ class MainWindow(QMainWindow):
             containerLayout.addWidget(page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        containerScrollArea.setFixedHeight(min(fileListLen, 5) * 40)
+        containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
 
         submitBtn = QPushButton("Continue")  
         submitBtn.setObjectName("submitBtn")

@@ -21,13 +21,15 @@ class General():
                 case "sysTheme":
                     sysStyle = QGuiApplication.instance().styleHints().colorScheme()
                     if sysStyle == Qt.ColorScheme.Dark:
-                        themeToLoad = self.darkStylePath
+                        themeToLoad = self.modernBlueDarkStylePath
                     else:
-                        themeToLoad = self.lightStylePath
-                case "darkTheme":
-                    themeToLoad = self.darkStylePath
-                case "lightTheme":  
-                    themeToLoad = self.lightStylePath
+                        themeToLoad = self.modernLightStylePath
+                case "modernBlueDarkTheme":
+                    themeToLoad = self.modernBlueDarkStylePath
+                case "modernDarkTheme":  
+                    themeToLoad = self.modernDarkStylePath
+                case "modernLightTheme":  
+                    themeToLoad = self.modernLightStylePath
 
 # Open the stylesheet with the selected theme
             with open(themeToLoad, "r") as f:  
