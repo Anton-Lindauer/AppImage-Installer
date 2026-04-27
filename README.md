@@ -61,18 +61,18 @@ The program will guide you through the installation process. Please report any e
 **Note:** The pictures are not 100% up to date and small visual changes are not worth the effort to update them.
 
 ### Selecting a file to install
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page1.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page1.png)
 
 ### Entering program info
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2b2c4410ae6529e10c02cfa65321be3994ce1883/pictures%20for%20README%20file/page2.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page2.png)
 Example of installing Ultimaker Cura.
 
 ### Installation process status page
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page3.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page3.png)
 This may take a while, especially the creation of a startmenu entry can take a while. 
 
 ### Finished installation screen
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/2bc87f13cd6052a6deaa93b7b3f674f80bc25afa/pictures%20for%20README%20file/page4.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page4.png)
 
 ## Other important notes
 If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
