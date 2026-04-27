@@ -7,7 +7,7 @@ QMainWindow {
 
 QMenuBar {
     background-color: #1d2024;
-    border-bottom: 1px solid #2e3238;
+    border-bottom: 1px solid #424242;
     color: #D8DADD;
 }
 
@@ -105,7 +105,7 @@ QScrollBar::handle:vertical:pressed {
 
 QGroupBox {
     background-color: #1d2024;
-    border: 1px solid #2e3238;
+    border: 1px solid #424242;
     border-radius: 10px;
     margin-left: 40px;
     margin-right: 40px
@@ -259,7 +259,7 @@ QComboBox QAbstractItemView::item:selected {
 }
 
 QDialog {
-    background-color: #3c3c3c;
+    background-color: #16191d;
     color: #D8DADD;
     font-size: 14px;
 }
@@ -282,7 +282,7 @@ QDialog QPushButton {
     margin: 3px;
     margin-top: 14px;
     color: #D8DADD;
-    background-color: #484848;
+    background-color: #292d32;
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -301,15 +301,16 @@ QDialog QPushButton#rightBtn {
 }
 
 QDialog QPushButton:default {
-    border: 2px solid #555555;
+    border: 2px solid #393d42;
 }
 
 QDialog QPushButton:hover {
-    background-color: #555555
+    background-color: #393d42;
 }
 
 QDialog QPushButton:pressed {
-    background-color: #595959
+    background-color: #494d52;
+    border: 2px solid #494d52
 }
 
 QPushButton {
@@ -330,6 +331,33 @@ QPushButton:hover {
 
 QPushButton:pressed {
     background-color: #494d52;
+}
+
+QCheckBox {
+    color: #D8DADD;
+    font-size: 14px;
+    spacing: 8px;
+    margin: 4px;
+    margin-left: 40px;
+    margin-right: 40px;
+}
+
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    border: 1.5px solid #2e3238;
+    background-color: #1d2024;
+}
+
+QCheckBox::indicator:hover {
+    border: 1.5px solid #3281ea;
+}
+
+QCheckBox::indicator:checked {
+    background-color: #3281ea;
+    border: 1.5px solid #3281ea;
+    image: url(assets/icons/darkThemes/check.svg)
 }
 
 /* Everything that's only for page one */

@@ -78,14 +78,14 @@ class StartmenuEntry():
         self.logger.addGeneralEntry(logContent)
         
 # Copy icon to icons directory
-        subprocess.run(["mv" , next(Path("squashfs-root").glob("*.png")), iconsDir], check=True, capture_output=True, text=True)
+        subprocess.run(["mv" , next(Path("squashfs-root").glob("*.png")), iconsDir], check=True)
         logContent = f"Moved icon to {iconsDir}"
-        self.logger.addCmdEntry(logContent)
+        self.logger.addGeneralEntry(logContent)
         
 # Delete squashfs-root; This is a temporary directory and the app icon is extracted to this directory
-        subprocess.run(["rm", "-rf", Path("squashfs-root")], check=True, capture_output=True, text=True)
+        subprocess.run(["rm", "-rf", Path("squashfs-root")], check=True)
         logContent = "Deleted temporary directory squashfs-root"
-        self.logger.addCmdEntry(logContent)
+        self.logger.addGeneralEntry(logContent)
 
 # .desktop file content
         desktopFile = f"""[Desktop Entry]
@@ -106,9 +106,9 @@ class StartmenuEntry():
         self.logger.addGeneralEntry(logContent)
 
 # Make the .desktop file executable
-        subprocess.run(["chmod", "+x", desktopEntryFile], check=True, capture_output=True, text=True)
+        subprocess.run(["chmod", "+x", desktopEntryFile], check=True)
         logContent = f"Made {desktopEntryFile} executable"
-        self.logger.addCmdEntry(logContent)
+        self.logger.addGeneralEntry(logContent)
 
 class Logging():
 

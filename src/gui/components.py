@@ -1,7 +1,7 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
-from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel
-from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl, QObject
+from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox
+from PySide6.QtCore import Qt, QThread, Signal, QUrl, QObject, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 from src.core.logic import Installer, StartmenuEntry, Logging
@@ -11,6 +11,10 @@ import time
 
 # All functions from the menubar
 class General():
+    def __init__(self):
+        super().__init__()
+
+        self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
     def openRepo():
             QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
@@ -36,14 +40,33 @@ class General():
                             _style = f.read()
                             app.setStyleSheet(_style)
 
-    def settingsWindow():
+    def settingsWindow(self):
         settingsPage = QDialog()
         settingsPage.setWindowTitle("AppImage-Installer Settings")
 
         settingsPageLayout = QVBoxLayout(settingsPage)
-        settingsPageLayout.addWidget(QLabel("Coming soon! (hopefully)"))
+        settingsPageLayout.setContentsMargins(0, 0, 0, 0,)
+        settingsPageLayout.setSpacing(0)
+
+        title = QLabel("General Settings")   
+        title.setObjectName("title")
+
+        self.setting1 = QCheckBox("Auto delete old logs")
+        self.setting1.setChecked(self.settings.value("autoDelete", True, type=bool))
+        self.setting1.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
+
+        settingsPageLayout.addWidget(title)
+        settingsPageLayout.addWidget(self.setting1)
+
+        settingsPageLayout.addStretch()
 
         settingsPage.exec()
+
+    def saveSettings(self, event):
+        self.settings.setValue("autoDelete", self.setting1.isChecked())
+
+        self.settings.sync()
+        super.saveEvent(event)
 
 
 #All functions for page 1

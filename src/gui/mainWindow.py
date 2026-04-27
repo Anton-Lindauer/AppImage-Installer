@@ -2,7 +2,7 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
-from PySide6.QtCore import Qt, QThread, Signal, QTimer, QUrl
+from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
@@ -27,6 +27,8 @@ class MainWindow(QMainWindow):
         self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
         self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
         self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
+
+        #self.general = General()
 
         General.loadTheme(self, "sysTheme")
         
@@ -77,15 +79,17 @@ class MainWindow(QMainWindow):
 # Qt doesn't immediately close a menu inside a menu when hovering over a different element.
 # Therefore you have to force Qt to do it
         setting2.hovered.connect(lambda: setting1.hide())
-        setting2.triggered.connect(General.settingsWindow)
 
-        theme1 = setting1.addAction("System theme (coming soon!)")
+        self.general = General()
+        setting2.triggered.connect(self.general.settingsWindow)
+
+        theme1 = setting1.addAction("System theme")
         setting1.addSeparator()
         theme2 = setting1.addAction("Modern Blue Dark")
         setting1.addSeparator()
-        theme3 = setting1.addAction("Modern Dark (coming soon!)")
+        theme3 = setting1.addAction("Modern Dark")
         setting1.addSeparator()
-        theme4 = setting1.addAction("Modern Light (coming soon!)")
+        theme4 = setting1.addAction("Modern Light")
 
         theme1.triggered.connect(lambda: General.loadTheme(self, "sysTheme"))
         theme2.triggered.connect(lambda: General.loadTheme(self, "modernBlueDarkTheme"))
@@ -365,7 +369,11 @@ class MainWindow(QMainWindow):
             self.programCategory = ";".join(selected)
 
         self.logger = Logging()
-        self.logger.rmvOldLogs()
+
+# Temporary way of deleting old logs
+        settings = QSettings("Anton-Lindauer", "AppImage-Installer")
+        if settings.value("autoDelete", True, type=bool):
+                self.logger.rmvOldLogs()
 
 # Function that installs the program
         self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger)
