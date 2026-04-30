@@ -16,6 +16,12 @@ class General():
 
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
+        fileDir = Path(__file__).resolve()
+        projectRoot = fileDir.parent.parent.parent
+        self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
+        self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
+        self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
+
     def openRepo():
             QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
 
@@ -23,16 +29,20 @@ class General():
             app = QApplication.instance()
             match selectedTheme:
                 case "sysTheme":
+                    self.settings.setValue("theme", "sysTheme")
                     sysStyle = QGuiApplication.instance().styleHints().colorScheme()
                     if sysStyle == Qt.ColorScheme.Dark:
                         themeToLoad = self.modernBlueDarkStylePath
                     else:
                         themeToLoad = self.modernLightStylePath
                 case "modernBlueDarkTheme":
+                    self.settings.setValue("theme", "modernBlueDarkTheme")
                     themeToLoad = self.modernBlueDarkStylePath
                 case "modernDarkTheme":  
+                    self.settings.setValue("theme", "modernDarkTheme")
                     themeToLoad = self.modernDarkStylePath
                 case "modernLightTheme":  
+                    self.settings.setValue("theme", "modernLightTheme")
                     themeToLoad = self.modernLightStylePath
 
 # Open the stylesheet with the selected theme
@@ -61,13 +71,6 @@ class General():
         settingsPageLayout.addStretch()
 
         settingsPage.exec()
-
-    def saveSettings(self, event):
-        self.settings.setValue("autoDelete", self.setting1.isChecked())
-
-        self.settings.sync()
-        super.saveEvent(event)
-
 
 #All functions for page 1
 class Page1Logic(QObject):

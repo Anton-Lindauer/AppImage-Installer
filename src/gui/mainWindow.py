@@ -1,7 +1,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QMessageBox, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -21,16 +21,9 @@ class MainWindow(QMainWindow):
         self.userDir = Path.home()
         self.fileDest = self.userDir / "AppImages"
 
-# Stylesheets paths
-        fileDir = Path(__file__).resolve()
-        projectRoot = fileDir.parent.parent.parent
-        self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
-        self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
-        self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
-
-        #self.general = General()
-
-        General.loadTheme(self, "sysTheme")
+        self.general = General()
+        self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
+        self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
         
         self.setWindowTitle("AppImage-Installer")
         self.setMinimumSize(750, 700)
@@ -80,7 +73,6 @@ class MainWindow(QMainWindow):
 # Therefore you have to force Qt to do it
         setting2.hovered.connect(lambda: setting1.hide())
 
-        self.general = General()
         setting2.triggered.connect(self.general.settingsWindow)
 
         theme1 = setting1.addAction("System theme")
@@ -91,10 +83,10 @@ class MainWindow(QMainWindow):
         setting1.addSeparator()
         theme4 = setting1.addAction("Modern Light")
 
-        theme1.triggered.connect(lambda: General.loadTheme(self, "sysTheme"))
-        theme2.triggered.connect(lambda: General.loadTheme(self, "modernBlueDarkTheme"))
-        theme3.triggered.connect(lambda: General.loadTheme(self, "modernDarkTheme"))
-        theme4.triggered.connect(lambda: General.loadTheme(self, "modernLightTheme"))
+        theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
+        theme2.triggered.connect(lambda: self.general.loadTheme("modernBlueDarkTheme"))
+        theme3.triggered.connect(lambda: self.general.loadTheme("modernDarkTheme"))
+        theme4.triggered.connect(lambda: self.general.loadTheme("modernLightTheme"))
 
         help1 = helpMenu.addAction("Github Repo")
         help1.triggered.connect(General.openRepo)
@@ -371,8 +363,7 @@ class MainWindow(QMainWindow):
         self.logger = Logging()
 
 # Temporary way of deleting old logs
-        settings = QSettings("Anton-Lindauer", "AppImage-Installer")
-        if settings.value("autoDelete", True, type=bool):
+        if self.settings.value("autoDelete", True, type=bool):
                 self.logger.rmvOldLogs()
 
 # Function that installs the program
