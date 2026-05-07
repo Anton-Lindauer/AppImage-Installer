@@ -13,48 +13,8 @@ Pyside6 module is required for the GUI version.
 Should work on any **Linux** Distro, doesn't work on Windows.
 
 ## How to install and launch the CLI or GUI version
-Download this repo to your home directory:
-```
-git clone https://github.com/Anton-Lindauer/AppImage-Installer.git
-```
 
-Then go in the AppImage-Installer directory:
-```
-cd AppImage-Installer
-```
-
-**CLI:**
-
-If you only want the CLI version, then enter this command to launch it:
-```
-python3 src/cli/mainCLI.py
-```
-
-**GUI:**
-
-If you want the GUI version, follow these steps
-
-Create a virtual environment:
-```
-python3 -m venv .venv
-```
-
-Activate the virtual environment (activation needs to be done each time you want to launch the GUI version):
-```
-source .venv/bin/activate
-```
-
-Install all requirements:
-```
-pip install -r requirements.txt
-```
-
-Launch the GUI version via the terminal or click the run button in VS Code if you have done everything in VS Code:
-```
-python3 main.py
-```
-
-The program will guide you through the installation process. Please report any errors that may occure.
+Installation guide can be found [here.](HowToInstall)
 
 ## Have a look at the GUI version
 
