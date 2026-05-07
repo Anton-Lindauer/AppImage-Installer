@@ -1,13 +1,13 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QFileDialog, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
 import subprocess
-import time
+import os
 from pathlib import Path
 
 from src.core.logic import Installer, Logging
@@ -23,7 +23,14 @@ class MainWindow(QMainWindow):
 
         self.general = General()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
-        self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
+
+        desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP") 
+        if not desktopEnv == "KDE":
+            self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
+            kdeSupport = "Not Supported"
+        else:
+            self.general.loadTheme(self.settings.value("theme", "kdeTheme", str))
+            kdeSupport = "Recommended"
         
         self.setWindowTitle("AppImage-Installer")
         self.setMinimumSize(750, 700)
@@ -33,22 +40,49 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
 
         mainLayout = QVBoxLayout(central)
+        mainLayout.setContentsMargins(6, 6, 6, 6)
+        mainLayout.setSpacing(0)
+
+# Tab one
+        self.tabs = QTabWidget()
+
+        self.tab1 = QWidget()
+        self.tab1Layout = QHBoxLayout(self.tab1)
 
 # The QStackedWidget that contains all pages 
-        self.stackedWidget = QStackedWidget()
+        self.tab1StackedWidget = QStackedWidget()
 
-        self.page1 = self.createPage1()
-        self.page2 = self.createPage2()
-        self.page3 = self.createPage3()
-        self.page4 = self.createPage4()
+        self.tab1Page1 = self.createTab1Page1()
+        self.tab1Page2 = self.createTab1Page2()
+        self.tab1Page3 = self.createTab1Page3()
+        self.tab1Page4 = self.createTab1Page4()
 
-        self.stackedWidget.addWidget(self.page1)
-        self.stackedWidget.addWidget(self.page2)
-        self.stackedWidget.addWidget(self.page3)
-        self.stackedWidget.addWidget(self.page4)
+        self.tab1StackedWidget.addWidget(self.tab1Page1)
+        self.tab1StackedWidget.addWidget(self.tab1Page2)
+        self.tab1StackedWidget.addWidget(self.tab1Page3)
+        self.tab1StackedWidget.addWidget(self.tab1Page4)
 
-# Add the QStackedWidget to the main windows layout
-        mainLayout.addWidget(self.stackedWidget)    
+        self.tab1Layout.addWidget(self.tab1StackedWidget)
+
+# Tab two
+        self.tab2 = QWidget()
+        self.tab2Layout = QHBoxLayout(self.tab2)
+
+# The QStackedWidget that contains all pages 
+        self.tab2StackedWidget = QStackedWidget()
+
+        self.tab2Page1 = self.createTab2Page1()
+
+        self.tab2StackedWidget.addWidget(self.tab2Page1)
+
+        self.tab2Layout.addWidget(self.tab2StackedWidget)
+
+        self.tabs.addTab(self.tab1, "Install")
+        self.tabs.addTab(self.tab2, "Remove")
+
+        mainLayout.addWidget(self.tabs)
+
+
 
 # All of the remaining code in this function is for the QMenuBar
         optionsBar = self.menuBar()
@@ -62,7 +96,7 @@ class MainWindow(QMainWindow):
         file2 = fileMenu.addAction("Refresh downloads directory")
 
         file1.triggered.connect(self.page1Validator)
-        file2.triggered.connect(lambda:  self.reloadPage1() if self.stackedWidget.currentIndex() == 0 else None)
+        file2.triggered.connect(lambda:  self.reloadPage1() if self.tab1StackedWidget.currentIndex() == 0 else None)
 
         
         setting1 = settingsMenu.addMenu("Theme")
@@ -82,11 +116,14 @@ class MainWindow(QMainWindow):
         theme3 = setting1.addAction("Modern Dark")
         setting1.addSeparator()
         theme4 = setting1.addAction("Modern Light")
+        setting1.addSeparator()
+        theme5 = setting1.addAction(f"Use KDE theme ({kdeSupport})")
 
         theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
         theme2.triggered.connect(lambda: self.general.loadTheme("modernBlueDarkTheme"))
         theme3.triggered.connect(lambda: self.general.loadTheme("modernDarkTheme"))
         theme4.triggered.connect(lambda: self.general.loadTheme("modernLightTheme"))
+        theme5.triggered.connect(lambda: self.general.loadTheme("kdeTheme"))
 
         help1 = helpMenu.addAction("Github Repo")
         help1.triggered.connect(General.openRepo)
@@ -103,9 +140,11 @@ class MainWindow(QMainWindow):
 
             
 
-    def createPage1(self):
+    def createTab1Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel("AppImage selection")   
         title.setObjectName("title")
@@ -174,18 +213,20 @@ class MainWindow(QMainWindow):
         return mainWidget
     
     def page1Validator(self):
-        if self.stackedWidget.currentIndex() == 0:
+        if self.tab1StackedWidget.currentIndex() == 0:
             self.page1Handler.userPick(self)
         
     def page1Worker(self, path):
-        self.stackedWidget.setCurrentIndex(1)
+        self.tab1StackedWidget.setCurrentIndex(1)
         self.selectedFilePath = path
 
 
 
-    def createPage2(self):
+    def createTab1Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel("Program information")
         title.setObjectName("title")
@@ -193,10 +234,10 @@ class MainWindow(QMainWindow):
 # Box for the options for the user; Contains other boxes with the descriptions and QlineEdits
         container = QGroupBox()
         
-# Set the layout in the container with no spacing
+# Set the layout in the container
         containerLayout = QVBoxLayout(container)
-        containerLayout.setContentsMargins(0, 0, 0, 0)
-        containerLayout.setSpacing(0)
+        containerLayout.setContentsMargins(10, 10, 10, 10)
+        containerLayout.setSpacing(6)
 
 # All the things the user has to enter
         self.programInfo = ["Terminal Command",
@@ -226,7 +267,7 @@ class MainWindow(QMainWindow):
 
             tileLayout = QVBoxLayout(containerTile)
             tileLayout.setContentsMargins(0, 0, 0, 0)
-            tileLayout.setSpacing(0)
+            tileLayout.setSpacing(6)
 
 # Special properties for the first and last boxes; Used in QSS for rounded corners
             if index == 0:
@@ -246,13 +287,13 @@ class MainWindow(QMainWindow):
             tileLayout.addWidget(description)
             tileLayout.addWidget(infoDescription)
 
-# Add QRadioButtons only to the last box, QlineEdits for all other boxes
+# Add QRadioButtons only to the last box, QLineEdits for all other boxes
             if index == index == len(self.programInfo) - 1:
                 innerTile = QWidget()
                 innerTileLayout = QGridLayout(innerTile)
 
                 innerTileLayout.setContentsMargins(0, 0, 0, 0)
-                innerTileLayout.setSpacing(0)
+                innerTileLayout.setSpacing(6)
 
                 self.allCategories = ""
                 self.page2RadioBtns = QButtonGroup()
@@ -287,7 +328,7 @@ class MainWindow(QMainWindow):
 
         self.page2BackBtn = QPushButton("Back")
         self.page2BackBtn.setObjectName("backBtn")
-        self.page2BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.page2BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(container)
@@ -299,13 +340,15 @@ class MainWindow(QMainWindow):
     
     def page2Validator(self):
         if all(edit.text().strip() for edit in self.programInfoList) and self.page2RadioBtns.checkedButton() is not None:
-            self.stackedWidget.setCurrentIndex(2)
+            self.tab1StackedWidget.setCurrentIndex(2)
 
 
 
-    def createPage3(self):
+    def createTab1Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel("Installation process")
         title.setObjectName("title")
@@ -313,7 +356,7 @@ class MainWindow(QMainWindow):
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        terminalLayout.setContentsMargins(0, 0, 0, 0)
+        terminalLayout.setContentsMargins(6, 6, 6, 6)
         terminalLayout.setSpacing(0)
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
@@ -331,7 +374,7 @@ class MainWindow(QMainWindow):
 
         self.page3BackBtn = QPushButton("Back")  
         self.page3BackBtn.setObjectName("backBtn")
-        self.page3BackBtn.clicked.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        self.page3BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(container)
@@ -399,7 +442,7 @@ class MainWindow(QMainWindow):
 # Easier to maintain to just rebuild the entire page than updating every element one by one
         self.reloadPage4()
 
-        self.stackedWidget.setCurrentIndex(3)
+        self.tab1StackedWidget.setCurrentIndex(3)
 
     def workerError(self, errorMsg):
         logFilePath = self.logger.logFilePath
@@ -410,8 +453,8 @@ class MainWindow(QMainWindow):
         msgBox.setWindowTitle("Error!")
 
         msgBoxLayout = QVBoxLayout(msgBox)
-        msgBoxLayout.setContentsMargins(0, 0, 0, 0,)
-        msgBoxLayout.setSpacing(0)
+        msgBoxLayout.setContentsMargins(20, 20, 20, 20)
+        msgBoxLayout.setSpacing(6)
 
         textContainer = QWidget()
         textContainerLayout = QVBoxLayout(textContainer)
@@ -457,9 +500,11 @@ class MainWindow(QMainWindow):
 
 
 
-    def createPage4(self):
+    def createTab1Page4(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(f"Finished installing {self.programInfoList[1].text()}")
         title.setObjectName("title")
@@ -480,34 +525,56 @@ class MainWindow(QMainWindow):
 # Functions to rebuild all pages; to remove all previous user input
 # Easier to maintain than to clear all elements one by one
     def reloadPage1(self):
-        oldPage1 = self.stackedWidget.widget(0)
-        self.stackedWidget.removeWidget(oldPage1)
+        oldPage1 = self.tab1StackedWidget.widget(0)
+        self.tab1StackedWidget.removeWidget(oldPage1)
         oldPage1.deleteLater()
 
-        newPage1 = self.createPage1()
-        self.stackedWidget.insertWidget(0, newPage1)
-        self.stackedWidget.setCurrentIndex(0)
+        newPage1 = self.createTab1Page1()
+        self.tab1StackedWidget.insertWidget(0, newPage1)
+        self.tab1StackedWidget.setCurrentIndex(0)
     
     def reloadPage2(self):
-        oldPage2 = self.stackedWidget.widget(1)
-        self.stackedWidget.removeWidget(oldPage2)
+        oldPage2 = self.tab1StackedWidget.widget(1)
+        self.tab1StackedWidget.removeWidget(oldPage2)
         oldPage2.deleteLater()
 
-        newPage2 = self.createPage2()
-        self.stackedWidget.insertWidget(1, newPage2)
+        newPage2 = self.createTab1Page2()
+        self.tab1StackedWidget.insertWidget(1, newPage2)
 
     def reloadPage3(self):
-        oldPage3 = self.stackedWidget.widget(2)
-        self.stackedWidget.removeWidget(oldPage3)
+        oldPage3 = self.tab1StackedWidget.widget(2)
+        self.tab1StackedWidget.removeWidget(oldPage3)
         oldPage3.deleteLater()
 
-        newPage3 = self.createPage3()
-        self.stackedWidget.insertWidget(2, newPage3)
+        newPage3 = self.createTab1Page3()
+        self.tab1StackedWidget.insertWidget(2, newPage3)
 
     def reloadPage4(self):
-        oldPage4 = self.stackedWidget.widget(3)
-        self.stackedWidget.removeWidget(oldPage4)
+        oldPage4 = self.tab1StackedWidget.widget(3)
+        self.tab1StackedWidget.removeWidget(oldPage4)
         oldPage4.deleteLater()
 
-        newPage4 = self.createPage4()
-        self.stackedWidget.insertWidget(3, newPage4)
+        newPage4 = self.createTab1Page4()
+        self.tab1StackedWidget.insertWidget(3, newPage4)
+
+
+
+
+    def createTab2Page1(self):
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
+
+        title = QLabel(f"Uninstaller (coming soon!)")
+        title.setObjectName("title")
+
+# Reload all pages if the user wants to install another program
+        submitBtn = QPushButton("Continue with selected program")
+        submitBtn.setObjectName("submitBtn")
+
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(submitBtn)
+        mainLayout.addStretch()
+        
+        return mainWidget

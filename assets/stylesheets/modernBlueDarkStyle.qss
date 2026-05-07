@@ -51,6 +51,35 @@ QMenu::separator {
     height: 1px;
 }
 
+QTabWidget {
+    background-color: red;
+}
+
+QTabWidget::pane {
+    background-color: green;
+}
+
+QTabBar::tab {
+    background-color: yellow;
+}
+
+QTabBar::tab:selected {
+    background-color: orange;
+}
+
+QTabBar::tab:hover {
+    background-color: pink;
+}
+
+QTabBar::tab:!selected {
+    background-color: white;
+
+}
+
+QTabBar {
+    background-color: red;
+}
+
 QLabel#title {
     font-weight: bold;
     max-height: 20px;

@@ -8,6 +8,7 @@ from src.core.logic import Installer, StartmenuEntry, Logging
 
 from pathlib import Path
 import time
+import os
 
 # All functions from the menubar
 class General():
@@ -21,6 +22,9 @@ class General():
         self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
         self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
         self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
+        self.kdeStylePath = projectRoot / "assets" / "stylesheets" / "kdeStyle.qss"
+
+        self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
 
     def openRepo():
             QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
@@ -44,9 +48,13 @@ class General():
                 case "modernLightTheme":  
                     self.settings.setValue("theme", "modernLightTheme")
                     themeToLoad = self.modernLightStylePath
+                case "kdeTheme":
+                    if self.desktopEnv == "KDE":
+                        self.settings.setValue("theme", "kdeTheme")
+                        themeToLoad = self.kdeStylePath
 
 # Open the stylesheet with the selected theme
-            with open(themeToLoad, "r") as f:  
+            with open(themeToLoad, "r") as f:
                             _style = f.read()
                             app.setStyleSheet(_style)
 
@@ -55,8 +63,8 @@ class General():
         settingsPage.setWindowTitle("AppImage-Installer Settings")
 
         settingsPageLayout = QVBoxLayout(settingsPage)
-        settingsPageLayout.setContentsMargins(0, 0, 0, 0,)
-        settingsPageLayout.setSpacing(0)
+        settingsPageLayout.setContentsMargins(20, 20, 20, 20)
+        settingsPageLayout.setSpacing(6)
 
         title = QLabel("General Settings")   
         title.setObjectName("title")

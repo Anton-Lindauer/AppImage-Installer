@@ -1,0 +1,17 @@
+QRadioButton {
+    padding: 6px;
+}
+
+QRadioButton#categorySel {
+    padding: 0px;
+}
+
+QLabel#title {
+    font-weight: bold;
+}
+
+/* Fix for the random line under some elements*/
+QCheckBox:focus,
+QRadioButton:focus{
+    border-bottom: none;
+}
