@@ -14,7 +14,7 @@ Should work on any **Linux** Distro, doesn't work on Windows.
 
 ## How to install and launch the CLI or GUI version
 
-Installation guide can be found [here.](HowToInstall)
+Installation guide can be found [here.](HowToInstall.md)
 
 ## Have a look at the GUI version
 
