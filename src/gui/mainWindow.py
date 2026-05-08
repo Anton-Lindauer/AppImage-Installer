@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
             kdeSupport = "Recommended"
         
         self.setWindowTitle("AppImage-Installer")
-        self.setMinimumSize(750, 700)
+        self.setMinimumSize(750, 710)
 
 # QWidget for everything
         central = QWidget()
@@ -312,8 +312,8 @@ class MainWindow(QMainWindow):
                     innerTileLayout.setContentsMargins(0, 0, 0, 0)
                     innerTileLayout.setSpacing(6)
                 else:
-                    innerTileLayout.setContentsMargins(0, 0, 0, 0)
-                    innerTileLayout.setSpacing(0)
+                    innerTileLayout.setContentsMargins(6, 6, 6, 6)
+                    innerTileLayout.setSpacing(7)
 
                 self.allCategories = ""
                 self.page2RadioBtns = QButtonGroup()
