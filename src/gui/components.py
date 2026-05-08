@@ -52,6 +52,9 @@ class General():
                     if self.desktopEnv == "KDE":
                         self.settings.setValue("theme", "kdeTheme")
                         themeToLoad = self.kdeStylePath
+                    else:
+                        print("Not supported on your desktop environment")
+                        return
 
 # Open the stylesheet with the selected theme
             with open(themeToLoad, "r") as f:

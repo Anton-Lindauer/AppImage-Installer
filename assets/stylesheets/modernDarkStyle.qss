@@ -51,6 +51,46 @@ QMenu::separator {
     height: 1px;
 }
 
+QTabWidget {
+    background-color: #2b2e32;
+}
+
+QTabWidget::pane {
+    background-color: #32363a;
+    border: 1px solid #484d52;
+    border-radius: 6px;
+    border-top-left-radius: 0px;
+}
+
+QTabBar::tab {
+    background-color: #2b2e32;
+    color: #686e75;
+    padding: 6px 16px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+QTabBar::tab:selected {
+    background-color: #32363a;
+    color: #d4d6d9;
+    border-color: #484d52;
+    border-bottom: 2px solid #3281ea;
+}
+
+QTabBar::tab:hover:!selected {
+    background-color: #333a3d;
+    color: #9aa0a6;
+    border-bottom-color: #333a3d;
+}
+
+QTabBar {
+    background-color: #2b2e32;
+}
+
 QLabel#title {
     font-weight: bold;
     max-height: 20px;

@@ -24,8 +24,8 @@ class MainWindow(QMainWindow):
         self.general = General()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
-        desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP") 
-        if not desktopEnv == "KDE":
+        self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP") 
+        if not self.desktopEnv == "KDE":
             self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
             kdeSupport = "Not Supported"
         else:
@@ -143,8 +143,12 @@ class MainWindow(QMainWindow):
     def createTab1Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        mainLayout.setContentsMargins(20, 10, 20, 0)
-        mainLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
+        #else:
+        #    mainLayout.setContentsMargins(0, 0, 0, 0)
+        #    mainLayout.setSpacing(0)
 
         title = QLabel("AppImage selection")   
         title.setObjectName("title")
@@ -225,8 +229,9 @@ class MainWindow(QMainWindow):
     def createTab1Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        mainLayout.setContentsMargins(20, 10, 20, 0)
-        mainLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
 
         title = QLabel("Program information")
         title.setObjectName("title")
@@ -236,8 +241,12 @@ class MainWindow(QMainWindow):
         
 # Set the layout in the container
         containerLayout = QVBoxLayout(container)
-        containerLayout.setContentsMargins(10, 10, 10, 10)
-        containerLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            containerLayout.setContentsMargins(10, 10, 10, 10)
+            containerLayout.setSpacing(6)
+        else:
+            containerLayout.setContentsMargins(0, 0, 0, 0)
+            containerLayout.setSpacing(0)
 
 # All the things the user has to enter
         self.programInfo = ["Terminal Command",
@@ -266,8 +275,12 @@ class MainWindow(QMainWindow):
             containerTile.setObjectName("page2InnerBox")
 
             tileLayout = QVBoxLayout(containerTile)
-            tileLayout.setContentsMargins(0, 0, 0, 0)
-            tileLayout.setSpacing(6)
+            if self.desktopEnv == "KDE":
+                tileLayout.setContentsMargins(0, 0, 0, 0)
+                tileLayout.setSpacing(6)
+            else:
+                tileLayout.setContentsMargins(0, 0, 0, 0)
+                tileLayout.setSpacing(0)
 
 # Special properties for the first and last boxes; Used in QSS for rounded corners
             if index == 0:
@@ -292,8 +305,12 @@ class MainWindow(QMainWindow):
                 innerTile = QWidget()
                 innerTileLayout = QGridLayout(innerTile)
 
-                innerTileLayout.setContentsMargins(0, 0, 0, 0)
-                innerTileLayout.setSpacing(6)
+                if self.desktopEnv == "KDE":
+                    innerTileLayout.setContentsMargins(0, 0, 0, 0)
+                    innerTileLayout.setSpacing(6)
+                else:
+                    innerTileLayout.setContentsMargins(0, 0, 0, 0)
+                    innerTileLayout.setSpacing(0)
 
                 self.allCategories = ""
                 self.page2RadioBtns = QButtonGroup()
@@ -347,8 +364,9 @@ class MainWindow(QMainWindow):
     def createTab1Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        mainLayout.setContentsMargins(20, 10, 20, 0)
-        mainLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
 
         title = QLabel("Installation process")
         title.setObjectName("title")
@@ -356,8 +374,13 @@ class MainWindow(QMainWindow):
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        terminalLayout.setContentsMargins(6, 6, 6, 6)
-        terminalLayout.setSpacing(0)
+        if self.desktopEnv == "KDE":
+            terminalLayout.setContentsMargins(6, 6, 6, 6)
+            terminalLayout.setSpacing(0)
+        else:
+            terminalLayout.setContentsMargins(0, 0,0,0)
+            terminalLayout.setSpacing(0)
+
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
 
@@ -453,8 +476,12 @@ class MainWindow(QMainWindow):
         msgBox.setWindowTitle("Error!")
 
         msgBoxLayout = QVBoxLayout(msgBox)
-        msgBoxLayout.setContentsMargins(20, 20, 20, 20)
-        msgBoxLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            msgBoxLayout.setContentsMargins(20, 20, 20, 20)
+            msgBoxLayout.setSpacing(6)
+        else:
+            msgBoxLayout.setContentsMargins(0, 0, 0, 0)
+            msgBoxLayout.setSpacing(0)
 
         textContainer = QWidget()
         textContainerLayout = QVBoxLayout(textContainer)
@@ -503,8 +530,12 @@ class MainWindow(QMainWindow):
     def createTab1Page4(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        mainLayout.setContentsMargins(20, 10, 20, 0)
-        mainLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
+        else:
+            mainLayout.setContentsMargins(0, 0, 0, 0)
+            mainLayout.setSpacing(0)
 
         title = QLabel(f"Finished installing {self.programInfoList[1].text()}")
         title.setObjectName("title")
@@ -563,8 +594,9 @@ class MainWindow(QMainWindow):
     def createTab2Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        mainLayout.setContentsMargins(20, 10, 20, 0)
-        mainLayout.setSpacing(6)
+        if self.desktopEnv == "KDE":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
 
         title = QLabel(f"Uninstaller (coming soon!)")
         title.setObjectName("title")

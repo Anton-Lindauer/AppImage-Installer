@@ -52,32 +52,43 @@ QMenu::separator {
 }
 
 QTabWidget {
-    background-color: red;
+    background-color: #16191d;
 }
 
 QTabWidget::pane {
-    background-color: green;
+    background-color: #1d2024;
+    border: 1px solid #2e3238;
+    border-radius: 6px;
+    border-top-left-radius: 0px;
 }
 
 QTabBar::tab {
-    background-color: yellow;
+    background-color: #16191d;
+    color: #7a8088;
+    padding: 6px 16px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 QTabBar::tab:selected {
-    background-color: orange;
+    background-color: #1d2024;
+    color: #D8DADD;
+    border-color: #2e3238;
+    border-bottom: 2px solid #3281ea;
 }
 
-QTabBar::tab:hover {
-    background-color: pink;
-}
-
-QTabBar::tab:!selected {
-    background-color: white;
-
+QTabBar::tab:hover:!selected {
+    background-color: #1f2327;
+    color: #9aa0a8;
+    border-bottom-color: #1f2327;
 }
 
 QTabBar {
-    background-color: red;
+    background-color: #16191d;
 }
 
 QLabel#title {
@@ -95,7 +106,7 @@ QScrollArea {
     border: 1px solid #424242;
     border-radius: 10px;
     margin-left: 40px;
-    margin-right: 40px
+    margin-right: 40px;
 }
 
 QScrollArea QWidget {
@@ -137,7 +148,7 @@ QGroupBox {
     border: 1px solid #424242;
     border-radius: 10px;
     margin-left: 40px;
-    margin-right: 40px
+    margin-right: 40px;
 }
 
 QRadioButton {
