@@ -97,6 +97,7 @@ class MainWindow(QMainWindow):
 
         file1.triggered.connect(self.page1Validator)
         file2.triggered.connect(lambda:  self.reloadPage1() if self.tab1StackedWidget.currentIndex() == 0 else None)
+        file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
         
         setting1 = settingsMenu.addMenu("Theme")
@@ -120,10 +121,15 @@ class MainWindow(QMainWindow):
         theme5 = setting1.addAction(f"Use KDE theme ({kdeSupport})")
 
         theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
+        theme1.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
         theme2.triggered.connect(lambda: self.general.loadTheme("modernBlueDarkTheme"))
+        theme2.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
         theme3.triggered.connect(lambda: self.general.loadTheme("modernDarkTheme"))
+        theme3.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
         theme4.triggered.connect(lambda: self.general.loadTheme("modernLightTheme"))
+        theme4.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
         theme5.triggered.connect(lambda: self.general.loadTheme("kdeTheme"))
+        theme5.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
 
         help1 = helpMenu.addAction("Github Repo")
         help1.triggered.connect(General.openRepo)
@@ -143,14 +149,11 @@ class MainWindow(QMainWindow):
     def createTab1Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
-        #else:
-        #    mainLayout.setContentsMargins(0, 0, 0, 0)
-        #    mainLayout.setSpacing(0)
 
-        title = QLabel("AppImage selection")   
+        title = QLabel("AppImage selection")
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere
@@ -229,7 +232,7 @@ class MainWindow(QMainWindow):
     def createTab1Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
@@ -241,7 +244,7 @@ class MainWindow(QMainWindow):
         
 # Set the layout in the container
         containerLayout = QVBoxLayout(container)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             containerLayout.setContentsMargins(10, 10, 10, 10)
             containerLayout.setSpacing(6)
         else:
@@ -275,7 +278,7 @@ class MainWindow(QMainWindow):
             containerTile.setObjectName("page2InnerBox")
 
             tileLayout = QVBoxLayout(containerTile)
-            if self.desktopEnv == "KDE":
+            if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
                 tileLayout.setContentsMargins(0, 0, 0, 0)
                 tileLayout.setSpacing(6)
             else:
@@ -305,7 +308,7 @@ class MainWindow(QMainWindow):
                 innerTile = QWidget()
                 innerTileLayout = QGridLayout(innerTile)
 
-                if self.desktopEnv == "KDE":
+                if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
                     innerTileLayout.setContentsMargins(0, 0, 0, 0)
                     innerTileLayout.setSpacing(6)
                 else:
@@ -364,7 +367,7 @@ class MainWindow(QMainWindow):
     def createTab1Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
@@ -374,7 +377,7 @@ class MainWindow(QMainWindow):
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             terminalLayout.setContentsMargins(6, 6, 6, 6)
             terminalLayout.setSpacing(0)
         else:
@@ -476,7 +479,7 @@ class MainWindow(QMainWindow):
         msgBox.setWindowTitle("Error!")
 
         msgBoxLayout = QVBoxLayout(msgBox)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             msgBoxLayout.setContentsMargins(20, 20, 20, 20)
             msgBoxLayout.setSpacing(6)
         else:
@@ -530,7 +533,7 @@ class MainWindow(QMainWindow):
     def createTab1Page4(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
         else:
@@ -546,6 +549,7 @@ class MainWindow(QMainWindow):
         submitBtn.clicked.connect(self.reloadPage1)     
         submitBtn.clicked.connect(self.reloadPage2)
         submitBtn.clicked.connect(self.reloadPage3)
+        submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(submitBtn)
@@ -562,7 +566,6 @@ class MainWindow(QMainWindow):
 
         newPage1 = self.createTab1Page1()
         self.tab1StackedWidget.insertWidget(0, newPage1)
-        self.tab1StackedWidget.setCurrentIndex(0)
     
     def reloadPage2(self):
         oldPage2 = self.tab1StackedWidget.widget(1)
@@ -588,20 +591,29 @@ class MainWindow(QMainWindow):
         newPage4 = self.createTab1Page4()
         self.tab1StackedWidget.insertWidget(3, newPage4)
 
+    def reloadTab1(self):
+        currentIndex = self.tab1StackedWidget.currentIndex()
+
+        self.reloadPage1()
+        self.reloadPage2()
+        self.reloadPage3()
+        self.reloadPage4()
+
+        self.tab1StackedWidget.setCurrentIndex(currentIndex)
+
 
 
 
     def createTab2Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE":
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
         title = QLabel(f"Uninstaller (coming soon!)")
         title.setObjectName("title")
 
-# Reload all pages if the user wants to install another program
         submitBtn = QPushButton("Continue with selected program")
         submitBtn.setObjectName("submitBtn")
 
