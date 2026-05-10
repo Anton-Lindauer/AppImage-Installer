@@ -84,7 +84,34 @@ class General():
         settingsPage.exec()
 
 #All functions for page 1
-class Page1Logic(QObject):
+class Tab1Page1Logic(QObject):
+    pickedFile = Signal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.userDir = Path.home()
+
+# Filedialog window to get a AppImage from outside the Downloads directory
+    def userPick(self, parentWindow):
+        pickedPath, _ = QFileDialog.getOpenFileName(
+            parentWindow,
+            "Pick a AppImage file to install",
+                str(self.userDir),
+            "AppImage files (*.AppImage)"
+        )
+
+        if pickedPath:
+            self.pickedFile.emit(pickedPath)
+
+# Find the selected file and the user can only continue with a file selected
+    def findSeletedRadioBtn(self, groupPage1):
+            selected = groupPage1.checkedButton()
+            if selected is not None:
+                pickedPath = selected.text()
+                self.pickedFile.emit(pickedPath)
+
+# The same functionality as for page 1
+class Tab2Page1Logic(QObject):
     pickedFile = Signal(str)
 
     def __init__(self, parent=None):

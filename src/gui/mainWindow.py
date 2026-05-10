@@ -1,7 +1,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QComboBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
 from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -11,7 +11,7 @@ import os
 from pathlib import Path
 
 from src.core.logic import Installer, Logging
-from src.gui.components import General, Page1Logic, InstallWorker
+from src.gui.components import General, Tab1Page1Logic, Tab2Page1Logic, InstallWorker
 
 class MainWindow(QMainWindow):
 
@@ -23,6 +23,9 @@ class MainWindow(QMainWindow):
 
         self.general = General()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
+
+        self.tab1Page1Handler = Tab1Page1Logic()
+        self.tab2Page1Handler = Tab2Page1Logic()
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP") 
         if not self.desktopEnv == "KDE":
@@ -72,8 +75,10 @@ class MainWindow(QMainWindow):
         self.tab2StackedWidget = QStackedWidget()
 
         self.tab2Page1 = self.createTab2Page1()
+        self.tab2Page2 = self.createTab2Page2()
 
         self.tab2StackedWidget.addWidget(self.tab2Page1)
+        self.tab2StackedWidget.addWidget(self.tab2Page2)
 
         self.tab2Layout.addWidget(self.tab2StackedWidget)
 
@@ -91,11 +96,11 @@ class MainWindow(QMainWindow):
         settingsMenu = optionsBar.addMenu("Settings")
         helpMenu = optionsBar.addMenu("Help")
 
-        file1 = fileMenu.addAction("Pick a different file")
+        file1 = fileMenu.addAction("Pick a file to install")
         fileMenu.addSeparator()
         file2 = fileMenu.addAction("Refresh downloads directory")
 
-        file1.triggered.connect(self.page1Validator)
+        file1.triggered.connect(self.tab1Page1Validator)
         file2.triggered.connect(lambda:  self.reloadPage1() if self.tab1StackedWidget.currentIndex() == 0 else None)
         file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
@@ -159,9 +164,8 @@ class MainWindow(QMainWindow):
 # Let the user pick a AppImage from anywhere
         filedialogBtn = QPushButton("Pick a file")
         
-        self.page1Handler = Page1Logic()
-        self.page1Handler.pickedFile.connect(self.page1Worker)
-        filedialogBtn.clicked.connect(lambda: self.page1Handler.userPick(self))
+        self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
+        filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.userPick(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         containerScrollArea = QScrollArea()
@@ -209,7 +213,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton("Continue")  
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.page1Handler.findSeletedRadioBtn(self.groupPage1))
+        submitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSeletedRadioBtn(self.groupPage1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
@@ -219,13 +223,13 @@ class MainWindow(QMainWindow):
 
         return mainWidget
     
-    def page1Validator(self):
+    def tab1Page1Validator(self):
         if self.tab1StackedWidget.currentIndex() == 0:
-            self.page1Handler.userPick(self)
+            self.tab1Page1Handler.userPick(self)
         
-    def page1Worker(self, path):
+    def tab1Page1Worker(self, path):
         self.tab1StackedWidget.setCurrentIndex(1)
-        self.selectedFilePath = path
+        self.selectedAppPath = path
 
 
 
@@ -436,7 +440,7 @@ class MainWindow(QMainWindow):
                 self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.worker = InstallWorker(self.selectedFilePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger)
+        self.worker = InstallWorker(self.selectedAppPath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger)
 
 # Process status updates from the installation function
         self.worker.progressUpdate.connect(self.workerProgress)
@@ -611,11 +615,106 @@ class MainWindow(QMainWindow):
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel(f"Uninstaller (coming soon!)")
+        title = QLabel("AppImage selection")
         title.setObjectName("title")
 
-        submitBtn = QPushButton("Continue with selected program")
+# Let the user pick a AppImage from anywhere
+        filedialogBtn = QPushButton("Pick a app (Coming soon!)")
+        
+        self.tab2Page1Handler.pickedFile.connect(self.tab2Page1Worker)
+        filedialogBtn.clicked.connect(lambda: self.tab2Page1Handler.userPick(self))
+
+# QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
+        containerScrollArea = QScrollArea()
+        containerScrollArea.setWidgetResizable(True)
+        containerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+# Container in the QScrollArea
+        container = QWidget() 
+        containerScrollArea.setWidget(container)
+
+        containerLayout = QVBoxLayout(container)   
+        containerLayout.setContentsMargins(0, 0, 0, 0,)
+        containerLayout.setSpacing(0)
+
+# All paths of AppImage files in the Downloads directory
+        self.fileList = Installer.listInstalls(self.fileDest)     
+        fileListLen = len(self.fileList)
+
+# Group for all QRadioButtons to later find out which one is checked
+        self.groupTab2Page1 = QButtonGroup(self) 
+
+# Create a QRadioButton for each file
+        if fileListLen > 0:
+             for itemPos, file in enumerate(self.fileList):
+                radioBtn = QRadioButton(file)
+                containerLayout.addWidget(radioBtn)
+                self.groupTab2Page1.addButton(radioBtn)
+
+# Only create a divider if the element isn't the last one and add rounded corners to the first and last element
+                suffix = "" if fileListLen <= 5 else "Scroll"
+
+                if fileListLen == 1 and fileListLen <= 5:
+                    radioBtn.setProperty("isFirstAndLast", "true")
+                elif itemPos == 0:
+                    radioBtn.setProperty(f"isFirst{suffix}", "true")
+                elif itemPos == fileListLen - 1:
+                    radioBtn.setProperty(f"isLast{suffix}", "true")
+        else:
+            tab2Page1NoFileMsg = QLabel("No .AppImage installation has been found")
+            tab2Page1NoFileMsg.setObjectName("message")
+            containerLayout.addWidget(tab2Page1NoFileMsg)
+
+# Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
+        containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
+
+        checkBox1 = QCheckBox("Remove all symlinks")
+        checkBox1.setChecked(True)
+        checkBox2 = QCheckBox("Remove startmenu entry")
+        checkBox2.setChecked(True)
+
+        submitBtn = QPushButton("Continue (Coming soon!)")  
         submitBtn.setObjectName("submitBtn")
+        submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSeletedRadioBtn(self.groupTab2Page1))
+
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(filedialogBtn)
+        mainLayout.addWidget(containerScrollArea)
+        mainLayout.addWidget(checkBox1)        
+        mainLayout.addWidget(checkBox2)
+        mainLayout.addWidget(submitBtn)
+        mainLayout.addStretch()
+
+        return mainWidget
+    
+    def tab2Page1Validator(self):
+        if self.tab2StackedWidget.currentIndex() == 0:
+            self.tab2Page1Handler.userPick(self)
+        
+    def tab2Page1Worker(self, path):
+        self.tab2StackedWidget.setCurrentIndex(1)
+        self.selectedAppPath = path
+
+    def createTab2Page2(self):
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
+        else:
+            mainLayout.setContentsMargins(0, 0, 0, 0)
+            mainLayout.setSpacing(0)
+
+        title = QLabel(f"Coming soon!")
+        title.setObjectName("title")
+
+# Reload all pages if the user wants to install another program
+        submitBtn = QPushButton("Remove another program")
+        submitBtn.setObjectName("submitBtn")
+        #submitBtn.clicked.connect(self.reloadPage1)     
+        #submitBtn.clicked.connect(self.reloadPage2)
+        #submitBtn.clicked.connect(self.reloadPage3)
+        submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(submitBtn)

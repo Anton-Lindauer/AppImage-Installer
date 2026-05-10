@@ -23,6 +23,15 @@ class Installer():
 
         fileList.sort()
         return fileList
+    
+    @staticmethod
+    def listInstalls(installDir):
+        fileList = [file.path 
+                    for file in os.scandir(installDir) 
+                    if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
+
+        fileList.sort()
+        return fileList
        
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
