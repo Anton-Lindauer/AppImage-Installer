@@ -23,15 +23,6 @@ class Installer():
 
         fileList.sort()
         return fileList
-    
-    @staticmethod
-    def listInstalls(installDir):
-        fileList = [file.path 
-                    for file in os.scandir(installDir) 
-                    if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
-
-        fileList.sort()
-        return fileList
        
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
@@ -52,8 +43,7 @@ class Installer():
         self.logger.addGeneralEntry(logContent)
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
-    def mkSymLink(self, selectedFilePath, cmdName, fileDest, userDir):
-        symLinkDir = userDir / ".local/bin/"
+    def mkSymLink(self, selectedFilePath, cmdName, fileDest, symLinkDir):
         path = fileDest / Path(selectedFilePath).name
         symLinkPath = Path(symLinkDir) / cmdName
 
@@ -61,7 +51,7 @@ class Installer():
 
         symLinkPath.symlink_to(path)
 
-        logContent = f"Symlink {userDir}/.local/bin/{cmdName} has been created"
+        logContent = f"Symlink {symLinkDir}/{cmdName} has been created"
         self.logger.addGeneralEntry(logContent)
 
 class StartmenuEntry():
@@ -118,6 +108,27 @@ class StartmenuEntry():
         subprocess.run(["chmod", "+x", desktopEntryFile], check=True)
         logContent = f"Made {desktopEntryFile} executable"
         self.logger.addGeneralEntry(logContent)
+
+class Uninstaller():
+    @staticmethod
+    def listInstalls(installDir):
+        fileList = [file.path 
+                    for file in os.scandir(installDir) 
+                    if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
+
+        fileList.sort()
+        return fileList
+    
+    @staticmethod
+    def listSymlinks(installedPath, symLinkDir):
+        symLinkList = [
+            file
+            for file in symLinkDir.iterdir()
+            if file.is_symlink()
+            and str(file.resolve()) == str(installedPath)
+        ]
+
+        return symLinkList
 
 class Logging():
 

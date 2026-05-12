@@ -10,7 +10,7 @@ import subprocess
 import os
 from pathlib import Path
 
-from src.core.logic import Installer, Logging
+from src.core.logic import Installer, Uninstaller, Logging
 from src.gui.components import General, Tab1Page1Logic, Tab2Page1Logic, InstallWorker
 
 class MainWindow(QMainWindow):
@@ -20,6 +20,7 @@ class MainWindow(QMainWindow):
     
         self.userDir = Path.home()
         self.fileDest = self.userDir / "AppImages"
+        self.symLinkDir = self.userDir / ".local/bin/"
 
         self.general = General()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
@@ -440,7 +441,7 @@ class MainWindow(QMainWindow):
                 self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.worker = InstallWorker(self.selectedAppPath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger)
+        self.worker = InstallWorker(self.selectedAppPath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
 
 # Process status updates from the installation function
         self.worker.progressUpdate.connect(self.workerProgress)
@@ -638,27 +639,27 @@ class MainWindow(QMainWindow):
         containerLayout.setSpacing(0)
 
 # All paths of AppImage files in the Downloads directory
-        self.fileList = Installer.listInstalls(self.fileDest)     
-        fileListLen = len(self.fileList)
+        self.installedList = Uninstaller.listInstalls(self.fileDest)     
+        installedListLen = len(self.installedList)
 
 # Group for all QRadioButtons to later find out which one is checked
         self.groupTab2Page1 = QButtonGroup(self) 
 
 # Create a QRadioButton for each file
-        if fileListLen > 0:
-             for itemPos, file in enumerate(self.fileList):
+        if installedListLen > 0:
+             for itemPos, file in enumerate(self.installedList):
                 radioBtn = QRadioButton(file)
                 containerLayout.addWidget(radioBtn)
                 self.groupTab2Page1.addButton(radioBtn)
 
 # Only create a divider if the element isn't the last one and add rounded corners to the first and last element
-                suffix = "" if fileListLen <= 5 else "Scroll"
+                suffix = "" if installedListLen <= 5 else "Scroll"
 
-                if fileListLen == 1 and fileListLen <= 5:
+                if installedListLen == 1 and installedListLen <= 5:
                     radioBtn.setProperty("isFirstAndLast", "true")
                 elif itemPos == 0:
                     radioBtn.setProperty(f"isFirst{suffix}", "true")
-                elif itemPos == fileListLen - 1:
+                elif itemPos == installedListLen - 1:
                     radioBtn.setProperty(f"isLast{suffix}", "true")
         else:
             tab2Page1NoFileMsg = QLabel("No .AppImage installation has been found")
@@ -666,16 +667,19 @@ class MainWindow(QMainWindow):
             containerLayout.addWidget(tab2Page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
+        containerScrollArea.setFixedHeight(min(installedListLen, 6) * 39)
 
         checkBox1 = QCheckBox("Remove all symlinks")
-        checkBox1.setChecked(True)
+        checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
+        checkBox1.toggled.connect(lambda checked1: self.settings.setValue("rmvSymlinks", checked1))
         checkBox2 = QCheckBox("Remove startmenu entry")
-        checkBox2.setChecked(True)
+        checkBox2.setChecked(self.settings.value("rmvStartmenuEntry", True, type=bool))
+        checkBox2.toggled.connect(lambda checked2: self.settings.setValue("rmvStartmenuEntry", checked2))
 
         submitBtn = QPushButton("Continue (Coming soon!)")  
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSeletedRadioBtn(self.groupTab2Page1))
+        submitBtn.clicked.connect(self.uninstallProgram)
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
@@ -694,6 +698,11 @@ class MainWindow(QMainWindow):
     def tab2Page1Worker(self, path):
         self.tab2StackedWidget.setCurrentIndex(1)
         self.selectedAppPath = path
+
+    def uninstallProgram(self):
+        symLinkPathList = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
+        print(symLinkPathList)
+    
 
     def createTab2Page2(self):
         mainWidget = QWidget()

@@ -143,7 +143,7 @@ class InstallWorker(QThread):
     error = Signal(str)
     success = Signal()
 
-    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName, logger):
+    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName, logger, symLinkDir):
         super().__init__()
 
         self.logger = logger
@@ -157,6 +157,7 @@ class InstallWorker(QThread):
         self.programDescr = programDescr
         self.programCategory = programCategory
         self.cmdName = cmdName
+        self.symLinkDir = symLinkDir
 
 # All installation steps with progress updates
     def run(self):
@@ -167,7 +168,7 @@ class InstallWorker(QThread):
             self.installer.mkExec(self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit("File has been made executable (2/4 tasks finished)")
 
-            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.userDir)
+            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.symLinkDir)
             self.progressUpdate.emit("Program has been made executable (3/4 tasks finished)")
 
             self.startMenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
