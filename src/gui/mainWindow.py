@@ -20,7 +20,8 @@ class MainWindow(QMainWindow):
     
         self.userDir = Path.home()
         self.fileDest = self.userDir / "AppImages"
-        self.symLinkDir = self.userDir / ".local/bin/"
+        self.symLinkDir = self.userDir / ".local/bin"
+        self.startMenuFilePath = self.userDir / ".local" / "share" / "applications"
 
         self.general = General()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
@@ -700,8 +701,13 @@ class MainWindow(QMainWindow):
         self.selectedAppPath = path
 
     def uninstallProgram(self):
-        symLinkPathList = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
-        print(symLinkPathList)
+        symLinkFilePath = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
+        print(symLinkFilePath)
+
+        desktopFilePath = Uninstaller.findDesktopFile(self.startMenuFilePath, self.selectedAppPath)
+        print(f"Path: {desktopFilePath}")
+
+        Uninstaller.rmvInstalledFiles(self.selectedAppPath, symLinkFilePath, desktopFilePath)
     
 
     def createTab2Page2(self):

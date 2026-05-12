@@ -110,6 +110,7 @@ class StartmenuEntry():
         self.logger.addGeneralEntry(logContent)
 
 class Uninstaller():
+# Returns a list with all AppImages in the AppImages directory
     @staticmethod
     def listInstalls(installDir):
         fileList = [file.path 
@@ -119,16 +120,39 @@ class Uninstaller():
         fileList.sort()
         return fileList
     
+# Returns the path of the terminal symlink of the selected AppImage
     @staticmethod
     def listSymlinks(installedPath, symLinkDir):
-        symLinkList = [
-            file
-            for file in symLinkDir.iterdir()
-            if file.is_symlink()
-            and str(file.resolve()) == str(installedPath)
-        ]
+        for file in symLinkDir.iterdir():
+            if file.is_symlink() and str(file.resolve()) == str(installedPath):
+                return file
 
-        return symLinkList
+# Returns the path of the startmenu .desktop file of the selected AppImage
+    @staticmethod
+    def findDesktopFile(desktopDir, appImagePath):
+        for file in os.scandir(desktopDir):
+            if not (file.name.endswith(".desktop") and file.is_file(follow_symlinks=False)):
+                continue
+
+            with open(file) as f: 
+                for line in f:
+                    line = line.strip()
+
+                    if not line.startswith("Exec="):
+                        continue
+
+                    linkPath = line.removeprefix("Exec=")
+
+                    if linkPath == appImagePath:
+                        return file.path
+                
+    def rmvInstalledFiles(selectedAppPath, symLinkFilePath, desktopFilePath):
+        os.remove(selectedAppPath)
+        os.remove(symLinkFilePath)
+        os.remove(desktopFilePath)
+
+        logger = Logging()
+        logger.addGeneralEntry(f"Permanently removed \n{selectedAppPath}\n{symLinkFilePath}\n{desktopFilePath}")
 
 class Logging():
 
@@ -143,6 +167,7 @@ class Logging():
             f.write("Just ignore them if no error occured.\n")
             f.write("******************************************************************\n")
 
+# Logs a terminal output of a terminal command
     def addCmdEntry(self, logContent):
         with open(self.logFilePath, "a") as f:
             if logContent.stderr:
@@ -152,12 +177,14 @@ class Logging():
             if logContent.stdout:
                 f.write(logContent.stdout + "\n")
                 f.write("******************************************************************\n")
-        
+
+# Logs custom messages
     def addGeneralEntry(self, logContent):
         with open(self.logFilePath, "a") as f:
                 f.write(logContent + "\n")
                 f.write("******************************************************************\n")
 
+# Delete old log files after seven days
     def rmvOldLogs(self):
         timeNow = datetime.now()
         for log in Path(self.logDir).iterdir():
