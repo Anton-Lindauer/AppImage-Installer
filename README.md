@@ -4,6 +4,7 @@
 
 This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, make a symlink (to launch it from the terminal) and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages. The AppImages files are expected to be in your downloads directory.
 
+And if you don't want a AppImage program anymore, you can also uninstall the program now.
 ## Requirements
 
 You need Python version 3.12 or higher to use the GUI or CLI version of this tool.
@@ -35,6 +36,8 @@ This may take a while, especially the creation of a startmenu entry can take a w
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page4.png)
 
 ## Other important notes
+Removing a AppImage file with this program will permanently delete it.
+
 If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
 
 A light mode and other themes are also included.

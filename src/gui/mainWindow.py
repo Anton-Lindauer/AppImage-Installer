@@ -2,12 +2,13 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
-from PySide6.QtCore import Qt, QSettings
+from PySide6.QtCore import Qt, QSettings, QTimer
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
 import subprocess
 import os
+import time
 from pathlib import Path
 
 from src.core.logic import Installer, Uninstaller, Logging
@@ -25,6 +26,8 @@ class MainWindow(QMainWindow):
 
         self.general = General()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
+
+        self.logger = Logging()
 
         self.tab1Page1Handler = Tab1Page1Logic()
         self.tab2Page1Handler = Tab2Page1Logic()
@@ -78,9 +81,11 @@ class MainWindow(QMainWindow):
 
         self.tab2Page1 = self.createTab2Page1()
         self.tab2Page2 = self.createTab2Page2()
+        self.tab2Page3 = self.createTab2Page3()
 
         self.tab2StackedWidget.addWidget(self.tab2Page1)
         self.tab2StackedWidget.addWidget(self.tab2Page2)
+        self.tab2StackedWidget.addWidget(self.tab2Page3)
 
         self.tab2Layout.addWidget(self.tab2StackedWidget)
 
@@ -100,11 +105,13 @@ class MainWindow(QMainWindow):
 
         file1 = fileMenu.addAction("Pick a file to install")
         fileMenu.addSeparator()
-        file2 = fileMenu.addAction("Refresh downloads directory")
+        file2 = fileMenu.addAction("Refresh file list")
 
         file1.triggered.connect(self.tab1Page1Validator)
-        file2.triggered.connect(lambda:  self.reloadPage1() if self.tab1StackedWidget.currentIndex() == 0 else None)
-        file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
+        file2.triggered.connect(lambda: self.reloadTab1Page1() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
+        file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 0 else None)
+        file2.triggered.connect(lambda: self.reloadTab2Page1() if self.tab2StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 1 else None)
+        file2.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 1 else None)
 
         
         setting1 = settingsMenu.addMenu("Theme")
@@ -164,7 +171,7 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere
-        filedialogBtn = QPushButton("Pick a file")
+        filedialogBtn = QPushButton("Pick a file to install")
         
         self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
         filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.userPick(self))
@@ -435,8 +442,6 @@ class MainWindow(QMainWindow):
         if selected:
             self.programCategory = ";".join(selected)
 
-        self.logger = Logging()
-
 # Temporary way of deleting old logs
         if self.settings.value("autoDelete", True, type=bool):
                 self.logger.rmvOldLogs()
@@ -472,7 +477,7 @@ class MainWindow(QMainWindow):
 
 # Rebuild page four to display the program name
 # Easier to maintain to just rebuild the entire page than updating every element one by one
-        self.reloadPage4()
+        self.reloadTab1Page4()
 
         self.tab1StackedWidget.setCurrentIndex(3)
 
@@ -552,9 +557,9 @@ class MainWindow(QMainWindow):
 # Reload all pages if the user wants to install another program
         submitBtn = QPushButton("Install another program")
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.reloadPage1)     
-        submitBtn.clicked.connect(self.reloadPage2)
-        submitBtn.clicked.connect(self.reloadPage3)
+        submitBtn.clicked.connect(self.reloadTab1Page1)     
+        submitBtn.clicked.connect(self.reloadTab1Page2)
+        submitBtn.clicked.connect(self.reloadTab1Page3)
         submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(title)
@@ -565,7 +570,7 @@ class MainWindow(QMainWindow):
     
 # Functions to rebuild all pages; to remove all previous user input
 # Easier to maintain than to clear all elements one by one
-    def reloadPage1(self):
+    def reloadTab1Page1(self):
         oldPage1 = self.tab1StackedWidget.widget(0)
         self.tab1StackedWidget.removeWidget(oldPage1)
         oldPage1.deleteLater()
@@ -573,7 +578,7 @@ class MainWindow(QMainWindow):
         newPage1 = self.createTab1Page1()
         self.tab1StackedWidget.insertWidget(0, newPage1)
     
-    def reloadPage2(self):
+    def reloadTab1Page2(self):
         oldPage2 = self.tab1StackedWidget.widget(1)
         self.tab1StackedWidget.removeWidget(oldPage2)
         oldPage2.deleteLater()
@@ -581,7 +586,7 @@ class MainWindow(QMainWindow):
         newPage2 = self.createTab1Page2()
         self.tab1StackedWidget.insertWidget(1, newPage2)
 
-    def reloadPage3(self):
+    def reloadTab1Page3(self):
         oldPage3 = self.tab1StackedWidget.widget(2)
         self.tab1StackedWidget.removeWidget(oldPage3)
         oldPage3.deleteLater()
@@ -589,7 +594,7 @@ class MainWindow(QMainWindow):
         newPage3 = self.createTab1Page3()
         self.tab1StackedWidget.insertWidget(2, newPage3)
 
-    def reloadPage4(self):
+    def reloadTab1Page4(self):
         oldPage4 = self.tab1StackedWidget.widget(3)
         self.tab1StackedWidget.removeWidget(oldPage4)
         oldPage4.deleteLater()
@@ -600,10 +605,10 @@ class MainWindow(QMainWindow):
     def reloadTab1(self):
         currentIndex = self.tab1StackedWidget.currentIndex()
 
-        self.reloadPage1()
-        self.reloadPage2()
-        self.reloadPage3()
-        self.reloadPage4()
+        self.reloadTab1Page1()
+        self.reloadTab1Page2()
+        self.reloadTab1Page3()
+        self.reloadTab1Page4()
 
         self.tab1StackedWidget.setCurrentIndex(currentIndex)
 
@@ -621,7 +626,7 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere
-        filedialogBtn = QPushButton("Pick a app (Coming soon!)")
+        filedialogBtn = QPushButton("Pick a AppImage program to uninstall")
         
         self.tab2Page1Handler.pickedFile.connect(self.tab2Page1Worker)
         filedialogBtn.clicked.connect(lambda: self.tab2Page1Handler.userPick(self))
@@ -670,17 +675,17 @@ class MainWindow(QMainWindow):
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         containerScrollArea.setFixedHeight(min(installedListLen, 6) * 39)
 
-        checkBox1 = QCheckBox("Remove all symlinks")
+        checkBox1 = QCheckBox("Remove all symlinks (Recommended)")
         checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
         checkBox1.toggled.connect(lambda checked1: self.settings.setValue("rmvSymlinks", checked1))
-        checkBox2 = QCheckBox("Remove startmenu entry")
+        checkBox2 = QCheckBox("Remove startmenu entry (Recommended)")
         checkBox2.setChecked(self.settings.value("rmvStartmenuEntry", True, type=bool))
         checkBox2.toggled.connect(lambda checked2: self.settings.setValue("rmvStartmenuEntry", checked2))
 
-        submitBtn = QPushButton("Continue (Coming soon!)")  
+        submitBtn = QPushButton("Continue")  
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSeletedRadioBtn(self.groupTab2Page1))
-        submitBtn.clicked.connect(self.uninstallProgram)
+        submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
@@ -700,17 +705,95 @@ class MainWindow(QMainWindow):
         self.tab2StackedWidget.setCurrentIndex(1)
         self.selectedAppPath = path
 
+    def createTab2Page2(self):
+        mainWidget = QWidget()
+        mainLayout = QVBoxLayout(mainWidget)
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+            mainLayout.setContentsMargins(20, 10, 20, 0)
+            mainLayout.setSpacing(6)
+
+        title = QLabel("Uninstallation process")
+        title.setObjectName("title")
+
+# QGroupBox thats used as a terminal for the status updates, that the user receives
+        container = QGroupBox()    
+        terminalLayout = QVBoxLayout(container)
+        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+            terminalLayout.setContentsMargins(6, 6, 6, 6)
+            terminalLayout.setSpacing(0)
+        else:
+            terminalLayout.setContentsMargins(0, 0,0,0)        #submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
+            terminalLayout.setSpacing(0)
+
+        container.setMinimumHeight(200)
+        container.setObjectName("page3Container")
+
+# Updates that are displayed in the GUIs terminal like UI element
+        self.tab2TerminalUpdateMsg = QLabel()     
+        self.tab2TerminalUpdateMsg.setObjectName("terminalText")
+
+        terminalLayout.addWidget(self.tab2TerminalUpdateMsg)
+        terminalLayout.addStretch()
+
+        self.tab2Page2SubmitBtn = QPushButton("Start uninstallation")  
+        self.tab2Page2SubmitBtn.setObjectName("submitBtn")
+        self.tab2Page2SubmitBtn.clicked.connect(self.uninstallProgram)
+
+        self.tab2Page2BackBtn = QPushButton("Back")  
+        self.tab2Page2BackBtn.setObjectName("backBtn")
+        self.tab2Page2BackBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
+
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(container)
+        mainLayout.addWidget(self.tab2Page2SubmitBtn)
+        mainLayout.addWidget(self.tab2Page2BackBtn)
+        mainLayout.addStretch()
+
+        return mainWidget
+    
     def uninstallProgram(self):
+        self.tab2Page2SubmitBtn.setEnabled(False)
+        self.tab2Page2BackBtn.setEnabled(False)
+
         symLinkFilePath = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
-        print(symLinkFilePath)
-
         desktopFilePath = Uninstaller.findDesktopFile(self.startMenuFilePath, self.selectedAppPath)
-        print(f"Path: {desktopFilePath}")
 
-        Uninstaller.rmvInstalledFiles(self.selectedAppPath, symLinkFilePath, desktopFilePath)
+        self.tab2TerminalUpdateMsg.setText("Uninstallation in process...")
+        self.tab2TerminalUpdateMsg.show()
+
+        if self.settings.value("rmvSymlinks", True, bool):
+            Uninstaller.rmvInstalledFiles(symLinkFilePath)
+            self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
+            self.terminalUpdate("Removed symlink")
+
+        if self.settings.value("rmvStartmenuEntry", True, bool):
+            Uninstaller.rmvInstalledFiles(desktopFilePath)
+            self.logger.addGeneralEntry(f"Permanently removed {desktopFilePath}")
+            self.terminalUpdate("Removed startmenu entry")
+
+        Uninstaller.rmvInstalledFiles(self.selectedAppPath)
+        self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
+        self.terminalUpdate("Removed AppImage file")
+
+        QTimer.singleShot(2000, self.terminalFinished)
+
+    def terminalUpdate(self, msg):
+        currentProgress = self.tab2TerminalUpdateMsg.text()
+
+# Update the terminal if a new progress update arrived
+        if currentProgress: 
+            newProgress = currentProgress + "\n" + msg
+        else:
+            newProgress = msg
+
+        self.tab2TerminalUpdateMsg.setText(newProgress)
+        self.tab2TerminalUpdateMsg.show()
+
+    def terminalFinished(self):
+        self.tab2StackedWidget.setCurrentIndex(2)
     
 
-    def createTab2Page2(self):
+    def createTab2Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
         if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
@@ -720,14 +803,14 @@ class MainWindow(QMainWindow):
             mainLayout.setContentsMargins(0, 0, 0, 0)
             mainLayout.setSpacing(0)
 
-        title = QLabel(f"Coming soon!")
+        title = QLabel(f"Uninstallation finished")
         title.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
-        submitBtn = QPushButton("Remove another program")
+        submitBtn = QPushButton("Remove another AppImage program")
         submitBtn.setObjectName("submitBtn")
-        #submitBtn.clicked.connect(self.reloadPage1)     
-        #submitBtn.clicked.connect(self.reloadPage2)
+        submitBtn.clicked.connect(self.reloadTab2Page1)     
+        submitBtn.clicked.connect(self.reloadTab2Page2)
         #submitBtn.clicked.connect(self.reloadPage3)
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
@@ -736,3 +819,21 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()
         
         return mainWidget
+    
+
+
+    def reloadTab2Page1(self):
+        oldPage1 = self.tab2StackedWidget.widget(0)
+        self.tab2StackedWidget.removeWidget(oldPage1)
+        oldPage1.deleteLater()
+
+        newPage1 = self.createTab2Page1()
+        self.tab2StackedWidget.insertWidget(0, newPage1)
+
+    def reloadTab2Page2(self):
+        oldPage2 = self.tab2StackedWidget.widget(1)
+        self.tab2StackedWidget.removeWidget(oldPage2)
+        oldPage2.deleteLater()
+
+        newPage2 = self.createTab2Page2()
+        self.tab2StackedWidget.insertWidget(1, newPage2)

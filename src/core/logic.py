@@ -146,13 +146,11 @@ class Uninstaller():
                     if linkPath == appImagePath:
                         return file.path
                 
-    def rmvInstalledFiles(selectedAppPath, symLinkFilePath, desktopFilePath):
-        os.remove(selectedAppPath)
-        os.remove(symLinkFilePath)
-        os.remove(desktopFilePath)
-
-        logger = Logging()
-        logger.addGeneralEntry(f"Permanently removed \n{selectedAppPath}\n{symLinkFilePath}\n{desktopFilePath}")
+    def rmvInstalledFiles(path):
+        if path == None:
+            return
+        
+        os.remove(path)
 
 class Logging():
 
