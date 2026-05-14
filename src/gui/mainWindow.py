@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
         title = QLabel("AppImage selection")
         title.setObjectName("title")
 
-# Let the user pick a AppImage from anywhere
+# Let the user pick an AppImage from anywhere
         filedialogBtn = QPushButton("Pick a file to install")
         
         self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)

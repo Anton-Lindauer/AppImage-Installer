@@ -10,6 +10,7 @@ if desktopEnv == "KDE":
     print("KDE Plasma integration will be used")
     os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
 
+# Accept a file path from the right click menu in the file manager
 selectedAppImage = None
 
 if len(sys.argv) > 1:
