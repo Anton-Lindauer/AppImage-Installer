@@ -148,7 +148,7 @@ Paste in this content and insert your username
 Active=true
 Name=Install with AppImage Installer
 Comment=Install AppImage
-Exec=/home/silas/Programmieren/AppImage-Installer/.venv/bin/python3 /home/silas/Programmieren/AppImage-Installer/main.py "%F"
+Exec=/home/{username}/Programmieren/AppImage-Installer/.venv/bin/python3 /home/{username}/Programmieren/AppImage-Installer/main.py "%F"
 Icon-Name=application-x-executable
 Selection=s
 Extensions=AppImage;
