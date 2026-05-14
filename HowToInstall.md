@@ -1,4 +1,7 @@
 # Installation guide
+This guide contains a general guide on how to get AppImage-Installer running, but also how to use the KDE Plasma theme for it, if you use KDE Plasma. 
+
+Lastly it also contains a guide on how to make a right click menu shortcut to install AppImages for Dolphin and Nemo; I can't write a guide for every filemanager, so you will have to figure it out on your own how to do it (with AI), if you want that.
 
 ## For every distro
 
@@ -52,7 +55,7 @@ The program will guide you through the installation process. Please report any e
 
 ## For every distro with KDE Plasma
 
-KDE Plasma also uses the Qt framework and can mess with QSS stylesheets. That's why I recommend you use the default theme of your KDE Plasma system
+KDE Plasma also uses the Qt framework and can mess with QSS stylesheets, but that also means you can integrate it into Qt. That's why I recommend you use the default theme of your KDE Plasma system
 
 ### For Debian based distros
 
@@ -129,3 +132,35 @@ If it doesn't show up in the right click menu of a .AppImage file, try this comm
 ```
 kbuildsycoca6
 ```
+
+## For every distro with Cinnamon
+### Nemo integration
+Since Nemo is the default Cinnamon file manager, you probably use it. Follow these steps to create a right click menu shortcut to install AppImages by right clicking them in Nemo.
+
+Create a Nemo Action
+```
+nano ~/.local/share/nemo/actions/appimage-installer.nemo_action
+```
+
+Paste in this content and insert your username
+```
+[Nemo Action]
+Active=true
+Name=Install with AppImage Installer
+Comment=Install AppImage
+Exec=/home/silas/Programmieren/AppImage-Installer/.venv/bin/python3 /home/silas/Programmieren/AppImage-Installer/main.py "%F"
+Icon-Name=application-x-executable
+Selection=s
+Extensions=AppImage;
+Quote=double
+```
+
+Save with Ctrl + O and exit with Ctrl + X.
+
+If it doesn't show up in the right click menu of a .AppImage file, try this command to close Nemo or logging back in
+```
+nemo -q
+```
+
+## For other desktop environments/filemanager
+I don't know how to do this for other filemanagers, but you can probably figure it out by asking chatgpt. From my experience it has been pretty good at figuring out filemanager integration.

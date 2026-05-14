@@ -173,7 +173,7 @@ class MainWindow(QMainWindow):
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel(f"AppImage selection")
+        title = QLabel("AppImage selection")
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere
