@@ -16,8 +16,10 @@ from src.gui.components import General, Tab1Page1Logic, Tab2Page1Logic, InstallW
 
 class MainWindow(QMainWindow):
 
-    def __init__(self):
+    def __init__(self, selectedAppImage=None):
         super().__init__()
+
+        self.selectedAppImage = selectedAppImage
     
         self.userDir = Path.home()
         self.fileDest = self.userDir / "AppImages"
@@ -71,6 +73,10 @@ class MainWindow(QMainWindow):
         self.tab1StackedWidget.addWidget(self.tab1Page4)
 
         self.tab1Layout.addWidget(self.tab1StackedWidget)
+
+        if not self.selectedAppImage == None:
+            self.tab1StackedWidget.setCurrentIndex(1)
+            self.selectedAppPath = self.selectedAppImage
 
 # Tab two
         self.tab2 = QWidget()
@@ -167,7 +173,7 @@ class MainWindow(QMainWindow):
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel("AppImage selection")
+        title = QLabel(f"AppImage selection")
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere

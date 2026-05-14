@@ -89,3 +89,43 @@ pip uninstall PySide6
 
 pip install PySide6==6.X.X
 ```
+
+### Dolphin integration
+
+Since Dolphin is the default KDE Plasma file manager, you probably use it. Follow these steps to create a right click menu shortcut to install AppImages by right clicking them in Dolphin.
+
+Make sure the ~/.local/share/kio/servicemenus/ directory exist, or create it with this command
+```
+mkdir -p ~/.local/share/kio/servicemenus
+```
+
+Create and open a .desktop file
+```
+nano ~/.local/share/kio/servicemenus/appimage-installer.desktop
+```
+
+Paste in this content and insert your username
+```
+[Desktop Entry]
+Type=Service
+ServiceTypes=KonqPopupMenu/Plugin
+MimeType=application/vnd.appimage;
+Actions=installAppImage
+
+[Desktop Action installAppImage]
+Name=Install with AppImage Installer
+Icon=application-x-executable
+Exec=python3 /home/{username}/AppImage-Installer/main.py %f
+```
+
+Save with Ctrl + O and exit with Ctrl + X.
+
+Make the file executable
+```
+chmod +x ~/.local/share/kio/servicemenus/appimage-installer.desktop
+```
+
+If it doesn't show up in the right click menu of a .AppImage file, try this command or logging back in
+```
+kbuildsycoca6
+```
