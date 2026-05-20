@@ -34,15 +34,20 @@ class MainWindow(QMainWindow):
         self.tab1Page1Handler = Tab1Page1Logic()
         self.tab2Page1Handler = Tab2Page1Logic()
 
-        self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP") 
+        self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
+        
+# Using a bool instead of checking the string every time is better, but I currently don't have the time to change that
+        self.isKde = self.desktopEnv == "KDE"
+        kdeSupport = self.tr("Recommended") if self.isKde else self.tr("Not Supported")
+        
         if not self.desktopEnv == "KDE":
             self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
-            kdeSupport = "Not Supported"
+        #    kdeSupport = self.tr("Not Supported")
         else:
             self.general.loadTheme(self.settings.value("theme", "kdeTheme", str))
-            kdeSupport = "Recommended"
+        #    kdeSupport = self.tr("Recommended")
         
-        self.setWindowTitle("AppImage-Installer")
+        self.setWindowTitle(self.tr("AppImage-Installer"))
         self.setMinimumSize(750, 710)
 
 # QWidget for everything
@@ -95,8 +100,8 @@ class MainWindow(QMainWindow):
 
         self.tab2Layout.addWidget(self.tab2StackedWidget)
 
-        self.tabs.addTab(self.tab1, "Install")
-        self.tabs.addTab(self.tab2, "Remove")
+        self.tabs.addTab(self.tab1, self.tr("Install"))
+        self.tabs.addTab(self.tab2, self.tr("Remove"))
 
         mainLayout.addWidget(self.tabs)
 
@@ -105,13 +110,13 @@ class MainWindow(QMainWindow):
 # All of the remaining code in this function is for the QMenuBar
         optionsBar = self.menuBar()
 
-        fileMenu = optionsBar.addMenu("File")
-        settingsMenu = optionsBar.addMenu("Settings")
-        helpMenu = optionsBar.addMenu("Help")
+        fileMenu = optionsBar.addMenu(self.tr("File"))
+        settingsMenu = optionsBar.addMenu(self.tr("Settings"))
+        helpMenu = optionsBar.addMenu(self.tr("Help"))
 
-        file1 = fileMenu.addAction("Pick a file to install")
+        file1 = fileMenu.addAction(self.tr("Pick a file to install"))
         fileMenu.addSeparator()
-        file2 = fileMenu.addAction("Refresh file list")
+        file2 = fileMenu.addAction(self.tr("Refresh file list"))
 
         file1.triggered.connect(self.tab1Page1Validator)
         file2.triggered.connect(lambda: self.reloadTab1Page1() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
@@ -120,9 +125,9 @@ class MainWindow(QMainWindow):
         file2.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 1 else None)
 
         
-        setting1 = settingsMenu.addMenu("Theme")
+        setting1 = settingsMenu.addMenu(self.tr("Theme"))
         settingsMenu.addSeparator()
-        setting2 = settingsMenu.addAction("Configure")
+        setting2 = settingsMenu.addAction(self.tr("Configure"))
 
 # Qt doesn't immediately close a menu inside a menu when hovering over a different element.
 # Therefore you have to force Qt to do it
@@ -130,28 +135,28 @@ class MainWindow(QMainWindow):
 
         setting2.triggered.connect(self.general.settingsWindow)
 
-        theme1 = setting1.addAction("System theme")
+        theme1 = setting1.addAction(self.tr("System theme"))
         setting1.addSeparator()
-        theme2 = setting1.addAction("Modern Blue Dark")
+        theme2 = setting1.addAction(self.tr("Modern Blue Dark"))
         setting1.addSeparator()
-        theme3 = setting1.addAction("Modern Dark")
+        theme3 = setting1.addAction(self.tr("Modern Dark"))
         setting1.addSeparator()
-        theme4 = setting1.addAction("Modern Light")
+        theme4 = setting1.addAction(self.tr("Modern Light"))
         setting1.addSeparator()
-        theme5 = setting1.addAction(f"Use KDE theme ({kdeSupport})")
+        theme5 = setting1.addAction(self.tr(f"Use KDE theme ({kdeSupport})"))
 
         theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
-        theme1.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
+        theme1.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
         theme2.triggered.connect(lambda: self.general.loadTheme("modernBlueDarkTheme"))
-        theme2.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
+        theme2.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
         theme3.triggered.connect(lambda: self.general.loadTheme("modernDarkTheme"))
-        theme3.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
+        theme3.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
         theme4.triggered.connect(lambda: self.general.loadTheme("modernLightTheme"))
-        theme4.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
+        theme4.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
         theme5.triggered.connect(lambda: self.general.loadTheme("kdeTheme"))
-        theme5.triggered.connect(lambda: self.reloadTab1() if kdeSupport == "Recommended" else None)
+        theme5.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
 
-        help1 = helpMenu.addAction("Github Repo")
+        help1 = helpMenu.addAction(self.tr("Github Repo"))
         help1.triggered.connect(General.openRepo)
 
 # Hides the box around the box with the menues; Has to be declared for every menu
@@ -173,7 +178,7 @@ class MainWindow(QMainWindow):
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel("AppImage selection")
+        title = QLabel(self.tr("AppImage selection"))
         title.setObjectName("title")
 
 # Let the user pick an AppImage from anywhere
