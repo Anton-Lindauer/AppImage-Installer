@@ -22,6 +22,10 @@ from src.gui.mainWindow import MainWindow
 
 def loadTranslator(app):
     settings = QSettings("Anton-Lindauer", "AppImage-Installer")
+
+    if not settings.contains("language"):
+        settings.setValue("language", QLocale.system().name()[:2])
+        print("Created language")
     
     language = settings.value("language", QLocale.system().name()[:2], type=str)
 

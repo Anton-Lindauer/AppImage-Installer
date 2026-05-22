@@ -1,6 +1,6 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
-from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox
+from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox
 from PySide6.QtCore import Qt, QThread, Signal, QUrl, QObject, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -76,8 +76,27 @@ class General(QObject):
         self.setting1.setChecked(self.settings.value("autoDelete", True, type=bool))
         self.setting1.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
 
+        title2 = QLabel(self.tr("Language"))
+        title2.setObjectName("title")
+
+        infoText2 = QLabel(self.tr("Requires restart to change"))
+        infoText2.setObjectName("infoDescription")
+
+        languageSel = QComboBox()
+        languageSel.addItem("Deutsch", "de")
+        languageSel.addItem("English", "en")
+
+        savedLanguage = self.settings.value("language", "en", type=str)
+        languageIndex = languageSel.findData(savedLanguage)
+        languageSel.setCurrentIndex(languageIndex)
+
+        languageSel.currentTextChanged.connect(lambda: self.settings.setValue("language", languageSel.currentData()))
+
         settingsPageLayout.addWidget(title)
         settingsPageLayout.addWidget(self.setting1)
+        settingsPageLayout.addWidget(title2)
+        settingsPageLayout.addWidget(infoText2)
+        settingsPageLayout.addWidget(languageSel)
 
         settingsPageLayout.addStretch()
 

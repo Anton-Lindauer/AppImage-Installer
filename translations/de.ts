@@ -18,6 +18,16 @@
         <source>Auto delete old logs</source>
         <translation>Alte Logs automatisch löschen</translation>
     </message>
+    <message>
+        <location filename="../src/gui/components.py" line="79"/>
+        <source>Language</source>
+        <translation>Sprache</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/components.py" line="82"/>
+        <source>Requires restart to change</source>
+        <translation>Neustart zum ändern nötig</translation>
+    </message>
 </context>
 <context>
     <name>MainWindow</name>
