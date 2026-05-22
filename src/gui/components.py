@@ -11,7 +11,7 @@ import time
 import os
 
 # All functions from the menubar
-class General():
+class General(QObject):
     def __init__(self):
         super().__init__()
 
@@ -63,16 +63,16 @@ class General():
 
     def settingsWindow(self):
         settingsPage = QDialog()
-        settingsPage.setWindowTitle("AppImage-Installer Settings")
+        settingsPage.setWindowTitle(self.tr("AppImage-Installer Settings"))
 
         settingsPageLayout = QVBoxLayout(settingsPage)
         settingsPageLayout.setContentsMargins(20, 20, 20, 20)
         settingsPageLayout.setSpacing(6)
 
-        title = QLabel("General Settings")   
+        title = QLabel(self.tr("General Settings"))   
         title.setObjectName("title")
 
-        self.setting1 = QCheckBox("Auto delete old logs")
+        self.setting1 = QCheckBox(self.tr("Auto delete old logs"))
         self.setting1.setChecked(self.settings.value("autoDelete", True, type=bool))
         self.setting1.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
 

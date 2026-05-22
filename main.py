@@ -48,7 +48,7 @@ def main():
         app.setStyle("Breeze")
 
 # Temporarily disabled, because the translations aren't complete
-#    loadTranslator(app)
+    loadTranslator(app)
         
     window = MainWindow(selectedAppImage)
     window.show()

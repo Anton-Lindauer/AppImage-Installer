@@ -36,18 +36,17 @@ class MainWindow(QMainWindow):
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
         
-# Using a bool instead of checking the string every time is better, but I currently don't have the time to change that
         self.isKde = self.desktopEnv == "KDE"
+
+# Used to display if the KDE integration is available
         kdeSupport = self.tr("Recommended") if self.isKde else self.tr("Not Supported")
         
         if not self.desktopEnv == "KDE":
             self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
-        #    kdeSupport = self.tr("Not Supported")
         else:
             self.general.loadTheme(self.settings.value("theme", "kdeTheme", str))
-        #    kdeSupport = self.tr("Recommended")
         
-        self.setWindowTitle(self.tr("AppImage-Installer"))
+        self.setWindowTitle("AppImage-Installer")
         self.setMinimumSize(750, 710)
 
 # QWidget for everything
@@ -156,7 +155,7 @@ class MainWindow(QMainWindow):
         theme5.triggered.connect(lambda: self.general.loadTheme("kdeTheme"))
         theme5.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
 
-        help1 = helpMenu.addAction(self.tr("Github Repo"))
+        help1 = helpMenu.addAction("Github Repo")
         help1.triggered.connect(General.openRepo)
 
 # Hides the box around the box with the menues; Has to be declared for every menu
@@ -174,7 +173,7 @@ class MainWindow(QMainWindow):
     def createTab1Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
@@ -182,7 +181,7 @@ class MainWindow(QMainWindow):
         title.setObjectName("title")
 
 # Let the user pick an AppImage from anywhere
-        filedialogBtn = QPushButton("Pick a file to install")
+        filedialogBtn = QPushButton(self.tr("Pick a file to install"))
         
         self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
         filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.userPick(self))
@@ -224,14 +223,14 @@ class MainWindow(QMainWindow):
                 elif itemPos == fileListLen - 1:
                     radioBtn.setProperty(f"isLast{suffix}", "true")
         else:
-            page1NoFileMsg = QLabel("No .AppImage file has been found in your Downloads directory")
+            page1NoFileMsg = QLabel(self.tr("No .AppImage file has been found in your Downloads directory"))
             page1NoFileMsg.setObjectName("message")
             containerLayout.addWidget(page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
 
-        submitBtn = QPushButton("Continue")  
+        submitBtn = QPushButton(self.tr("Continue"))  
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSeletedRadioBtn(self.groupPage1))
 
@@ -256,11 +255,11 @@ class MainWindow(QMainWindow):
     def createTab1Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel("Program information")
+        title = QLabel(self.tr("Program information"))
         title.setObjectName("title")
 
 # Box for the options for the user; Contains other boxes with the descriptions and QlineEdits
@@ -268,7 +267,7 @@ class MainWindow(QMainWindow):
         
 # Set the layout in the container
         containerLayout = QVBoxLayout(container)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             containerLayout.setContentsMargins(10, 10, 10, 10)
             containerLayout.setSpacing(6)
         else:
@@ -276,16 +275,16 @@ class MainWindow(QMainWindow):
             containerLayout.setSpacing(0)
 
 # All the things the user has to enter
-        self.programInfo = ["Terminal Command",
-                            "Display Name",
-                            "Short Description",
-                            "Categories"]
+        self.programInfo = [self.tr("Terminal Command"),
+                            self.tr("Display Name"),
+                            self.tr("Short Description"),
+                            self.tr("Categories")]
         
 # More information on what to enter for the user
-        programInfoText = ["The command used to launch the application from the terminal.",
-                           "The name that will appear in the start menu and application list.",
-                           "A brief summary of the application (displayed as a tooltip).",
-                           "Determines the placement in the start menu. Some categories can't be combined; combined they create a different category."]
+        programInfoText = [self.tr("The command used to launch the application from the terminal."),
+                           self.tr("The name that will appear in the start menu and application list."),
+                           self.tr("A brief summary of the application (displayed as a tooltip)."),
+                           self.tr("Determines the placement in the start menu. Some categories can't be combined; combined they create a different category.")]
         
         self.categoryList = ["Accessibility;Utility", "Education", "Office", 
                              "Development", "Graphics", "Network", 
@@ -302,7 +301,7 @@ class MainWindow(QMainWindow):
             containerTile.setObjectName("page2InnerBox")
 
             tileLayout = QVBoxLayout(containerTile)
-            if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+            if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
                 tileLayout.setContentsMargins(0, 0, 0, 0)
                 tileLayout.setSpacing(6)
             else:
@@ -332,7 +331,7 @@ class MainWindow(QMainWindow):
                 innerTile = QWidget()
                 innerTileLayout = QGridLayout(innerTile)
 
-                if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+                if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
                     innerTileLayout.setContentsMargins(0, 0, 0, 0)
                     innerTileLayout.setSpacing(6)
                 else:
@@ -366,11 +365,11 @@ class MainWindow(QMainWindow):
 
             containerLayout.addWidget(containerTile)
 
-        self.page2SubmitBtn = QPushButton("Continue")
+        self.page2SubmitBtn = QPushButton(self.tr("Continue"))
         self.page2SubmitBtn.setObjectName("submitBtn")
         self.page2SubmitBtn.clicked.connect(self.page2Validator)
 
-        self.page2BackBtn = QPushButton("Back")
+        self.page2BackBtn = QPushButton(self.tr("Back"))
         self.page2BackBtn.setObjectName("backBtn")
         self.page2BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
@@ -391,17 +390,17 @@ class MainWindow(QMainWindow):
     def createTab1Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel("Installation process")
+        title = QLabel(self.tr("Installation process"))
         title.setObjectName("title")
 
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             terminalLayout.setContentsMargins(6, 6, 6, 6)
             terminalLayout.setSpacing(0)
         else:
@@ -418,11 +417,11 @@ class MainWindow(QMainWindow):
         terminalLayout.addWidget(self.terminalUpdateMsg)
         terminalLayout.addStretch()
 
-        self.page3SubmitBtn = QPushButton("Start installation")  
+        self.page3SubmitBtn = QPushButton(self.tr("Start installation"))
         self.page3SubmitBtn.setObjectName("submitBtn")
         self.page3SubmitBtn.clicked.connect(self.installProgram)
 
-        self.page3BackBtn = QPushButton("Back")  
+        self.page3BackBtn = QPushButton(self.tr("Back"))
         self.page3BackBtn.setObjectName("backBtn")
         self.page3BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(1))
 
@@ -465,7 +464,7 @@ class MainWindow(QMainWindow):
         self.worker.success.connect(self.workerFinished)
         self.worker.error.connect(self.workerError)
 
-        self.terminalUpdateMsg.setText("Installation in process...")
+        self.terminalUpdateMsg.setText(self.tr("Installation in process..."))
         self.terminalUpdateMsg.show()
 
         self.worker.start()
@@ -484,7 +483,7 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
 
     def workerFinished(self):
-        self.terminalUpdateMsg.setText("Installation finished")
+        self.terminalUpdateMsg.setText(self.tr("Installation finished"))
 
 # Rebuild page four to display the program name
 # Easier to maintain to just rebuild the entire page than updating every element one by one
@@ -501,7 +500,7 @@ class MainWindow(QMainWindow):
         msgBox.setWindowTitle("Error!")
 
         msgBoxLayout = QVBoxLayout(msgBox)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             msgBoxLayout.setContentsMargins(20, 20, 20, 20)
             msgBoxLayout.setSpacing(6)
         else:
@@ -511,10 +510,10 @@ class MainWindow(QMainWindow):
         textContainer = QWidget()
         textContainerLayout = QVBoxLayout(textContainer)
 
-        msgTitle = QLabel("AppImage-Installer ran into an issue!")
+        msgTitle = QLabel(self.tr("AppImage-Installer ran into an issue!"))
         msgTitle.setObjectName("msgTitle")
 
-        msgText = QLabel(f"This error occured:\n{errorMsg}\nA more detailed log can be found in {logFilePath}.")
+        msgText = QLabel(self.tr(f"This error occured:\n{errorMsg}\nA more detailed log can be found in {logFilePath}."))
 
         textContainerLayout.addWidget(msgTitle)
         textContainerLayout.addWidget(msgText)
@@ -525,11 +524,11 @@ class MainWindow(QMainWindow):
         btnLayout.setContentsMargins(0, 0, 0, 0,)
         btnLayout.setSpacing(0)
 
-        exitBtn = QPushButton("Exit")
+        exitBtn = QPushButton(self.tr("Exit"))
         exitBtn.setObjectName("leftBtn")
         exitBtn.clicked.connect(lambda: sys.exit())
 
-        openLogBtn = QPushButton("Open Log")
+        openLogBtn = QPushButton(self.tr("Open Log"))
         openLogBtn.setObjectName("rightBtn")
         openLogBtn.setDefault(True)
         openLogBtn.setAutoDefault(True)
@@ -555,18 +554,18 @@ class MainWindow(QMainWindow):
     def createTab1Page4(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
         else:
             mainLayout.setContentsMargins(0, 0, 0, 0)
             mainLayout.setSpacing(0)
 
-        title = QLabel(f"Finished installing {self.programInfoList[1].text()}")
+        title = QLabel(self.tr(f"Finished installing {self.programInfoList[1].text()}"))
         title.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
-        submitBtn = QPushButton("Install another program")
+        submitBtn = QPushButton(self.tr("Install another program"))
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.reloadTab1Page1)     
         submitBtn.clicked.connect(self.reloadTab1Page2)
@@ -629,15 +628,15 @@ class MainWindow(QMainWindow):
     def createTab2Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel("AppImage selection")
+        title = QLabel(self.tr("AppImage selection"))
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere
-        filedialogBtn = QPushButton("Pick a AppImage program to uninstall")
+        filedialogBtn = QPushButton(self.tr("Pick a AppImage program to uninstall"))
         
         self.tab2Page1Handler.pickedFile.connect(self.tab2Page1Worker)
         filedialogBtn.clicked.connect(lambda: self.tab2Page1Handler.userPick(self))
@@ -679,21 +678,21 @@ class MainWindow(QMainWindow):
                 elif itemPos == installedListLen - 1:
                     radioBtn.setProperty(f"isLast{suffix}", "true")
         else:
-            tab2Page1NoFileMsg = QLabel("No .AppImage installation has been found")
+            tab2Page1NoFileMsg = QLabel(self.tr("No AppImage installation has been found"))
             tab2Page1NoFileMsg.setObjectName("message")
             containerLayout.addWidget(tab2Page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         containerScrollArea.setFixedHeight(min(installedListLen, 6) * 39)
 
-        checkBox1 = QCheckBox("Remove all symlinks (Recommended)")
+        checkBox1 = QCheckBox(self.tr("Remove all symlinks (Recommended)"))
         checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
         checkBox1.toggled.connect(lambda checked1: self.settings.setValue("rmvSymlinks", checked1))
-        checkBox2 = QCheckBox("Remove startmenu entry (Recommended)")
+        checkBox2 = QCheckBox(self.tr("Remove startmenu entry (Recommended)"))
         checkBox2.setChecked(self.settings.value("rmvStartmenuEntry", True, type=bool))
         checkBox2.toggled.connect(lambda checked2: self.settings.setValue("rmvStartmenuEntry", checked2))
 
-        submitBtn = QPushButton("Continue")  
+        submitBtn = QPushButton(self.tr("Continue"))
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSeletedRadioBtn(self.groupTab2Page1))
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(1))
@@ -719,17 +718,17 @@ class MainWindow(QMainWindow):
     def createTab2Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
 
-        title = QLabel("Uninstallation process")
+        title = QLabel(self.tr("Uninstallation process"))
         title.setObjectName("title")
 
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             terminalLayout.setContentsMargins(6, 6, 6, 6)
             terminalLayout.setSpacing(0)
         else:
@@ -746,11 +745,11 @@ class MainWindow(QMainWindow):
         terminalLayout.addWidget(self.tab2TerminalUpdateMsg)
         terminalLayout.addStretch()
 
-        self.tab2Page2SubmitBtn = QPushButton("Start uninstallation")  
+        self.tab2Page2SubmitBtn = QPushButton(self.tr("Start uninstallation"))
         self.tab2Page2SubmitBtn.setObjectName("submitBtn")
         self.tab2Page2SubmitBtn.clicked.connect(self.uninstallProgram)
 
-        self.tab2Page2BackBtn = QPushButton("Back")  
+        self.tab2Page2BackBtn = QPushButton(self.tr("Back"))
         self.tab2Page2BackBtn.setObjectName("backBtn")
         self.tab2Page2BackBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
@@ -769,22 +768,22 @@ class MainWindow(QMainWindow):
         symLinkFilePath = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
         desktopFilePath = Uninstaller.findDesktopFile(self.startMenuFilePath, self.selectedAppPath)
 
-        self.tab2TerminalUpdateMsg.setText("Uninstallation in process...")
+        self.tab2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2TerminalUpdateMsg.show()
 
         if self.settings.value("rmvSymlinks", True, bool):
             Uninstaller.rmvInstalledFiles(symLinkFilePath)
             self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
-            self.terminalUpdate("Removed symlink")
+            self.terminalUpdate(self.tr("Removed symlink"))
 
         if self.settings.value("rmvStartmenuEntry", True, bool):
             Uninstaller.rmvInstalledFiles(desktopFilePath)
             self.logger.addGeneralEntry(f"Permanently removed {desktopFilePath}")
-            self.terminalUpdate("Removed startmenu entry")
+            self.terminalUpdate(self.tr("Removed startmenu entry"))
 
         Uninstaller.rmvInstalledFiles(self.selectedAppPath)
         self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
-        self.terminalUpdate("Removed AppImage file")
+        self.terminalUpdate(self.tr("Removed AppImage file"))
 
         QTimer.singleShot(2000, self.terminalFinished)
 
@@ -807,18 +806,18 @@ class MainWindow(QMainWindow):
     def createTab2Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.desktopEnv == "KDE" and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             mainLayout.setContentsMargins(20, 10, 20, 0)
             mainLayout.setSpacing(6)
         else:
             mainLayout.setContentsMargins(0, 0, 0, 0)
             mainLayout.setSpacing(0)
 
-        title = QLabel(f"Uninstallation finished")
+        title = QLabel(self.tr("Uninstallation finished"))
         title.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
-        submitBtn = QPushButton("Remove another AppImage program")
+        submitBtn = QPushButton(self.tr("Remove another AppImage program"))
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.reloadTab2Page1)     
         submitBtn.clicked.connect(self.reloadTab2Page2)
