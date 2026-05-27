@@ -307,14 +307,15 @@ QComboBox QAbstractItemView::item {
     min-height: 24px;
 }
 
-QComboBox QAbstractItemView::item:hover {
-    background-color: #3a3e43;
-    color: #d4d6d9;
+QComboBox::item {
+    border-radius: 4px;
+    min-height: 24px;
+    max-height: 24px;
 }
 
-QComboBox QAbstractItemView::item:selected {
-    background-color: #484d52;
-    color: #d4d6d9;
+QComboBox::item:selected {
+    background-color: #3a3e43;
+    color: #D8DADD;
 }
 
 QDialog {

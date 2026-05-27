@@ -301,19 +301,14 @@ QComboBox QAbstractItemView {
     padding: 2px;
 }
 
-QComboBox QAbstractItemView::item {
-    padding: 5px 10px;
+QComboBox::item {
     border-radius: 4px;
     min-height: 24px;
+    max-height: 24px;
 }
 
-QComboBox QAbstractItemView::item:hover {
+QComboBox::item:selected {
     background-color: #f0f1f3;
-    color: #1a1d21;
-}
-
-QComboBox QAbstractItemView::item:selected {
-    background-color: #e8eaed;
     color: #1a1d21;
 }
 
