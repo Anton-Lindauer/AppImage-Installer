@@ -68,7 +68,7 @@ QTabBar::tab {
     background-color: #1d2024;
     color: #7a8088;
     padding: 6px 16px;
-    border: none;
+    border-bottom: none;
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
     border-bottom-left-radius: 0px;
@@ -97,8 +97,6 @@ QLabel#title {
     max-height: 20px;
     min-height: 20px;
     font-size: 14px;
-    margin-left: 40px;
-    margin-right: 40px;
     color: #D8DADD;
 }
 
@@ -106,8 +104,6 @@ QScrollArea {
     background-color: #1d2024;
     border: 1px solid #424242;
     border-radius: 10px;
-    margin-left: 40px;
-    margin-right: 40px;
 }
 
 QScrollArea QWidget {
@@ -148,8 +144,6 @@ QGroupBox {
     background-color: #1d2024;
     border: 1px solid #424242;
     border-radius: 10px;
-    margin-left: 40px;
-    margin-right: 40px;
 }
 
 QRadioButton {
@@ -264,6 +258,7 @@ QComboBox {
     border: 1.5px solid #2e3238;
     border-radius: 6px;
     padding: 5px 10px;
+    max-width: 200px;
 }
 
 QComboBox:hover {
@@ -326,14 +321,13 @@ QDialog QLabel {
 QDialog QLabel#msgTitle {
     font-weight: bold;
     font-size: 16px;
-    margin-bottom: 6px;
+    margin: 0px;
 }
 
 QDialog QPushButton {
     min-height: 26px;
     max-height: 26px;
-    margin: 3px;
-    margin-top: 14px;
+    margin: 0px;
     color: #D8DADD;
     background-color: #292d32;
     border: none;
@@ -369,8 +363,6 @@ QDialog QPushButton:pressed {
 QPushButton {
     min-height: 26px;
     max-height: 26px;
-    margin-left: 40px;
-    margin-right: 40px;
     color: #D8DADD;
     background-color: #292d32;
     border: none;
@@ -391,8 +383,6 @@ QCheckBox {
     font-size: 14px;
     spacing: 8px;
     margin: 4px;
-    margin-left: 40px;
-    margin-right: 40px;
 }
 
 QCheckBox::indicator {
@@ -413,14 +403,14 @@ QCheckBox::indicator:checked {
     image: url(assets/icons/darkThemes/check.svg)
 }
 
-/* Everything that's only for page one */
+/* Everything that's only for tab one and two page one */
 QLabel#page1NoFileMsg {
     color: #D8DADD;
     font-size: 14px;
     padding: 4px;
 }
 
-/* Everything that's only for page two */
+/* Everything that's only for tab one page two */
 #page2InnerBox {
     margin: 0px;
     border-bottom: 1px solid #424242;
@@ -446,28 +436,32 @@ QLabel#page1NoFileMsg {
 }
 
 QLabel#entry {
-    padding: 10px;
+    padding-left: 8px;
+    padding-top: 8px;
+    padding-bottom: 0px;
     font-size: 14px;
     font: bold;
     color: #D8DADD;
 }
 
 QLabel#infoDescription {
-    padding: 8px;
     font-size: 12px;
     color: #D8DADD;
     padding-right: 10px;
     padding-left: 10px;
     padding-top: 0px;
-    padding-bottom: 10px;
+    padding-bottom: 0px;
 }
 
 QRadioButton#categorySel {
     border: none;
-    padding: 0px;
+    padding-right: 10px;
+    padding-left: 10px;
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
-/* Everything that's only for page three */
+/* Everything that's only for tab one page three and tab two page two*/
 QGroupBox#page3Container {
     font-size: 14px;
     color: #33ff33;
@@ -479,4 +473,10 @@ QLabel#terminalText {
     font-size: 14px;
     color: #33ff33;
     padding: 4px;
+}
+
+/* Everything that's only for the settings window */
+QLabel#settingsDescription {
+    font-size: 12px;
+    color: #D8DADD;
 }

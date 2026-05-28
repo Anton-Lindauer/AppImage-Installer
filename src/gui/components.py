@@ -80,7 +80,7 @@ class General(QObject):
         title2.setObjectName("title")
 
         infoText2 = QLabel(self.tr("Requires restart to change"))
-        infoText2.setObjectName("infoDescription")
+        infoText2.setObjectName("settingsDescription")
 
         languageSel = QComboBox()
         languageSel.addItem("Deutsch", "de")

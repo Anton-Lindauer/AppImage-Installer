@@ -144,6 +144,7 @@ class MainWindow(QMainWindow):
         setting1.addSeparator()
         theme5 = setting1.addAction(self.tr(f"Use KDE theme ({kdeSupport})"))
 
+# Reloading tab 1 page 2 because it uses a different layout for QSS and KDE themes
         theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
         theme1.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
         theme2.triggered.connect(lambda: self.general.loadTheme("modernBlueDarkTheme"))
@@ -173,9 +174,8 @@ class MainWindow(QMainWindow):
     def createTab1Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr("AppImage selection"))
         title.setObjectName("title")
@@ -255,9 +255,8 @@ class MainWindow(QMainWindow):
     def createTab1Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr("Program information"))
         title.setObjectName("title")
@@ -266,6 +265,8 @@ class MainWindow(QMainWindow):
         container = QGroupBox()
         
 # Set the layout in the container
+# I have to do it like this to enable hover effects for the custom QSS styles,
+# because margin isn't affected by hover effects
         containerLayout = QVBoxLayout(container)
         if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             containerLayout.setContentsMargins(10, 10, 10, 10)
@@ -301,12 +302,8 @@ class MainWindow(QMainWindow):
             containerTile.setObjectName("page2InnerBox")
 
             tileLayout = QVBoxLayout(containerTile)
-            if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-                tileLayout.setContentsMargins(0, 0, 0, 0)
-                tileLayout.setSpacing(6)
-            else:
-                tileLayout.setContentsMargins(0, 0, 0, 0)
-                tileLayout.setSpacing(0)
+            tileLayout.setContentsMargins(0, 0, 0, 0)
+            tileLayout.setSpacing(6)
 
 # Special properties for the first and last boxes; Used in QSS for rounded corners
             if index == 0:
@@ -330,19 +327,14 @@ class MainWindow(QMainWindow):
             if index == index == len(self.programInfo) - 1:
                 innerTile = QWidget()
                 innerTileLayout = QGridLayout(innerTile)
-
-                if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-                    innerTileLayout.setContentsMargins(0, 0, 0, 0)
-                    innerTileLayout.setSpacing(6)
-                else:
-                    innerTileLayout.setContentsMargins(6, 6, 6, 6)
-                    innerTileLayout.setSpacing(7)
+                innerTileLayout.setContentsMargins(0, 0, 0, 6)
+                innerTileLayout.setSpacing(6)
 
                 self.allCategories = ""
                 self.page2RadioBtns = QButtonGroup()
                 self.page2RadioBtns.setExclusive(False)
 
-# Create a QRadioButton for all 14 categories
+# Create a QRadioButton for all 13 categories
                 for i, category in enumerate(self.categoryList):
                     radioBtn = QRadioButton(category)
                     radioBtn.setObjectName("categorySel")
@@ -390,9 +382,8 @@ class MainWindow(QMainWindow):
     def createTab1Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr("Installation process"))
         title.setObjectName("title")
@@ -400,12 +391,8 @@ class MainWindow(QMainWindow):
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            terminalLayout.setContentsMargins(6, 6, 6, 6)
-            terminalLayout.setSpacing(0)
-        else:
-            terminalLayout.setContentsMargins(0, 0,0,0)
-            terminalLayout.setSpacing(0)
+        terminalLayout.setContentsMargins(6, 6, 6, 6)
+        terminalLayout.setSpacing(0)
 
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
@@ -500,12 +487,8 @@ class MainWindow(QMainWindow):
         msgBox.setWindowTitle("Error!")
 
         msgBoxLayout = QVBoxLayout(msgBox)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            msgBoxLayout.setContentsMargins(20, 20, 20, 20)
-            msgBoxLayout.setSpacing(6)
-        else:
-            msgBoxLayout.setContentsMargins(0, 0, 0, 0)
-            msgBoxLayout.setSpacing(0)
+        msgBoxLayout.setContentsMargins(20, 20, 20, 20)
+        msgBoxLayout.setSpacing(6)
 
         textContainer = QWidget()
         textContainerLayout = QVBoxLayout(textContainer)
@@ -554,12 +537,8 @@ class MainWindow(QMainWindow):
     def createTab1Page4(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
-        else:
-            mainLayout.setContentsMargins(0, 0, 0, 0)
-            mainLayout.setSpacing(0)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr(f"Finished installing {self.programInfoList[1].text()}"))
         title.setObjectName("title")
@@ -615,10 +594,10 @@ class MainWindow(QMainWindow):
     def reloadTab1(self):
         currentIndex = self.tab1StackedWidget.currentIndex()
 
-        self.reloadTab1Page1()
+        #self.reloadTab1Page1()
         self.reloadTab1Page2()
-        self.reloadTab1Page3()
-        self.reloadTab1Page4()
+        #self.reloadTab1Page3()
+        #self.reloadTab1Page4()
 
         self.tab1StackedWidget.setCurrentIndex(currentIndex)
 
@@ -628,9 +607,8 @@ class MainWindow(QMainWindow):
     def createTab2Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr("AppImage selection"))
         title.setObjectName("title")
@@ -718,9 +696,8 @@ class MainWindow(QMainWindow):
     def createTab2Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr("Uninstallation process"))
         title.setObjectName("title")
@@ -728,12 +705,8 @@ class MainWindow(QMainWindow):
 # QGroupBox thats used as a terminal for the status updates, that the user receives
         container = QGroupBox()    
         terminalLayout = QVBoxLayout(container)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            terminalLayout.setContentsMargins(6, 6, 6, 6)
-            terminalLayout.setSpacing(0)
-        else:
-            terminalLayout.setContentsMargins(0, 0,0,0)        #submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
-            terminalLayout.setSpacing(0)
+        terminalLayout.setContentsMargins(6, 6, 6, 6)
+        terminalLayout.setSpacing(0)
 
         container.setMinimumHeight(200)
         container.setObjectName("page3Container")
@@ -806,12 +779,8 @@ class MainWindow(QMainWindow):
     def createTab2Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            mainLayout.setContentsMargins(20, 10, 20, 0)
-            mainLayout.setSpacing(6)
-        else:
-            mainLayout.setContentsMargins(0, 0, 0, 0)
-            mainLayout.setSpacing(0)
+        mainLayout.setContentsMargins(20, 10, 20, 0)
+        mainLayout.setSpacing(6)
 
         title = QLabel(self.tr("Uninstallation finished"))
         title.setObjectName("title")
@@ -821,7 +790,6 @@ class MainWindow(QMainWindow):
         submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.reloadTab2Page1)     
         submitBtn.clicked.connect(self.reloadTab2Page2)
-        #submitBtn.clicked.connect(self.reloadPage3)
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(title)
