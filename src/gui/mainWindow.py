@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
         setting1.addSeparator()
         theme4 = setting1.addAction(self.tr("Modern Light"))
         setting1.addSeparator()
-        theme5 = setting1.addAction(self.tr(f"Use KDE theme ({kdeSupport})"))
+        theme5 = setting1.addAction(self.tr("Use KDE theme ({Support})").format(Support=kdeSupport))
 
 # Reloading tab 1 page 2 because it uses a different layout for QSS and KDE themes
         theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
@@ -496,7 +496,7 @@ class MainWindow(QMainWindow):
         msgTitle = QLabel(self.tr("AppImage-Installer ran into an issue!"))
         msgTitle.setObjectName("msgTitle")
 
-        msgText = QLabel(self.tr(f"This error occured:\n{errorMsg}\nA more detailed log can be found in {logFilePath}."))
+        msgText = QLabel(self.tr("This error occured:\n{error}\nA more detailed log can be found in {logFile}.").format(error=errorMsg, logFile=logFilePath))
 
         textContainerLayout.addWidget(msgTitle)
         textContainerLayout.addWidget(msgText)
@@ -540,7 +540,7 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr(f"Finished installing {self.programInfoList[1].text()}"))
+        title = QLabel(self.tr("Finished installing {name}").format(name=self.programInfoList[1].text()))
         title.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
