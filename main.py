@@ -23,6 +23,7 @@ from src.gui.mainWindow import MainWindow
 def loadTranslator(app):
     settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
+# Write the used language to the settings if there is no entry allready
     if not settings.contains("language"):
         settings.setValue("language", QLocale.system().name()[:2])
         print("Created language")
@@ -34,9 +35,9 @@ def loadTranslator(app):
         return None
 
     translator = QTranslator(app)
-    translations_path = Path(__file__).parent / "translations" / f"{language}.qm"
+    translationsPath = Path(__file__).parent / "translations" / f"{language}.qm"
 
-    if translator.load(str(translations_path)):
+    if translator.load(str(translationsPath)):
         app.installTranslator(translator)
         print(f"Loaded language: {language}")
         return translator
@@ -47,11 +48,11 @@ def loadTranslator(app):
 def main():
     app = QApplication(sys.argv)
     
+# Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
     if desktopEnv == "KDE":
         print(f"Available system themes: {QStyleFactory.keys()}")
         app.setStyle("Breeze")
 
-# Temporarily disabled, because the translations aren't complete
     loadTranslator(app)
         
     window = MainWindow(selectedAppImage)

@@ -1,10 +1,12 @@
 # AppImage-Installer
 
-## A GUI or CLI tool to easily install AppImage files on Linux.
+## A GUI tool to easily install AppImage files on Linux.
 
 This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, make a symlink (to launch it from the terminal) and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages. The AppImages files are expected to be in your downloads directory.
 
-And if you don't want a AppImage program anymore, you can also uninstall the program now.
+And if you don't want a AppImage program anymore, you can also uninstall the program now (only in the GUI version).
+
+The CLI version is no longer maintained and can only install AppImages and not uninstall them.
 ## Requirements
 
 You need Python version 3.12 or higher to use the GUI or CLI version of this tool.

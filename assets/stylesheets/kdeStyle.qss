@@ -15,3 +15,8 @@ QCheckBox:focus,
 QRadioButton:focus{
     border-bottom: none;
 }
+
+/* Fix for separators having different heights*/
+QMenu::separator {
+    height: 4px;
+}
