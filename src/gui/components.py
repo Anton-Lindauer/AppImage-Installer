@@ -1,6 +1,6 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
-from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox
+from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox, QListView
 from PySide6.QtCore import Qt, QThread, Signal, QUrl, QObject, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
@@ -85,6 +85,18 @@ class General(QObject):
         languageSel = QComboBox()
         languageSel.addItem("Deutsch", "de")
         languageSel.addItem("English", "en")
+
+# Fix to properly load the stylesheets
+        view = QListView(languageSel)
+        languageSel.setView(view)
+
+# Fix for items not wanting to align to the left side
+        for i in range(languageSel.count()):
+            languageSel.setItemData(
+                i,
+                int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                Qt.ItemDataRole.TextAlignmentRole
+            )
 
         savedLanguage = self.settings.value("language", "en", type=str)
         languageIndex = languageSel.findData(savedLanguage)

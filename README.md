@@ -61,6 +61,4 @@ If you want to contribute, make suggestions on how to make the code better or th
 ## Known issues
 The divider lines in the boxes don't look the same because of how Qt renders them, there isn't really a fix for this.
 
-The program only adapts to your system theme when launched, since there isn't a easy way to read the theme out and change it while the program is running. If you want to change it, you have to press on the buttons on the first page or relaunch the program.
-
-The handle of the scroll areas won't get bigger when hovered over it, because QSS doesn't care about a new width when accessing the hover selector.
+The ComboBox in the configure menu has a box around the drop down menu. This is because of some Qt or linux default behavior when creating that element. I haven't found a fix yet and I'm not even sure if this is fixable.

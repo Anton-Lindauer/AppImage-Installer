@@ -255,14 +255,16 @@ QLineEdit:focus {
 QComboBox {
     background-color: #1d2024;
     color: #D8DADD;
-    border: 1.5px solid #2e3238;
-    border-radius: 6px;
-    padding: 5px 10px;
+    border: 1.5px solid #1d2024;
+    border-radius: 8px;
+    padding: 0px;
     max-width: 200px;
+    height: 24px;
+    padding-left: 4px;
 }
 
 QComboBox:hover {
-    border: 1.5px solid #626262;
+    border: 1.5px solid #3e4248;
 }
 
 QComboBox:on {
@@ -285,23 +287,21 @@ QComboBox::down-arrow {
 QComboBox QAbstractItemView {
     background-color: #1d2024;
     color: #D8DADD;
-    border: 1px solid #2e3238;
-    border-top: none;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border: 1.5px solid #3e4248;
+    border-radius: 8px;
     selection-background-color: #2e3238;
     selection-color: #D8DADD;
     outline: none;
     padding: 2px;
 }
 
-QComboBox::item {
-    border-radius: 4px;
+QComboBox QAbstractItemView::item {
+    border-radius: 8px;
     min-height: 24px;
     max-height: 24px;
 }
 
-QComboBox::item:selected {
+QComboBox QAbstractItemView::item:selected {
     background-color: #252a2e;
     color: #D8DADD;
 }
