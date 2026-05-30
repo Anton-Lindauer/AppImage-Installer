@@ -61,4 +61,4 @@ If you want to contribute, make suggestions on how to make the code better or th
 ## Known issues
 The divider lines in the boxes don't look the same because of how Qt renders them, there isn't really a fix for this.
 
-The ComboBox in the configure menu has a box around the drop down menu. This is because of some Qt or linux default behavior when creating that element. I haven't found a fix yet and I'm not even sure if this is fixable.
+The ComboBox in the configure menu has a box around the drop down menu on Linux Mint. This is because of some Qt or Cinnamon default behavior when creating that element. I haven't found a fix yet and I'm not even sure if this is fixable.

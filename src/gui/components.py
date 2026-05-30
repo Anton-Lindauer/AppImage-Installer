@@ -69,7 +69,7 @@ class General(QObject):
         settingsPageLayout.setContentsMargins(20, 20, 20, 20)
         settingsPageLayout.setSpacing(6)
 
-        title = QLabel(self.tr("General Settings"))   
+        title = QLabel(self.tr("General Settings"))
         title.setObjectName("title")
 
         self.setting1 = QCheckBox(self.tr("Auto delete old logs"))
@@ -86,17 +86,19 @@ class General(QObject):
         languageSel.addItem("Deutsch", "de")
         languageSel.addItem("English", "en")
 
+        if not self.settings.value("theme") == "kdeTheme":
+
 # Fix to properly load the stylesheets
-        view = QListView(languageSel)
-        languageSel.setView(view)
+            view = QListView(languageSel)
+            languageSel.setView(view)
 
 # Fix for items not wanting to align to the left side
-        for i in range(languageSel.count()):
-            languageSel.setItemData(
-                i,
-                int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                Qt.ItemDataRole.TextAlignmentRole
-            )
+            for i in range(languageSel.count()):
+                languageSel.setItemData(
+                    i,
+                    int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                    Qt.ItemDataRole.TextAlignmentRole
+                )
 
         savedLanguage = self.settings.value("language", "en", type=str)
         languageIndex = languageSel.findData(savedLanguage)
