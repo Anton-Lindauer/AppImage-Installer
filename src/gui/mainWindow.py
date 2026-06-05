@@ -1,18 +1,16 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QStyledItemDelegate, QGridLayout, QSizePolicy, QDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QGridLayout, QDialog
 from PySide6.QtCore import Qt, QSettings, QTimer
-from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 import sys
 import subprocess
 import os
-import time
 from pathlib import Path
 
 from src.core.logic import Installer, Uninstaller, Logging
-from src.gui.components import General, Tab1Page1Logic, Tab2Page1Logic, InstallWorker
+from src.gui.components import General, PrepInstall, PrepUninstall, InstallWorker, MetadataWorker
 
 class MainWindow(QMainWindow):
 
@@ -31,8 +29,8 @@ class MainWindow(QMainWindow):
 
         self.logger = Logging()
 
-        self.tab1Page1Handler = Tab1Page1Logic()
-        self.tab2Page1Handler = Tab2Page1Logic()
+        self.tab1Page1Handler = PrepInstall()
+        self.tab2Page1Handler = PrepUninstall()
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
         
@@ -230,14 +228,14 @@ class MainWindow(QMainWindow):
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
 
-        submitBtn = QPushButton(self.tr("Continue"))  
-        submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSeletedRadioBtn(self.groupPage1))
+        self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
+        self.tab1Page1SubmitBtn.setObjectName("submitBtn")
+        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSeletedRadioBtn(self.groupPage1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
         mainLayout.addWidget(containerScrollArea)
-        mainLayout.addWidget(submitBtn)
+        mainLayout.addWidget(self.tab1Page1SubmitBtn)
         mainLayout.addStretch()
 
         return mainWidget
@@ -247,8 +245,34 @@ class MainWindow(QMainWindow):
             self.tab1Page1Handler.userPick(self)
         
     def tab1Page1Worker(self, path):
-        self.tab1StackedWidget.setCurrentIndex(1)
         self.selectedAppPath = path
+
+        self.tab1Page1SubmitBtn.setEnabled(False)
+
+        self.metadataWorker = MetadataWorker(self.selectedAppPath)
+
+        self.metadataWorker.finished.connect(self.metadataLoaded)
+        self.metadataWorker.error.connect(self.metadataWorkerError)
+
+        self.metadataWorker.start()
+
+    def metadataLoaded(self, metadata):
+        self.tab1StackedWidget.setCurrentIndex(1)
+
+        self.programInfoList[0].setText(metadata["exec"])
+        self.programInfoList[1].setText(metadata["name"])
+        self.programInfoList[2].setText(metadata["comment"])
+        
+# Aktivate the QRadioButtons when they are in the AppImages category string
+        categories = metadata["categories"].split(";")
+
+        for button in self.page2RadioBtns.buttons():
+            button.setChecked(button.text() in categories)
+
+# Temporary erroro handler
+# Todo: make a universal error handler like the installer error handler
+    def metadataWorkerError(self, error):
+        print(error)
 
 
 
@@ -364,6 +388,7 @@ class MainWindow(QMainWindow):
         self.page2BackBtn = QPushButton(self.tr("Back"))
         self.page2BackBtn.setObjectName("backBtn")
         self.page2BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
+        self.page2BackBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(container)
