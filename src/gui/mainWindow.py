@@ -253,14 +253,14 @@ class MainWindow(QMainWindow):
         self.metadataWorker = MetadataWorker(self.selectedAppPath)
 
         self.metadataWorker.finished.connect(self.metadataLoader)
-        self.metadataWorker.error.connect(self.metadataWorkerError)
+        self.metadataWorker.error.connect(self.workerError)
 
         self.metadataWorker.start()
 
     def metadataLoader(self, metadata):
         self.tab1StackedWidget.setCurrentIndex(1)
 
-        self.programInfoList[0].setText(metadata["exec"])
+        self.programInfoList[0].setText(metadata["exec"].lower())
         self.programInfoList[1].setText(metadata["name"])
         self.programInfoList[2].setText(metadata["comment"])
         
@@ -269,11 +269,6 @@ class MainWindow(QMainWindow):
 
         for button in self.page2RadioBtns.buttons():
             button.setChecked(button.text() in categories)
-
-# Temporary erroro handler
-# Todo: make a universal error handler like the installer error handler
-    def metadataWorkerError(self, error):
-        print(error)
 
 
 
@@ -471,17 +466,17 @@ class MainWindow(QMainWindow):
                 self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.worker = InstallWorker(self.selectedAppPath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
+        self.installWorker = InstallWorker(self.selectedAppPath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
 
 # Process status updates from the installation function
-        self.worker.progressUpdate.connect(self.workerProgress)
-        self.worker.finished.connect(self.workerFinished)
-        self.worker.error.connect(self.workerError)
+        self.installWorker.progressUpdate.connect(self.workerProgress)
+        self.installWorker.finished.connect(self.workerFinished)
+        self.installWorker.error.connect(self.workerError)
 
         self.terminalUpdateMsg.setText(self.tr("Installation in process..."))
         self.terminalUpdateMsg.show()
 
-        self.worker.start()
+        self.installWorker.start()
 
     def workerProgress(self, message):
         currentProgress = self.terminalUpdateMsg.text()
@@ -504,60 +499,6 @@ class MainWindow(QMainWindow):
         self.reloadTab1Page4()
 
         self.tab1StackedWidget.setCurrentIndex(3)
-
-    def workerError(self, errorMsg):
-        logFilePath = self.logger.logFilePath
-
-        self.logger.addGeneralEntry(errorMsg)
-# A pop-up window if a error occurs during the installation process
-        msgBox = QDialog()
-        msgBox.setWindowTitle("Error!")
-
-        msgBoxLayout = QVBoxLayout(msgBox)
-        msgBoxLayout.setContentsMargins(20, 20, 20, 20)
-        msgBoxLayout.setSpacing(6)
-
-        textContainer = QWidget()
-        textContainerLayout = QVBoxLayout(textContainer)
-
-        msgTitle = QLabel(self.tr("AppImage-Installer ran into an issue!"))
-        msgTitle.setObjectName("msgTitle")
-
-        msgText = QLabel(self.tr("This error occured:\n{error}\nA more detailed log can be found in {logFile}.").format(error=errorMsg, logFile=logFilePath))
-
-        textContainerLayout.addWidget(msgTitle)
-        textContainerLayout.addWidget(msgText)
-
-        msgBoxLayout.addWidget(textContainer, alignment=Qt.AlignHCenter)
-
-        btnLayout = QHBoxLayout()
-        btnLayout.setContentsMargins(0, 0, 0, 0,)
-        btnLayout.setSpacing(0)
-
-        exitBtn = QPushButton(self.tr("Exit"))
-        exitBtn.setObjectName("leftBtn")
-        exitBtn.clicked.connect(lambda: sys.exit())
-
-        openLogBtn = QPushButton(self.tr("Open Log"))
-        openLogBtn.setObjectName("rightBtn")
-        openLogBtn.setDefault(True)
-        openLogBtn.setAutoDefault(True)
-
-# Open the log file with the default file editor
-        openLogBtn.clicked.connect(lambda: subprocess.Popen(
-                ["xdg-open", str(logFilePath)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            ))
-
-        btnLayout.addWidget(exitBtn)
-        btnLayout.addWidget(openLogBtn)
-
-        msgBoxLayout.addLayout(btnLayout)
-
-        msgBox.exec()
-
-        sys.exit()
 
 
 
@@ -785,7 +726,7 @@ class MainWindow(QMainWindow):
         self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
         self.terminalUpdate(self.tr("Removed AppImage file"))
 
-        QTimer.singleShot(2000, self.terminalFinished)
+        QTimer.singleShot(1000, self.terminalFinished)
 
     def terminalUpdate(self, msg):
         currentProgress = self.tab2TerminalUpdateMsg.text()
@@ -842,3 +783,60 @@ class MainWindow(QMainWindow):
 
         newPage2 = self.createTab2Page2()
         self.tab2StackedWidget.insertWidget(1, newPage2)
+
+
+
+# Error handler for all QThread workers; A pop up window with the error message and a button to open the error log
+    def workerError(self, errorMsg):
+        logFilePath = self.logger.logFilePath
+
+        self.logger.addGeneralEntry(errorMsg)
+
+        msgBox = QDialog()
+        msgBox.setWindowTitle("Error!")
+
+        msgBoxLayout = QVBoxLayout(msgBox)
+        msgBoxLayout.setContentsMargins(20, 20, 20, 20)
+        msgBoxLayout.setSpacing(6)
+
+        textContainer = QWidget()
+        textContainerLayout = QVBoxLayout(textContainer)
+
+        msgTitle = QLabel(self.tr("AppImage-Installer ran into an issue!"))
+        msgTitle.setObjectName("msgTitle")
+
+        msgText = QLabel(self.tr("This error occured:\n{error}\nA more detailed log can be found in {logFile}.").format(error=errorMsg, logFile=logFilePath))
+
+        textContainerLayout.addWidget(msgTitle)
+        textContainerLayout.addWidget(msgText)
+
+        msgBoxLayout.addWidget(textContainer, alignment=Qt.AlignHCenter)
+
+        btnLayout = QHBoxLayout()
+        btnLayout.setContentsMargins(0, 0, 0, 0,)
+        btnLayout.setSpacing(0)
+
+        exitBtn = QPushButton(self.tr("Exit"))
+        exitBtn.setObjectName("leftBtn")
+        exitBtn.clicked.connect(lambda: sys.exit())
+
+        openLogBtn = QPushButton(self.tr("Open Log"))
+        openLogBtn.setObjectName("rightBtn")
+        openLogBtn.setDefault(True)
+        openLogBtn.setAutoDefault(True)
+
+# Open the log file with the default file editor
+        openLogBtn.clicked.connect(lambda: subprocess.Popen(
+                ["xdg-open", str(logFilePath)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            ))
+
+        btnLayout.addWidget(exitBtn)
+        btnLayout.addWidget(openLogBtn)
+
+        msgBoxLayout.addLayout(btnLayout)
+
+        msgBox.exec()
+
+        sys.exit()

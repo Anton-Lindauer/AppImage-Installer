@@ -65,7 +65,7 @@ class InstallWorker(QThread):
             self.progressUpdate.emit(self.tr("Startmenu entry has been created (4/4 tasks finished)"))
 
 # Wait 2s to let the user see that everything has been completed
-            time.sleep(2)
+            time.sleep(1)
 
             self.finished.emit()
 
