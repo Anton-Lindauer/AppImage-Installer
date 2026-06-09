@@ -1,20 +1,17 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox, QListView
-from PySide6.QtCore import Qt, QThread, Signal, QUrl, QObject, QSettings
+from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
-
-from src.core.logic import Installer, StartmenuEntry
 
 from pathlib import Path
 import subprocess
 import tempfile
 import shutil
-import time
 import os
 
 # All functions from the menubar
-class General(QObject):
+class MenuBarUtils(QObject):
     def __init__(self):
         super().__init__()
 
@@ -68,16 +65,16 @@ class General(QObject):
         settingsPage = QDialog()
         settingsPage.setWindowTitle(self.tr("AppImage-Installer Settings"))
 
-        settingsPageLayout = QVBoxLayout(settingsPage)
-        settingsPageLayout.setContentsMargins(20, 20, 20, 20)
-        settingsPageLayout.setSpacing(6)
+        settingsWindowLayout = QVBoxLayout(settingsPage)
+        settingsWindowLayout.setContentsMargins(20, 20, 20, 20)
+        settingsWindowLayout.setSpacing(6)
 
         title = QLabel(self.tr("General Settings"))
         title.setObjectName("title")
 
-        self.setting1 = QCheckBox(self.tr("Auto delete old logs"))
-        self.setting1.setChecked(self.settings.value("autoDelete", True, type=bool))
-        self.setting1.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
+        setting1 = QCheckBox(self.tr("Auto delete old logs"))
+        setting1.setChecked(self.settings.value("autoDelete", True, type=bool))
+        setting1.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
 
         title2 = QLabel(self.tr("Language"))
         title2.setObjectName("title")
@@ -89,6 +86,7 @@ class General(QObject):
         languageSel.addItem("Deutsch", "de")
         languageSel.addItem("English", "en")
 
+# KDE doesn't have those problems
         if not self.settings.value("theme") == "kdeTheme":
 
 # Fix to properly load the stylesheets
@@ -109,13 +107,13 @@ class General(QObject):
 
         languageSel.currentTextChanged.connect(lambda: self.settings.setValue("language", languageSel.currentData()))
 
-        settingsPageLayout.addWidget(title)
-        settingsPageLayout.addWidget(self.setting1)
-        settingsPageLayout.addWidget(title2)
-        settingsPageLayout.addWidget(infoText2)
-        settingsPageLayout.addWidget(languageSel)
+        settingsWindowLayout.addWidget(title)
+        settingsWindowLayout.addWidget(setting1)
+        settingsWindowLayout.addWidget(title2)
+        settingsWindowLayout.addWidget(infoText2)
+        settingsWindowLayout.addWidget(languageSel)
 
-        settingsPageLayout.addStretch()
+        settingsWindowLayout.addStretch()
 
         settingsPage.exec()
 
@@ -131,9 +129,9 @@ class PrepInstall(QObject):
     def userPick(self, parentWindow):
         pickedPath, _ = QFileDialog.getOpenFileName(
             parentWindow,
-            "Pick a AppImage file to install",
+            self.tr("Pick a AppImage file to install"),
                 str(self.userDir),
-            "AppImage files (*.AppImage)"
+            self.tr("AppImage files (*.AppImage)")
         )
 
         if pickedPath:
@@ -145,56 +143,6 @@ class PrepInstall(QObject):
             if selected is not None:
                 pickedPath = selected.text()
                 self.pickedFile.emit(pickedPath)
-
-    def getAppimageMetadata(path):
-        filePath = Path(path).resolve()
-
-        workDir = Path(tempfile.mkdtemp())
-
-        try:
-# Extract the AppImage to a temporary directory
-            subprocess.run(
-                [str(filePath), "--appimage-extract"],
-                cwd=workDir,
-                check=True
-            )
-
-            squashfsRoot = workDir / "squashfs-root"
-
-            if not squashfsRoot.exists():
-                raise RuntimeError("Extraction failed: squashfs-root not found")
-
-# AppImages contain a .desktop file with the same content as the .desktop file for the startmenu entry
-            desktopFiles = list(squashfsRoot.rglob("*.desktop"))
-
-            if not desktopFiles:
-                raise RuntimeError("No .desktop files found in AppImage")
-
-            desktopFile = desktopFiles[0]
-
-            metadata = {}
-
-            with open(desktopFile, encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-
-                    if "=" not in line:
-                        continue
-
-                    key, value = line.split("=", 1)
-                    metadata[key] = value
-
-# Return only the needed information from the AppImage's .desktop file
-            return {
-                "exec": metadata.get("Exec", ""),
-                "name": metadata.get("Name", ""),
-                "comment": metadata.get("Comment", ""),
-                "categories": metadata.get("Categories", ""),
-                "icon": metadata.get("Icon", "")
-            }
-
-        finally:
-            shutil.rmtree(workDir, ignore_errors=True)
 
 # All functions to prepare the uninstallation of an installed AppImage program
 class PrepUninstall(QObject):
@@ -204,13 +152,13 @@ class PrepUninstall(QObject):
         super().__init__(parent)
         self.userDir = Path.home()
 
-# Filedialog window to get a AppImage from outside the Downloads directory
+# Filedialog window to get a AppImage from outside the AppImage directory
     def userPick(self, parentWindow):
         pickedPath, _ = QFileDialog.getOpenFileName(
             parentWindow,
-            "Pick a AppImage file to install",
+            self.tr("Pick a AppImage file to uninstall"),
                 str(self.userDir),
-            "AppImage files (*.AppImage)"
+            self.tr("AppImage files (*.AppImage)")
         )
 
         if pickedPath:
@@ -222,68 +170,3 @@ class PrepUninstall(QObject):
             if selected is not None:
                 pickedPath = selected.text()
                 self.pickedFile.emit(pickedPath)
-
-# Extracting a AppImage can take a while, so I temporarely put that code in a QThread (I know it's not the best way to do it like this)
-class MetadataWorker(QThread):
-    progressUpdate = Signal(str)
-    error = Signal(str)
-    finished = Signal(dict)
-
-    def __init__(self, path):
-        super().__init__()
-        self.path = path
-
-    def run(self):
-        try:
-            metadata = PrepInstall.getAppimageMetadata(self.path)
-            self.finished.emit(metadata)
-
-        except Exception as e:
-            self.error.emit(str(e))
-
-# Class for the installation process
-class InstallWorker(QThread):
-    progressUpdate = Signal(str)
-    error = Signal(str)
-    success = Signal()
-
-    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName, logger, symLinkDir):
-        super().__init__()
-
-        self.logger = logger
-        self.installer = Installer(self.logger)
-        self.startMenuEntry = StartmenuEntry(self.logger)
-
-        self.selectedFilePath = selectedFilePath
-        self.fileDest = fileDest     
-        self.userDir = userDir
-        self.programName = programName
-        self.programDescr = programDescr
-        self.programCategory = programCategory
-        self.cmdName = cmdName
-        self.symLinkDir = symLinkDir
-
-# All installation steps with progress updates
-    def run(self):
-        try:
-            self.installer.moveFile(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit(self.tr("File moved successfully (1/4 tasks finished)"))
-
-            self.installer.mkExec(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit(self.tr("File has been made executable (2/4 tasks finished)"))
-
-            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.symLinkDir)
-            self.progressUpdate.emit(self.tr("Program has been made executable (3/4 tasks finished)"))
-
-            self.startMenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
-            self.progressUpdate.emit(self.tr("Startmenu entry has been created (4/4 tasks finished)"))
-
-# Wait 2s to let the user see that everything has been completed
-            time.sleep(2)
-
-            self.success.emit()
-
-        except Exception as error:
-            print(error)
-
-            self.error.emit(str(error))

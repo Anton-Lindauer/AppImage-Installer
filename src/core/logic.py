@@ -4,6 +4,8 @@ import os
 import shutil
 import subprocess
 import stat
+import tempfile
+import time
 from pathlib import Path
 from datetime import datetime
 
@@ -23,7 +25,54 @@ class Installer():
 
         fileList.sort()
         return fileList
+    
+# Get the content of the .desktop file in the AppImage to later create a startmenu entry    
+    def getAppimageMetadata(filePath):
+        workDir = Path(tempfile.mkdtemp())
+
+        try:
+# Extract the AppImage to a temporary directory
+            subprocess.run(
+                [str(filePath), "--appimage-extract", "*.desktop"],
+                cwd=workDir,
+                check=True
+            )
+
+            squashfsRoot = workDir / "squashfs-root"
+
+            if not squashfsRoot.exists():
+                raise RuntimeError("Extraction failed: squashfs-root not found")
+            
+# AppImages contain a .desktop file with the same content as the .desktop file for the startmenu entry
+            desktopFiles = list(squashfsRoot.rglob("*.desktop"))
+
+            if not desktopFiles:
+                raise RuntimeError("No .desktop files found in AppImage")
+
+            desktopFile = desktopFiles[0]
+
+            metadata = {}
+
+            with open(desktopFile, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+
+                    if "=" not in line:
+                        continue
+
+                    key, value = line.split("=", 1)
+                    metadata[key] = value
+
+            return {
+                "exec": metadata.get("Exec", ""),
+                "name": metadata.get("Name", ""),
+                "comment": metadata.get("Comment", ""),
+                "categories": metadata.get("Categories", "")
+            }
        
+        finally:
+            shutil.rmtree(workDir, ignore_errors=True)
+    
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
         Path(fileDest).mkdir(parents=True, exist_ok=True)
@@ -64,27 +113,39 @@ class StartmenuEntry():
         iconsDir = userDir / ".local/share/icons"
         applicationsDir = userDir / ".local/share/applications"
 
-        Path(iconsDir).mkdir(parents=True, exist_ok=True)
-        Path(applicationsDir).mkdir(parents=True, exist_ok=True)
+        iconsDir.mkdir(parents=True, exist_ok=True)
+        applicationsDir.mkdir(parents=True, exist_ok=True)
 
-# Extract AppImage in to the temporary directory
-        logContent = subprocess.run([f"{fileDest}/{fileName}", "--appimage-extract"], check=True, capture_output=True, text=True)
+        workDir = Path(tempfile.mkdtemp())
+
+# Extract the icon.png to a temporary squashfs directory
+        logContent = subprocess.run(
+            [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
+            cwd=workDir,
+            check=True
+        )
         self.logger.addCmdEntry(logContent)
+        
+        squashfsRoot = workDir / "squashfs-root"
 
-# Find the name of the icon.png file; Used later in the .desktop file 
-        programIcon = Path(next(Path("squashfs-root").glob("*.png"))).name
-        logContent = "Found the icon file name"
-        self.logger.addGeneralEntry(logContent)
+        if not squashfsRoot.exists():
+            raise RuntimeError("Extraction failed: squashfs-root not found")
+            
+# AppImages contain a icon.png which will be used as program icon 
+        iconFile = next(squashfsRoot.rglob("*.png"), None)
+
+        if iconFile is None:
+            raise RuntimeError("No .png files found in AppImage")
+
+        programIcon = Path(iconFile).name
+
+        iconPath = Path(iconsDir / programIcon)
+
+# Only move the icon if it doesn't already exist; allows for multiple installations of the same program
+        if not  iconPath.exists():
+            shutil.move(iconFile, iconsDir)
         
-# Copy icon to icons directory
-        subprocess.run(["mv" , next(Path("squashfs-root").glob("*.png")), iconsDir], check=True)
-        logContent = f"Moved icon to {iconsDir}"
-        self.logger.addGeneralEntry(logContent)
-        
-# Delete squashfs-root; This is a temporary directory and the app icon is extracted to this directory
-        subprocess.run(["rm", "-rf", Path("squashfs-root")], check=True)
-        logContent = "Deleted temporary directory squashfs-root"
-        self.logger.addGeneralEntry(logContent)
+        shutil.rmtree(workDir, ignore_errors=True)
 
 # .desktop file content
         desktopFile = f"""[Desktop Entry]

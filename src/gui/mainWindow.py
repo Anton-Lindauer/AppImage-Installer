@@ -10,7 +10,8 @@ import os
 from pathlib import Path
 
 from src.core.logic import Installer, Uninstaller, Logging
-from src.gui.components import General, PrepInstall, PrepUninstall, InstallWorker, MetadataWorker
+from src.gui.components import MenuBarUtils, PrepInstall, PrepUninstall
+from src.gui.threads import MetadataWorker, InstallWorker
 
 class MainWindow(QMainWindow):
 
@@ -24,7 +25,7 @@ class MainWindow(QMainWindow):
         self.symLinkDir = self.userDir / ".local/bin"
         self.startMenuFilePath = self.userDir / ".local" / "share" / "applications"
 
-        self.general = General()
+        self.menubarUtils = MenuBarUtils()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
         self.logger = Logging()
@@ -40,9 +41,9 @@ class MainWindow(QMainWindow):
         kdeSupport = self.tr("Recommended") if self.isKde else self.tr("Not Supported")
         
         if not self.desktopEnv == "KDE":
-            self.general.loadTheme(self.settings.value("theme", "sysTheme", str))
+            self.menubarUtils.loadTheme(self.settings.value("theme", "sysTheme", str))
         else:
-            self.general.loadTheme(self.settings.value("theme", "kdeTheme", str))
+            self.menubarUtils.loadTheme(self.settings.value("theme", "kdeTheme", str))
         
         self.setWindowTitle("AppImage-Installer")
         self.setMinimumSize(750, 710)
@@ -130,7 +131,7 @@ class MainWindow(QMainWindow):
 # Therefore you have to force Qt to do it
         setting2.hovered.connect(lambda: setting1.hide())
 
-        setting2.triggered.connect(self.general.settingsWindow)
+        setting2.triggered.connect(self.menubarUtils.settingsWindow)
 
         theme1 = setting1.addAction(self.tr("System theme"))
         setting1.addSeparator()
@@ -143,19 +144,19 @@ class MainWindow(QMainWindow):
         theme5 = setting1.addAction(self.tr("Use KDE theme ({Support})").format(Support=kdeSupport))
 
 # Reloading tab 1 page 2 because it uses a different layout for QSS and KDE themes
-        theme1.triggered.connect(lambda: self.general.loadTheme("sysTheme"))
+        theme1.triggered.connect(lambda: self.menubarUtils.loadTheme("sysTheme"))
         theme1.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme2.triggered.connect(lambda: self.general.loadTheme("modernBlueDarkTheme"))
+        theme2.triggered.connect(lambda: self.menubarUtils.loadTheme("modernBlueDarkTheme"))
         theme2.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme3.triggered.connect(lambda: self.general.loadTheme("modernDarkTheme"))
+        theme3.triggered.connect(lambda: self.menubarUtils.loadTheme("modernDarkTheme"))
         theme3.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme4.triggered.connect(lambda: self.general.loadTheme("modernLightTheme"))
+        theme4.triggered.connect(lambda: self.menubarUtils.loadTheme("modernLightTheme"))
         theme4.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme5.triggered.connect(lambda: self.general.loadTheme("kdeTheme"))
+        theme5.triggered.connect(lambda: self.menubarUtils.loadTheme("kdeTheme"))
         theme5.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
 
         help1 = helpMenu.addAction("Github Repo")
-        help1.triggered.connect(General.openRepo)
+        help1.triggered.connect(self.menubarUtils.openRepo)
 
 # Hides the box around the box with the menues; Has to be declared for every menu
         for menu in (fileMenu, settingsMenu, setting1, helpMenu):
@@ -251,12 +252,12 @@ class MainWindow(QMainWindow):
 
         self.metadataWorker = MetadataWorker(self.selectedAppPath)
 
-        self.metadataWorker.finished.connect(self.metadataLoaded)
+        self.metadataWorker.finished.connect(self.metadataLoader)
         self.metadataWorker.error.connect(self.metadataWorkerError)
 
         self.metadataWorker.start()
 
-    def metadataLoaded(self, metadata):
+    def metadataLoader(self, metadata):
         self.tab1StackedWidget.setCurrentIndex(1)
 
         self.programInfoList[0].setText(metadata["exec"])
@@ -309,19 +310,20 @@ class MainWindow(QMainWindow):
         programInfoText = [self.tr("The command used to launch the application from the terminal."),
                            self.tr("The name that will appear in the start menu and application list."),
                            self.tr("A brief summary of the application (displayed as a tooltip)."),
-                           self.tr("Determines the placement in the start menu. Some categories can't be combined; combined they create a different category.")]
+                           self.tr("Determines the placement in the start menu.")]
         
-        self.categoryList = ["Accessibility;Utility", "Education", "Office", 
-                             "Development", "Graphics", "Network", 
-                             "AudioVideo", "Game", "System",
-                             "Science;Education", "Utility", 
-                             "Settings", "System;Settings"]
+# All main categories from freedesktop.org
+        self.categoryList = ["AudioVideo", "Audio", "Video", 
+                             "Development", "Education", "HealthFitness", 
+                             "Game", "Graphics", "Network",
+                             "Office", "Science", "Settings", 
+                             "System", "Utility"]
         
         self.programInfoList = []
         
 # Create all the element in the groupbox
         for index, info in enumerate(self.programInfo):  
-# Boxes with the descriptions and the QLineEdits 
+# Boxes with the descriptions and the QLineEdits
             containerTile = QWidget()
             containerTile.setObjectName("page2InnerBox")
 
@@ -358,7 +360,7 @@ class MainWindow(QMainWindow):
                 self.page2RadioBtns = QButtonGroup()
                 self.page2RadioBtns.setExclusive(False)
 
-# Create a QRadioButton for all 13 categories
+# Create a QRadioButton for all 14 categories
                 for i, category in enumerate(self.categoryList):
                     radioBtn = QRadioButton(category)
                     radioBtn.setObjectName("categorySel")
@@ -473,7 +475,7 @@ class MainWindow(QMainWindow):
 
 # Process status updates from the installation function
         self.worker.progressUpdate.connect(self.workerProgress)
-        self.worker.success.connect(self.workerFinished)
+        self.worker.finished.connect(self.workerFinished)
         self.worker.error.connect(self.workerError)
 
         self.terminalUpdateMsg.setText(self.tr("Installation in process..."))
@@ -541,7 +543,7 @@ class MainWindow(QMainWindow):
         openLogBtn.setDefault(True)
         openLogBtn.setAutoDefault(True)
 
-# I didn't want to write a function for one command
+# Open the log file with the default file editor
         openLogBtn.clicked.connect(lambda: subprocess.Popen(
                 ["xdg-open", str(logFilePath)],
                 stdout=subprocess.DEVNULL,
