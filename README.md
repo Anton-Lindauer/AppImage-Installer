@@ -7,6 +7,7 @@ This project is **still in development**, but you can already do the following t
 And if you don't want a AppImage program anymore, you can also uninstall the program now (only in the GUI version).
 
 The CLI version is no longer maintained and can only install AppImages and not uninstall them.
+
 ## Requirements
 
 You need Python version 3.12 or higher to use the GUI or CLI version of this tool.
@@ -24,25 +25,29 @@ Installation guide can be found [here.](HowToInstall.md)
 **Note:** The pictures are not 100% up to date and small visual changes are not worth the effort to update them.
 
 ### Selecting a file to install
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page1.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Installer%20Page%201.png)
+Pick a file from your Downloads directory with the radiobuttons or from somewhere else.
 
 ### Entering program info
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page2.png)
-Example of installing Ultimaker Cura.
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Installer%20Page%202.png)
+Example of installing Ultimaker Cura. AppImage-Installer extracts the metadata from the AppImage file and will fill out everything accourdingly.
 
-### Installation process status page
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page3.png)
-This may take a while, especially the creation of a startmenu entry can take a while. 
+Allthough the GUI doesn't tell you, you have to fill out every field on this page to continue. You can select multiple categories. 
 
-### Finished installation screen
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/f970c2a469a98938db5edcf130c342d73af810de/pictures%20for%20README%20file/page4.png)
+### Uninstalling AppImage programs
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
+For now you can only see the installation path of the AppImage files, the program name will be used when I have the time and motivation to implement it.
+
+### Uninstallation terminal
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Uninstaller%20Page%202.png)
+The installer tab has a similar terminal after page 2. When pressing start uninstallation/installation, the process will actually start.
 
 ## Other important notes
 Removing a AppImage file with this program will permanently delete it.
 
 If you suddenly find a directory called "AppDir" or another new directory in the directory of the installer scripts, you can most likely safely delete them. Sometimes such directories are created by the AppImages durin the app icon extraction process. 
 
-A light mode and other themes are also included.
+A light mode and other themes, as well as KDE Plasma theme integration are also included.
 
 This tool is still work in progress and more functionality will be added soon.
 
@@ -62,3 +67,5 @@ If you want to contribute, make suggestions on how to make the code better or th
 The divider lines in the boxes don't look the same because of how Qt renders them, there isn't really a fix for this.
 
 The ComboBox in the configure menu has a box around the drop down menu on Linux Mint. This is because of some Qt or Cinnamon default behavior when creating that element. I haven't found a fix yet and I'm not even sure if this is fixable.
+
+There is a random line under the text of a tab when using the KDE Plasma integration, I couldn't find a fix yet.
