@@ -25,7 +25,7 @@ Installation guide can be found [here.](HowToInstall.md)
 **Note:** The pictures are not 100% up to date and small visual changes are not worth the effort to update them.
 
 ### Selecting a file to install
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Installer%20Page%201.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/46315701a187ff9cb3c29cbf78db58fbf1f3189a/pictures%20for%20README%20file/Installer%20Page%201.png)
 Pick a file from your Downloads directory with the radiobuttons or from somewhere else.
 
 ### Entering program info
@@ -35,8 +35,8 @@ Example of installing Ultimaker Cura. AppImage-Installer extracts the metadata f
 Allthough the GUI doesn't tell you, you have to fill out every field on this page to continue. You can select multiple categories. 
 
 ### Uninstalling AppImage programs
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
-For now you can only see the installation path of the AppImage files, the program name will be used when I have the time and motivation to implement it.
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829ahttps://github.com/Anton-Lindauer/AppImage-Installer/blob/46315701a187ff9cb3c29cbf78db58fbf1f3189a/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
+**Note:** AppImage-Installer will also show up in this list, because the .desktop file of it is in the same directory as for installed AppImages. Uninstalling AppImage-Installer through this won't work, but will break it.
 
 ### Uninstallation terminal
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Uninstaller%20Page%202.png)
