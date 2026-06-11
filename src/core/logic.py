@@ -82,14 +82,15 @@ class Installer():
         logContent = f"File successfully moved to {fileDest}"
         self.logger.addGeneralEntry(logContent)
 
-# Make the AppImage file executable
-    def mkExec(self, selectedFilePath, fileDest):
-        fileName = Path(selectedFilePath).name
-        path = fileDest / fileName
+# Make the AppImage file executable (Hotfixed, a better fix will come soon)
+    def mkExec(self, path):
+        path = Path(path)
+        #fileName = Path(selectedFilePath).name
+        #path = fileDest / fileName
         path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
-        logContent = f"AppImage file at {path} has been made executable"
-        self.logger.addGeneralEntry(logContent)
+        #logContent = f"AppImage file at {path} has been made executable"
+        #self.logger.addGeneralEntry(logContent)
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     def mkSymLink(self, selectedFilePath, cmdName, fileDest, symLinkDir):
@@ -180,6 +181,32 @@ class Uninstaller():
 
         fileList.sort()
         return fileList
+    
+    def listInstalledNames(desktopPath):
+        installedList = [Path(file).stem
+                         for file in os.scandir(desktopPath)
+                         if file.name[-8:] == ".desktop" and file.is_file(follow_symlinks=False)]
+        
+        installedList.sort()
+
+        metadata = {}
+        index = 0
+        
+        for file in os.scandir(desktopPath):
+            index += 1
+            with open(file, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+
+                    if "=" not in line:
+                        continue
+                    
+                    key, value = line.split("=", 1)
+
+                    if key == "Name" or key == "Icon" or key == "Exec":
+                        metadata[f"{key}{index}"] = value
+
+        return metadata
     
 # Returns the path of the terminal symlink of the selected AppImage
     @staticmethod

@@ -3,6 +3,7 @@ faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QGridLayout, QDialog
 from PySide6.QtCore import Qt, QSettings, QTimer
+from PySide6.QtGui import QPixmap
 
 import sys
 import subprocess
@@ -231,7 +232,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
         self.tab1Page1SubmitBtn.setObjectName("submitBtn")
-        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSeletedRadioBtn(self.groupPage1))
+        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
@@ -602,34 +603,70 @@ class MainWindow(QMainWindow):
 
 # All paths of AppImage files in the Downloads directory
         self.installedList = Uninstaller.listInstalls(self.fileDest)     
-        installedListLen = len(self.installedList)
+        #installedListLen = len(self.installedList)
+
+        installedMetadata = Uninstaller.listInstalledNames(self.startMenuFilePath)
+
+#        for index, item in enumerate(installedMetadata):
+#            print(f"Item{index}: {item}: {installedMetadata[item]}")
+
+        self.installedMetadataList = list(installedMetadata.values())
+
+        nameIndex = 0
+
+        iterations = len(self.installedMetadataList) / 3
+        iterations = int(iterations)
 
 # Group for all QRadioButtons to later find out which one is checked
         self.groupTab2Page1 = QButtonGroup(self) 
 
 # Create a QRadioButton for each file
-        if installedListLen > 0:
-             for itemPos, file in enumerate(self.installedList):
-                radioBtn = QRadioButton(file)
+        if iterations > 0:
+             for index in range(iterations):
+                radioBtn = QRadioButton(self.installedMetadataList[nameIndex])
                 containerLayout.addWidget(radioBtn)
                 self.groupTab2Page1.addButton(radioBtn)
 
-# Only create a divider if the element isn't the last one and add rounded corners to the first and last element
-                suffix = "" if installedListLen <= 5 else "Scroll"
+                iconPath = self.installedMetadataList[nameIndex + 2]
 
-                if installedListLen == 1 and installedListLen <= 5:
+                radioBtnContainer = QWidget()
+                radioBtnContainer.setObjectName("radioBtnContainer")
+
+                layout = QHBoxLayout(radioBtnContainer)
+                layout.setContentsMargins(0, 0, 0, 0)
+                #layout.setSpacing(0)
+
+                iconLabel = QLabel()
+                iconLabel.setObjectName("iconLabel")
+                pixmap = QPixmap(iconPath)
+                iconLabel.setPixmap(pixmap.scaled(22, 22, aspectMode=Qt.AspectRatioMode.KeepAspectRatio))
+
+                layout.addWidget(iconLabel)
+                layout.addWidget(radioBtn)
+                
+                nameIndex += 3
+
+                containerLayout.addWidget(radioBtnContainer)
+
+# Only create a divider if the element isn't the last one and add rounded corners to the first and last element
+                suffix = "" if iterations <= 5 else "Scroll"
+
+                if iterations == 1 and iterations <= 5:
                     radioBtn.setProperty("isFirstAndLast", "true")
-                elif itemPos == 0:
+                    radioBtnContainer.setProperty("isFirstAndLast", "true")
+                elif index == 0:
                     radioBtn.setProperty(f"isFirst{suffix}", "true")
-                elif itemPos == installedListLen - 1:
+                    radioBtnContainer.setProperty(f"isFirst{suffix}", "true")
+                elif index == iterations - 1:
                     radioBtn.setProperty(f"isLast{suffix}", "true")
+                    radioBtnContainer.setProperty(f"isLast{suffix}", "true")
         else:
             tab2Page1NoFileMsg = QLabel(self.tr("No AppImage installation has been found"))
             tab2Page1NoFileMsg.setObjectName("message")
             containerLayout.addWidget(tab2Page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        containerScrollArea.setFixedHeight(min(installedListLen, 6) * 39)
+        containerScrollArea.setFixedHeight(min(iterations, 6) * 39)
 
         checkBox1 = QCheckBox(self.tr("Remove all symlinks (Recommended)"))
         checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
@@ -640,7 +677,7 @@ class MainWindow(QMainWindow):
 
         submitBtn = QPushButton(self.tr("Continue"))
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSeletedRadioBtn(self.groupTab2Page1))
+        submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSelectedRadioBtn(self.groupTab2Page1))
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(1))
 
         mainLayout.addWidget(title)
@@ -659,7 +696,9 @@ class MainWindow(QMainWindow):
         
     def tab2Page1Worker(self, path):
         self.tab2StackedWidget.setCurrentIndex(1)
-        self.selectedAppPath = path
+        #self.selectedAppPath = path
+        picked = self.installedMetadataList.index(path)
+        self.selectedAppPath = self.installedMetadataList[picked + 1]
 
     def createTab2Page2(self):
         mainWidget = QWidget()

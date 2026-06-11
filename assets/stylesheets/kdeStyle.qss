@@ -10,6 +10,12 @@ QLabel#title {
     font-weight: bold;
 }
 
+QLabel#iconLabel {
+    max-width: 22px;
+    padding: 0px;
+    padding-left: 6px;
+}
+
 /* Fix for the random line under some elements*/
 QCheckBox:focus,
 QRadioButton:focus{

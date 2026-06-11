@@ -410,6 +410,43 @@ QLabel#page1NoFileMsg {
     padding: 4px;
 }
 
+QWidget#radioBtnContainer {
+    border-bottom: 1px solid #484d52
+}
+
+QWidget#radioBtnContainer:hover {
+    background-color: #4e5256;
+}
+
+QWidget#radioBtnContainer[isFirst="true"] {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
+
+QWidget#radioBtnContainer[isLast="true"] {
+    border-bottom: none;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 0px;
+}
+
+QWidget#radioBtnContainer[isFirstAndLast="true"] {
+    border-bottom: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 0px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 0px;
+}
+
+QLabel#iconLabel {
+    max-width: 22px;
+    padding: 0px;
+    padding-left: 6px;
+}
+
 /* Everything that's only for tab one page two */
 #page2InnerBox {
     margin: 0px;

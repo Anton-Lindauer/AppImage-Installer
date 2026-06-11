@@ -1,7 +1,7 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox, QListView
-from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings
+from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings, QEvent
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 from pathlib import Path
@@ -138,7 +138,7 @@ class PrepInstall(QObject):
             self.pickedFile.emit(pickedPath)
 
 # Find the selected file and the user can only continue with a file selected
-    def findSeletedRadioBtn(self, groupPage1):
+    def findSelectedRadioBtn(self, groupPage1):
             selected = groupPage1.checkedButton()
             if selected is not None:
                 pickedPath = selected.text()
@@ -165,7 +165,7 @@ class PrepUninstall(QObject):
             self.pickedFile.emit(pickedPath)
 
 # Find the selected file and the user can only continue with a file selected
-    def findSeletedRadioBtn(self, groupPage1):
+    def findSelectedRadioBtn(self, groupPage1):
             selected = groupPage1.checkedButton()
             if selected is not None:
                 pickedPath = selected.text()
