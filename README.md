@@ -35,7 +35,7 @@ Example of installing Ultimaker Cura. AppImage-Installer extracts the metadata f
 Allthough the GUI doesn't tell you, you have to fill out every field on this page to continue. You can select multiple categories. 
 
 ### Uninstalling AppImage programs
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829ahttps://github.com/Anton-Lindauer/AppImage-Installer/blob/46315701a187ff9cb3c29cbf78db58fbf1f3189a/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/3c2d934e4599e7d495e181149be2eb9587fd7ad3/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
 **Note:** AppImage-Installer will also show up in this list, because the .desktop file of it is in the same directory as for installed AppImages. Uninstalling AppImage-Installer through this won't work, but will break it.
 
 ### Uninstallation terminal
