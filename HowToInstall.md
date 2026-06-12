@@ -1,5 +1,6 @@
 # Installation guide
-This guide contains a general guide on how to get AppImage-Installer running, but also how to use the KDE Plasma theme for it, if you use KDE Plasma. 
+
+This guide contains a general guide on how to get AppImage-Installer running, but also how to use the KDE Plasma theme for it, if you use KDE Plasma.
 
 Lastly it also contains a guide on how to make a right click menu shortcut to install AppImages for Dolphin and Nemo; I can't write a guide for every filemanager, so you will have to figure it out on your own how to do it (with AI), if you want that.
 
@@ -8,19 +9,22 @@ Lastly it also contains a guide on how to make a right click menu shortcut to in
 ### General installation and setup
 
 Download this repo to your home directory
-```
+
+```bash
 git clone https://github.com/Anton-Lindauer/AppImage-Installer.git
 ```
 
 Then go in the AppImage-Installer directory
-```
+
+```bash
 cd AppImage-Installer
 ```
 
 **CLI:**
 
 If you only want the CLI version, then enter this command to launch it
-```
+
+```bash
 python3 src/cli/mainCLI.py
 ```
 
@@ -29,27 +33,32 @@ python3 src/cli/mainCLI.py
 If you want the GUI version, follow these steps
 
 Create a virtual environment
-```
+
+```bash
 python3 -m venv .venv
 ```
 
 Activate the virtual environment in bash
-```
+
+```bash
 source .venv/bin/activate
 ```
 
 Or if you use fish
-```
+
+```fish
 source .venv/bin/activate.fish
 ```
 
 Install all requirements
-```
+
+```bash
 pip install -r requirements.txt
 ```
 
 Launch the GUI version via the terminal or click the run button in VS Code if you have done everything in VS Code
-```
+
+```bash
 python3 main.py
 ```
 
@@ -58,12 +67,14 @@ The program will guide you through the installation process. Please report any e
 ### Startmenu entry for AppImage-Installer
 
 Create and open a .desktop file
-```
+
+```bash
 nano ~/.local/share/applications/appimage-installer.desktop
 ```
 
 Paste in this content an change {username} to your username
-```
+
+```bash
 [Desktop Entry]
 Type=Application
 Name=AppImage Installer
@@ -82,7 +93,7 @@ KDE Plasma also uses the Qt framework and can mess with QSS stylesheets, but tha
 
 ### For Debian based distros
 
-```
+```bash
 sudo apt install qt6ct
 
 sudo apt install qt6-wayland qwayland-qt6
@@ -90,7 +101,7 @@ sudo apt install qt6-wayland qwayland-qt6
 
 ### For Arch based distros
 
-```
+```bash
 sudo pacman -S qt6ct
 
 sudo pacman -S qt6-wayland plasma-integration
@@ -105,12 +116,14 @@ I don't know which packagemanager your distro uses, but you need to install qt6c
 KDE Plasma also uses the Qt framework and therefore you have to make sure that the system Pyside6 and in the .venv installed Pyside6 are the exact same version. If they are different, change the .venv version to the system version
 
 Check your system version, by pasting this in a new terminal outside of your .venv and your venv version by pasting this in a terminal inside your activated .venv
-```
+
+```bash
 pip list | grep PySide6
 ```
 
 Remove the wrong version and install the system version in your activated .venv
-```
+
+```bash
 pip uninstall PySide6
 
 pip install PySide6==6.X.X
@@ -121,17 +134,20 @@ pip install PySide6==6.X.X
 Since Dolphin is the default KDE Plasma file manager, you probably use it. Follow these steps to create a right click menu shortcut to install AppImages by right clicking them in Dolphin.
 
 Make sure the ~/.local/share/kio/servicemenus/ directory exist, or create it with this command
-```
+
+```bash
 mkdir -p ~/.local/share/kio/servicemenus
 ```
 
 Create and open a .desktop file
-```
+
+```bash
 nano ~/.local/share/kio/servicemenus/appimage-installer.desktop
 ```
 
 Paste in this content and insert your username
-```
+
+```bash
 [Desktop Entry]
 Type=Service
 ServiceTypes=KonqPopupMenu/Plugin
@@ -147,26 +163,32 @@ Exec=python3 /home/{username}/AppImage-Installer/main.py %f
 Save with Ctrl + O and exit with Ctrl + X.
 
 Make the file executable
-```
+
+```bash
 chmod +x ~/.local/share/kio/servicemenus/appimage-installer.desktop
 ```
 
 If it doesn't show up in the right click menu of a .AppImage file, try this command or logging back in
-```
+
+```bash
 kbuildsycoca6
 ```
 
 ## For every distro with Cinnamon
+
 ### Nemo integration
+
 Since Nemo is the default Cinnamon file manager, you probably use it. Follow these steps to create a right click menu shortcut to install AppImages by right clicking them in Nemo.
 
 Create a Nemo Action
-```
+
+```bash
 nano ~/.local/share/nemo/actions/appimage-installer.nemo_action
 ```
 
 Paste in this content and insert your username
-```
+
+```bash
 [Nemo Action]
 Active=true
 Name=Install with AppImage Installer
@@ -181,9 +203,11 @@ Quote=double
 Save with Ctrl + O and exit with Ctrl + X.
 
 If it doesn't show up in the right click menu of a .AppImage file, try this command to close Nemo or logging back in
-```
+
+```bash
 nemo -q
 ```
 
 ## For other desktop environments/filemanager
-I don't know how to do this for other filemanagers, but you can probably figure it out by asking chatgpt. From my experience it has been pretty good at figuring out filemanager integration.
+
+I don't know how to do this for other filemanagers, but you can probably figure it out by asking chatgpt. From my experience it has been pretty good at figuring out filemanager integration

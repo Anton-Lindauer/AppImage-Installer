@@ -13,15 +13,18 @@ class MetadataWorker(QThread):
     error = Signal(str)
     finished = Signal(dict)
 
-    def __init__(self, path):
+    def __init__(self, path, logger):
         super().__init__()
         self.path = path
+        self.logger = logger
+
+        self.installer = Installer(self.logger)
 
     def run(self):
         try:
-            Installer.mkExec(self, self.path)
+            self.installer.mkExec(self.path)
 
-            metadata = Installer.getAppimageMetadata(self.path)
+            metadata = self.installer.getAppimageMetadata(self.path)
             self.finished.emit(metadata)
 
         except Exception as error:
@@ -56,9 +59,6 @@ class InstallWorker(QThread):
         try:
             self.installer.moveFile(self.selectedFilePath, self.fileDest)
             self.progressUpdate.emit(self.tr("File moved successfully (1/3 tasks finished)"))
-
-#            self.installer.mkExec(self.selectedFilePath, self.fileDest)
-#            self.progressUpdate.emit(self.tr("File has been made executable (2/4 tasks finished)"))
 
             self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.symLinkDir)
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))

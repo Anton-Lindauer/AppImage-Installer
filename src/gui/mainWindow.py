@@ -251,7 +251,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Page1SubmitBtn.setEnabled(False)
 
-        self.metadataWorker = MetadataWorker(self.selectedAppPath)
+        self.metadataWorker = MetadataWorker(self.selectedAppPath, self.logger)
 
         self.metadataWorker.finished.connect(self.metadataLoader)
         self.metadataWorker.error.connect(self.workerError)
@@ -601,40 +601,27 @@ class MainWindow(QMainWindow):
         containerLayout.setContentsMargins(0, 0, 0, 0,)
         containerLayout.setSpacing(0)
 
-# All paths of AppImage files in the Downloads directory
-        self.installedList = Uninstaller.listInstalls(self.fileDest)     
-        #installedListLen = len(self.installedList)
+        self.appsMetadata = Uninstaller.getInstalledMetadata(self.startMenuFilePath)
 
-        installedMetadata = Uninstaller.listInstalledNames(self.startMenuFilePath)
-
-#        for index, item in enumerate(installedMetadata):
-#            print(f"Item{index}: {item}: {installedMetadata[item]}")
-
-        self.installedMetadataList = list(installedMetadata.values())
-
-        nameIndex = 0
-
-        iterations = len(self.installedMetadataList) / 3
-        iterations = int(iterations)
+        numOfApps = len(self.appsMetadata)
 
 # Group for all QRadioButtons to later find out which one is checked
         self.groupTab2Page1 = QButtonGroup(self) 
 
 # Create a QRadioButton for each file
-        if iterations > 0:
-             for index in range(iterations):
-                radioBtn = QRadioButton(self.installedMetadataList[nameIndex])
+        if numOfApps > 0:
+             for index, app in enumerate(self.appsMetadata):
+                radioBtn = QRadioButton(app.name)
                 containerLayout.addWidget(radioBtn)
                 self.groupTab2Page1.addButton(radioBtn)
 
-                iconPath = self.installedMetadataList[nameIndex + 2]
+                iconPath = app.iconPath
 
                 radioBtnContainer = QWidget()
                 radioBtnContainer.setObjectName("radioBtnContainer")
 
                 layout = QHBoxLayout(radioBtnContainer)
                 layout.setContentsMargins(0, 0, 0, 0)
-                #layout.setSpacing(0)
 
                 iconLabel = QLabel()
                 iconLabel.setObjectName("iconLabel")
@@ -643,21 +630,19 @@ class MainWindow(QMainWindow):
 
                 layout.addWidget(iconLabel)
                 layout.addWidget(radioBtn)
-                
-                nameIndex += 3
 
                 containerLayout.addWidget(radioBtnContainer)
 
 # Only create a divider if the element isn't the last one and add rounded corners to the first and last element
-                suffix = "" if iterations <= 5 else "Scroll"
+                suffix = "" if numOfApps <= 5 else "Scroll"
 
-                if iterations == 1 and iterations <= 5:
+                if numOfApps == 1 and numOfApps <= 5:
                     radioBtn.setProperty("isFirstAndLast", "true")
                     radioBtnContainer.setProperty("isFirstAndLast", "true")
                 elif index == 0:
                     radioBtn.setProperty(f"isFirst{suffix}", "true")
                     radioBtnContainer.setProperty(f"isFirst{suffix}", "true")
-                elif index == iterations - 1:
+                elif index == numOfApps - 1:
                     radioBtn.setProperty(f"isLast{suffix}", "true")
                     radioBtnContainer.setProperty(f"isLast{suffix}", "true")
         else:
@@ -666,7 +651,7 @@ class MainWindow(QMainWindow):
             containerLayout.addWidget(tab2Page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        containerScrollArea.setFixedHeight(min(iterations, 6) * 39)
+        containerScrollArea.setFixedHeight(min(numOfApps, 6) * 39)
 
         checkBox1 = QCheckBox(self.tr("Remove all symlinks (Recommended)"))
         checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
@@ -694,11 +679,15 @@ class MainWindow(QMainWindow):
         if self.tab2StackedWidget.currentIndex() == 0:
             self.tab2Page1Handler.userPick(self)
         
-    def tab2Page1Worker(self, path):
+    def tab2Page1Worker(self, name):
         self.tab2StackedWidget.setCurrentIndex(1)
-        #self.selectedAppPath = path
-        picked = self.installedMetadataList.index(path)
-        self.selectedAppPath = self.installedMetadataList[picked + 1]
+        #picked = self.installedMetadataList.index(path)
+        #self.selectedAppPath = self.installedMetadataList[picked + 1]
+        for app in self.appsMetadata:
+            if app.name == name:
+                self.selectedAppPath = app.path
+                self.desktopFilePath = app.desktopPath
+
 
     def createTab2Page2(self):
         mainWidget = QWidget()
@@ -746,7 +735,6 @@ class MainWindow(QMainWindow):
         self.tab2Page2BackBtn.setEnabled(False)
 
         symLinkFilePath = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
-        desktopFilePath = Uninstaller.findDesktopFile(self.startMenuFilePath, self.selectedAppPath)
 
         self.tab2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2TerminalUpdateMsg.show()
@@ -757,8 +745,8 @@ class MainWindow(QMainWindow):
             self.terminalUpdate(self.tr("Removed symlink"))
 
         if self.settings.value("rmvStartmenuEntry", True, bool):
-            Uninstaller.rmvInstalledFiles(desktopFilePath)
-            self.logger.addGeneralEntry(f"Permanently removed {desktopFilePath}")
+            Uninstaller.rmvInstalledFiles(self.desktopFilePath)
+            self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
             self.terminalUpdate(self.tr("Removed startmenu entry"))
 
         Uninstaller.rmvInstalledFiles(self.selectedAppPath)

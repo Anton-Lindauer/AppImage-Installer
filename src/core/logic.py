@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import stat
 import tempfile
-import time
+from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 
@@ -27,7 +27,7 @@ class Installer():
         return fileList
     
 # Get the content of the .desktop file in the AppImage to later create a startmenu entry    
-    def getAppimageMetadata(filePath):
+    def getAppimageMetadata(self, filePath):
         workDir = Path(tempfile.mkdtemp())
 
         try:
@@ -35,7 +35,8 @@ class Installer():
             subprocess.run(
                 [str(filePath), "--appimage-extract", "*.desktop"],
                 cwd=workDir,
-                check=True
+                check=True,
+                capture_output=True
             )
 
             squashfsRoot = workDir / "squashfs-root"
@@ -72,6 +73,7 @@ class Installer():
        
         finally:
             shutil.rmtree(workDir, ignore_errors=True)
+            self.logger.addGeneralEntry(f"Extracted .desktop file data \n{metadata}")
     
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
@@ -82,15 +84,12 @@ class Installer():
         logContent = f"File successfully moved to {fileDest}"
         self.logger.addGeneralEntry(logContent)
 
-# Make the AppImage file executable (Hotfixed, a better fix will come soon)
+# Make the AppImage file executable
     def mkExec(self, path):
         path = Path(path)
-        #fileName = Path(selectedFilePath).name
-        #path = fileDest / fileName
-        path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
-        #logContent = f"AppImage file at {path} has been made executable"
-        #self.logger.addGeneralEntry(logContent)
+        path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+        self.logger.addGeneralEntry(f"Made {path} executable")
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     def mkSymLink(self, selectedFilePath, cmdName, fileDest, symLinkDir):
@@ -123,7 +122,8 @@ class StartmenuEntry():
         logContent = subprocess.run(
             [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
             cwd=workDir,
-            check=True
+            check=True,
+            capture_output=True
         )
         self.logger.addCmdEntry(logContent)
         
@@ -167,46 +167,55 @@ class StartmenuEntry():
         self.logger.addGeneralEntry(logContent)
 
 # Make the .desktop file executable
-        subprocess.run(["chmod", "+x", desktopEntryFile], check=True)
+        subprocess.run(["chmod", "+x", desktopEntryFile],
+            check=True,
+            capture_output=True)
         logContent = f"Made {desktopEntryFile} executable"
         self.logger.addGeneralEntry(logContent)
 
 class Uninstaller():
-# Returns a list with all AppImages in the AppImages directory
+# Store metadata from .desktop files in a list of dataclasses
     @staticmethod
-    def listInstalls(installDir):
-        fileList = [file.path 
-                    for file in os.scandir(installDir) 
-                    if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
-
-        fileList.sort()
-        return fileList
-    
-    def listInstalledNames(desktopPath):
-        installedList = [Path(file).stem
-                         for file in os.scandir(desktopPath)
-                         if file.name[-8:] == ".desktop" and file.is_file(follow_symlinks=False)]
-        
-        installedList.sort()
-
-        metadata = {}
-        index = 0
+    def getInstalledMetadata(desktopPath) -> list[UninstallData]:
+        installedProgramsMetadata = []
         
         for file in os.scandir(desktopPath):
-            index += 1
-            with open(file, encoding="utf-8") as f:
+            if not (file.is_file(follow_symlinks=False) and file.name[-8:] == ".desktop"):
+                continue
+
+            programName = ""
+            execPath = ""
+            iconFilePath = ""
+            desktopFilePath = file.path
+
+            with open(file.path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
 
                     if "=" not in line:
                         continue
-                    
+
                     key, value = line.split("=", 1)
+                    
+                    if key == "Name":
+                        programName = value
+                    elif key == "Exec":
+                        execPath = value
+                    elif key == "Icon":
+                        iconFilePath = value
+                    
+                if programName and execPath and iconFilePath and desktopFilePath:
+                    programMetadata = UninstallData(
+                        name=programName,
+                        path=execPath,
+                        iconPath=iconFilePath,
+                        desktopPath=desktopFilePath
+                    )
+                    installedProgramsMetadata.append(programMetadata)
+                
+        installedProgramsMetadata.sort(key=lambda app: app.name.lower())
 
-                    if key == "Name" or key == "Icon" or key == "Exec":
-                        metadata[f"{key}{index}"] = value
-
-        return metadata
+        return installedProgramsMetadata
     
 # Returns the path of the terminal symlink of the selected AppImage
     @staticmethod
@@ -215,30 +224,20 @@ class Uninstaller():
             if file.is_symlink() and str(file.resolve()) == str(installedPath):
                 return file
 
-# Returns the path of the startmenu .desktop file of the selected AppImage
     @staticmethod
-    def findDesktopFile(desktopDir, appImagePath):
-        for file in os.scandir(desktopDir):
-            if not (file.name.endswith(".desktop") and file.is_file(follow_symlinks=False)):
-                continue
-
-            with open(file) as f: 
-                for line in f:
-                    line = line.strip()
-
-                    if not line.startswith("Exec="):
-                        continue
-
-                    linkPath = line.removeprefix("Exec=")
-
-                    if linkPath == appImagePath:
-                        return file.path
-                
     def rmvInstalledFiles(path):
         if path == None:
             return
         
         os.remove(path)
+
+# Stores the content of each .desktop file for the uninstallation
+@dataclass
+class UninstallData:
+    name: str
+    path: str
+    iconPath: str
+    desktopPath: str
 
 class Logging():
 
