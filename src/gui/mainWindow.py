@@ -188,11 +188,12 @@ class MainWindow(QMainWindow):
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         containerScrollArea = QScrollArea()
+        #containerScrollArea = RoundedScrollArea(radius=8)
         containerScrollArea.setWidgetResizable(True)
         containerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 # Container in the QScrollArea
-        container = QWidget() 
+        container = QWidget()
         containerScrollArea.setWidget(container)
 
         containerLayout = QVBoxLayout(container)   
@@ -618,7 +619,7 @@ class MainWindow(QMainWindow):
                 iconPath = app.iconPath
 
                 radioBtnContainer = QWidget()
-                radioBtnContainer.setObjectName("radioBtnContainer")
+                #radioBtnContainer.setObjectName("radioBtnContainer")
 
                 layout = QHBoxLayout(radioBtnContainer)
                 layout.setContentsMargins(0, 0, 0, 0)
@@ -681,8 +682,6 @@ class MainWindow(QMainWindow):
         
     def tab2Page1Worker(self, name):
         self.tab2StackedWidget.setCurrentIndex(1)
-        #picked = self.installedMetadataList.index(path)
-        #self.selectedAppPath = self.installedMetadataList[picked + 1]
         for app in self.appsMetadata:
             if app.name == name:
                 self.selectedAppPath = app.path
@@ -867,3 +866,25 @@ class MainWindow(QMainWindow):
         msgBox.exec()
 
         sys.exit()
+
+
+
+
+from PySide6.QtGui import QPainterPath, QRegion
+from PySide6.QtCore import QRectF
+
+class RoundedScrollArea(QScrollArea):
+    def __init__(self, radius=8, parent=None):
+        super().__init__(parent)
+        self.radius = radius
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_mask()
+
+    def _update_mask(self):
+        path = QPainterPath()
+        rect = QRectF(self.rect())
+        path.addRoundedRect(rect, self.radius, self.radius)
+        region = QRegion(path.toFillPolygon().toPolygon())
+        self.setMask(region)

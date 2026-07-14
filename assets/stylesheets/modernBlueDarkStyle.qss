@@ -8,7 +8,7 @@ QMainWindow {
 QMenuBar {
     background-color: #1d2024;
     border-bottom: 1px solid #424242;
-    color: #D8DADD;
+    color: #d8dadd;
 }
 
 QMenuBar::item {
@@ -23,14 +23,14 @@ QMenuBar::item {
 
 QMenuBar::item:pressed {
     background-color: rgba(255, 255, 255, 0.08);
-    color: #D8DADD
+    color: #d8dadd
 }
 
 QMenu {
     background-color: #1d2024;
     padding: 4px;
     border-radius: 10px;
-    color: #D8DADD;
+    color: #d8dadd;
 }
 
 QMenu QMenu {
@@ -77,7 +77,7 @@ QTabBar::tab {
 
 QTabBar::tab:selected {
     background-color: #1d2024;
-    color: #D8DADD;
+    color: #d8dadd;
     border: 1px solid #424242;
     border-bottom: 2px solid #3281ea;
 }
@@ -97,7 +97,7 @@ QLabel#title {
     max-height: 20px;
     min-height: 20px;
     font-size: 14px;
-    color: #D8DADD;
+    color: #d8dadd;
 }
 
 QScrollArea {
@@ -148,9 +148,8 @@ QGroupBox {
 
 QRadioButton {
     padding: 8px;
-    color: #D8DADD;
+    color: #c8cacd;
     font-size: 14px;
-    border-bottom: 1px solid #424242
 }
 
 QRadioButton[isFirst="true"] {
@@ -226,12 +225,12 @@ QRadioButton::indicator:checked:hover {
 }
 
 QRadioButton:hover {
-    background-color: #2d3034;
+    color: #ffffff;
 }
 
 QLineEdit {
     background-color: #13161a;
-    color: #D8DADD;
+    color: #d8dadd;
     border: none;
     border-radius: 10px;
     font-size: 14px;
@@ -254,7 +253,7 @@ QLineEdit:focus {
 
 QComboBox {
     background-color: #1d2024;
-    color: #D8DADD;
+    color: #d8dadd;
     border: 1.5px solid #1d2024;
     border-radius: 8px;
     padding: 0px;
@@ -286,11 +285,11 @@ QComboBox::down-arrow {
 
 QComboBox QAbstractItemView {
     background-color: #1d2024;
-    color: #D8DADD;
+    color: #d8dadd;
     border: 1.5px solid #3e4248;
     border-radius: 8px;
     selection-background-color: #2e3238;
-    selection-color: #D8DADD;
+    selection-color: #d8dadd;
     outline: none;
     padding: 2px;
 }
@@ -303,18 +302,18 @@ QComboBox QAbstractItemView::item {
 
 QComboBox QAbstractItemView::item:selected {
     background-color: #252a2e;
-    color: #D8DADD;
+    color: #d8dadd;
 }
 
 QDialog {
     background-color: #16191d;
-    color: #D8DADD;
+    color: #d8dadd;
     font-size: 14px;
 }
 
 QDialog QLabel {
     background-color: transparent;
-    color: #D8DADD;
+    color: #d8dadd;
     font-size: 14px;
 }
 
@@ -328,7 +327,7 @@ QDialog QPushButton {
     min-height: 26px;
     max-height: 26px;
     margin: 0px;
-    color: #D8DADD;
+    color: #d8dadd;
     background-color: #292d32;
     border: none;
     border-radius: 8px;
@@ -363,7 +362,7 @@ QDialog QPushButton:pressed {
 QPushButton {
     min-height: 26px;
     max-height: 26px;
-    color: #D8DADD;
+    color: #d8dadd;
     background-color: #292d32;
     border: none;
     border-radius: 6px;
@@ -379,7 +378,7 @@ QPushButton:pressed {
 }
 
 QCheckBox {
-    color: #D8DADD;
+    color: #d8dadd;
     font-size: 14px;
     spacing: 8px;
     margin: 4px;
@@ -405,7 +404,7 @@ QCheckBox::indicator:checked {
 
 /* Everything that's only for tab one and two page one */
 QLabel#page1NoFileMsg {
-    color: #D8DADD;
+    color: #d8dadd;
     font-size: 14px;
     padding: 4px;
 }
@@ -478,12 +477,12 @@ QLabel#entry {
     padding-bottom: 0px;
     font-size: 14px;
     font: bold;
-    color: #D8DADD;
+    color: #d8dadd;
 }
 
 QLabel#infoDescription {
     font-size: 12px;
-    color: #D8DADD;
+    color: #d8dadd;
     padding-right: 10px;
     padding-left: 10px;
     padding-top: 0px;
@@ -515,5 +514,5 @@ QLabel#terminalText {
 /* Everything that's only for the settings window */
 QLabel#settingsDescription {
     font-size: 12px;
-    color: #D8DADD;
+    color: #d8dadd;
 }

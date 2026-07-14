@@ -148,9 +148,8 @@ QGroupBox {
 
 QRadioButton {
     padding: 8px;
-    color: #1a1d21;
+    color: #2a2d31;
     font-size: 14px;
-    border-bottom: 1px solid #cdd0d5
 }
 
 QRadioButton[isFirst="true"] {
@@ -226,7 +225,7 @@ QRadioButton::indicator:checked:hover {
 }
 
 QRadioButton:hover {
-    background-color: #e0e3e7;
+    color: #000000;
 }
 
 QLineEdit {
