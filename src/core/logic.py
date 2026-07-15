@@ -123,7 +123,8 @@ class StartmenuEntry():
             [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
             cwd=workDir,
             check=True,
-            capture_output=True
+            capture_output=True,
+            text=True
         )
         self.logger.addCmdEntry(logContent)
         
@@ -201,9 +202,13 @@ class Uninstaller():
                         programName = value
                     elif key == "Exec":
                         execPath = value
+# Mark not AppImage programs to later filter them out
+                        if not value.endswith(".AppImage"):
+                            execPath = False
                     elif key == "Icon":
                         iconFilePath = value
-                    
+
+# Filter out incomplete or not AppImage installs
                 if programName and execPath and iconFilePath and desktopFilePath:
                     programMetadata = UninstallData(
                         name=programName,

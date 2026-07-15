@@ -39,7 +39,7 @@ Allthough the GUI doesn't tell you, you have to fill out every field on this pag
 ### Uninstalling AppImage programs
 
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/3c2d934e4599e7d495e181149be2eb9587fd7ad3/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
-**Note:** AppImage-Installer will also show up in this list, because the .desktop file of it is in the same directory as for installed AppImages. Uninstalling AppImage-Installer through this won't work, but will break it.
+**Note:** Only complete AppImage installation that follow this tools install principles will show up here.
 
 ### Uninstallation terminal
 
