@@ -27,6 +27,8 @@ class MetadataWorker(QThread):
             metadata = self.installer.getAppimageMetadata(self.path)
             self.finished.emit(metadata)
 
+            print("Worker kurz vor Ende")
+
         except Exception as error:
             print(error)
 

@@ -34,6 +34,8 @@ class MainWindow(QMainWindow):
         self.tab1Page1Handler = PrepInstall()
         self.tab2Page1Handler = PrepUninstall()
 
+        self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
+
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
         
         self.isKde = self.desktopEnv == "KDE"
@@ -65,6 +67,10 @@ class MainWindow(QMainWindow):
 
 # The QStackedWidget that contains all pages 
         self.tab1StackedWidget = QStackedWidget()
+
+        self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
+        self.tab1Page1SubmitBtn.setObjectName("submitBtn")
+        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
 
         self.tab1Page1 = self.createTab1Page1()
         self.tab1Page2 = self.createTab1Page2()
@@ -183,7 +189,7 @@ class MainWindow(QMainWindow):
 # Let the user pick an AppImage from anywhere
         filedialogBtn = QPushButton(self.tr("Pick a file to install"))
         
-        self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
+        
         filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.userPick(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
@@ -231,9 +237,6 @@ class MainWindow(QMainWindow):
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
 
-        self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
-        self.tab1Page1SubmitBtn.setObjectName("submitBtn")
-        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
@@ -248,6 +251,14 @@ class MainWindow(QMainWindow):
             self.tab1Page1Handler.userPick(self)
         
     def tab1Page1Worker(self, path):
+        print("CLICK", path)
+        if hasattr(self, "metadataWorker"):
+            print("------------- running:", self.metadataWorker.isRunning(), "-------------")
+
+            if self.metadataWorker.isRunning():
+                self.metadataWorker.quit()
+                self.metadataWorker.wait()
+
         self.selectedAppPath = path
 
         self.tab1Page1SubmitBtn.setEnabled(False)
@@ -516,7 +527,8 @@ class MainWindow(QMainWindow):
 # Reload all pages if the user wants to install another program
         submitBtn = QPushButton(self.tr("Install another program"))
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.reloadTab1Page1)     
+        submitBtn.clicked.connect(self.reloadTab1Page1)
+        submitBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True)) 
         submitBtn.clicked.connect(self.reloadTab1Page2)
         submitBtn.clicked.connect(self.reloadTab1Page3)
         submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
