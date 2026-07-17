@@ -16,6 +16,11 @@ QLabel#iconLabel {
     padding-left: 6px;
 }
 
+QLabel#message {
+    padding: 0px;
+    padding-left: 4px;
+}
+
 /* Fix for the random line under some elements*/
 QCheckBox:focus,
 QRadioButton:focus{

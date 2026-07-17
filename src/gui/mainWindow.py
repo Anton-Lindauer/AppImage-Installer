@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
     
         self.userDir = Path.home()
         self.fileDest = self.userDir / "AppImages"
-        self.symLinkDir = self.userDir / ".local/bin"
+        self.symLinkDir = self.userDir / ".local" / "bin"
         self.startMenuFilePath = self.userDir / ".local" / "share" / "applications"
 
         self.menubarUtils = MenuBarUtils()
@@ -67,10 +67,6 @@ class MainWindow(QMainWindow):
 
 # The QStackedWidget that contains all pages 
         self.tab1StackedWidget = QStackedWidget()
-
-        self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
-        self.tab1Page1SubmitBtn.setObjectName("submitBtn")
-        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
 
         self.tab1Page1 = self.createTab1Page1()
         self.tab1Page2 = self.createTab1Page2()
@@ -176,7 +172,8 @@ class MainWindow(QMainWindow):
             menu.setAttribute(Qt.WA_TranslucentBackground)
 
             
-
+############################################### Tab 1 - Page 1 ###############################################
+# This is the static part of the page, it's only generated once, when the app launches
     def createTab1Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
@@ -188,77 +185,83 @@ class MainWindow(QMainWindow):
 
 # Let the user pick an AppImage from anywhere
         filedialogBtn = QPushButton(self.tr("Pick a file to install"))
-        
-        
         filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.userPick(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
-        containerScrollArea = QScrollArea()
-        #containerScrollArea = RoundedScrollArea(radius=8)
-        containerScrollArea.setWidgetResizable(True)
-        containerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.tab1Page1ContainerScrollArea = QScrollArea()
+        self.tab1Page1ContainerScrollArea.setWidgetResizable(True)
+        self.tab1Page1ContainerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 # Container in the QScrollArea
         container = QWidget()
-        containerScrollArea.setWidget(container)
+        self.tab1Page1ContainerScrollArea.setWidget(container)
 
-        containerLayout = QVBoxLayout(container)   
-        containerLayout.setContentsMargins(0, 0, 0, 0,)
-        containerLayout.setSpacing(0)
+        self.tab1Page1ContainerLayout = QVBoxLayout(container)   
+        self.tab1Page1ContainerLayout.setContentsMargins(0, 0, 0, 0,)
+        self.tab1Page1ContainerLayout.setSpacing(0)
+
+# The radiobutton selection has to be a seperate funktion to be able to update it, without updating the entire UI
+        self.populatePage1FileList()
+
+        self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
+        self.tab1Page1SubmitBtn.setObjectName("submitBtn")
+        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
+
+        mainLayout.addWidget(title)
+        mainLayout.addWidget(filedialogBtn)
+        mainLayout.addWidget(self.tab1Page1ContainerScrollArea)
+        mainLayout.addWidget(self.tab1Page1SubmitBtn)
+        mainLayout.addStretch()
+
+        return mainWidget
+
+# This is the dynamic part. By calling this function, the QRadioButtons in the QScrollArea get updated 
+    def populatePage1FileList(self):
+        self.clearLayout(self.tab1Page1ContainerLayout)
+
+        if hasattr(self, "groupPage1"):
+            self.groupPage1.deleteLater()
+        self.groupPage1 = QButtonGroup(self)
 
 # All paths of AppImage files in the Downloads directory
         self.fileList = Installer.listFiles(self.userDir)     
         fileListLen = len(self.fileList)
 
-# Group for all QRadioButtons to later find out which one is checked
-        self.groupPage1 = QButtonGroup(self) 
-
 # Create a QRadioButton for each file
         if fileListLen > 0:
-             for itemPos, file in enumerate(self.fileList):
+             for file in self.fileList:
                 radioBtn = QRadioButton(file)
-                containerLayout.addWidget(radioBtn)
+                self.tab1Page1ContainerLayout.addWidget(radioBtn)
                 self.groupPage1.addButton(radioBtn)
 
-# Only create a divider if the element isn't the last one and add rounded corners to the first and last element
-                suffix = "" if fileListLen <= 5 else "Scroll"
-
-                if fileListLen == 1 and fileListLen <= 5:
-                    radioBtn.setProperty("isFirstAndLast", "true")
-                elif itemPos == 0:
-                    radioBtn.setProperty(f"isFirst{suffix}", "true")
-                elif itemPos == fileListLen - 1:
-                    radioBtn.setProperty(f"isLast{suffix}", "true")
         else:
             page1NoFileMsg = QLabel(self.tr("No .AppImage file has been found in your Downloads directory"))
             page1NoFileMsg.setObjectName("message")
-            containerLayout.addWidget(page1NoFileMsg)
+            self.tab1Page1ContainerLayout.addWidget(page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        containerScrollArea.setFixedHeight(min(fileListLen, 6) * 39)
+        self.tab1Page1ContainerScrollArea.setFixedHeight(min(max(fileListLen, 1), 6) * 39)
 
+# Disable the Scrollbar when you cannot scroll
+        if fileListLen <= 6:
+            self.tab1Page1ContainerScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        mainLayout.addWidget(title)
-        mainLayout.addWidget(filedialogBtn)
-        mainLayout.addWidget(containerScrollArea)
-        mainLayout.addWidget(self.tab1Page1SubmitBtn)
-        mainLayout.addStretch()
+# General method to delete all the content of a layout, currently only used for the QScrollArea on page 1
+    def clearLayout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
 
-        return mainWidget
-    
+# Only accept a file from the menubar selector if the user is on the first page
     def tab1Page1Validator(self):
         if self.tab1StackedWidget.currentIndex() == 0:
             self.tab1Page1Handler.userPick(self)
-        
+
+# The worker that extracts the AppImages metadata
     def tab1Page1Worker(self, path):
-        print("CLICK", path)
-        if hasattr(self, "metadataWorker"):
-            print("------------- running:", self.metadataWorker.isRunning(), "-------------")
-
-            if self.metadataWorker.isRunning():
-                self.metadataWorker.quit()
-                self.metadataWorker.wait()
-
         self.selectedAppPath = path
 
         self.tab1Page1SubmitBtn.setEnabled(False)
@@ -270,6 +273,7 @@ class MainWindow(QMainWindow):
 
         self.metadataWorker.start()
 
+# Loads the AppImages metadata in the QLineEdits and QRadiobuttons
     def metadataLoader(self, metadata):
         self.tab1StackedWidget.setCurrentIndex(1)
 
@@ -277,7 +281,7 @@ class MainWindow(QMainWindow):
         self.programInfoList[1].setText(metadata["name"])
         self.programInfoList[2].setText(metadata["comment"])
         
-# Aktivate the QRadioButtons when they are in the AppImages category string
+# Activate the QRadioButtons when they are in the AppImages category string
         categories = metadata["categories"].split(";")
 
         for button in self.page2RadioBtns.buttons():
@@ -542,12 +546,7 @@ class MainWindow(QMainWindow):
 # Functions to rebuild all pages; to remove all previous user input
 # Easier to maintain than to clear all elements one by one
     def reloadTab1Page1(self):
-        oldPage1 = self.tab1StackedWidget.widget(0)
-        self.tab1StackedWidget.removeWidget(oldPage1)
-        oldPage1.deleteLater()
-
-        newPage1 = self.createTab1Page1()
-        self.tab1StackedWidget.insertWidget(0, newPage1)
+        self.populatePage1FileList()
     
     def reloadTab1Page2(self):
         oldPage2 = self.tab1StackedWidget.widget(1)

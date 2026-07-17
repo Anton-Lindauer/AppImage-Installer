@@ -39,7 +39,6 @@ def loadTranslator(app):
 
     if translator.load(str(translationsPath)):
         app.installTranslator(translator)
-        print(f"Loaded language: {language}")
         return translator
     else:
         print(f"Couldn't load: {language}, Fallback to English")
@@ -50,7 +49,6 @@ def main():
     
 # Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
     if desktopEnv == "KDE":
-        print(f"Available system themes: {QStyleFactory.keys()}")
         app.setStyle("Breeze")
 
     loadTranslator(app)
