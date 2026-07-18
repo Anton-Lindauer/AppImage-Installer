@@ -27,8 +27,6 @@ class MetadataWorker(QThread):
             metadata = self.installer.getAppimageMetadata(self.path)
             self.finished.emit(metadata)
 
-            print("Worker kurz vor Ende")
-
         except Exception as error:
             print(error)
 
@@ -67,6 +65,8 @@ class InstallWorker(QThread):
 
             self.startMenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
             self.progressUpdate.emit(self.tr("Startmenu entry has been created (3/3 tasks finished)"))
+
+            self.progressUpdate.emit(self.tr("Installation finished"))
 
 # Wait 2s to let the user see that everything has been completed
             time.sleep(1)

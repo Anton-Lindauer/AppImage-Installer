@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
         file2 = fileMenu.addAction(self.tr("Refresh file list"))
 
         file1.triggered.connect(self.tab1Page1Validator)
-        file2.triggered.connect(lambda: self.reloadTab1Page1() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
+        file2.triggered.connect(lambda: self.populatePage1FileList() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
         file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 0 else None)
         file2.triggered.connect(lambda: self.reloadTab2Page1() if self.tab2StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 1 else None)
         file2.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 1 else None)
@@ -302,15 +302,10 @@ class MainWindow(QMainWindow):
         container = QGroupBox()
         
 # Set the layout in the container
-# I have to do it like this to enable hover effects for the custom QSS styles,
-# because margin isn't affected by hover effects
-        containerLayout = QVBoxLayout(container)
-        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
-            containerLayout.setContentsMargins(10, 10, 10, 10)
-            containerLayout.setSpacing(6)
-        else:
-            containerLayout.setContentsMargins(0, 0, 0, 0)
-            containerLayout.setSpacing(0)
+# Has to be dynamic, because the layout is different for QSS and KDE themes
+        self.tab1Page2ContainerLayout = QVBoxLayout(container)
+
+        self.loadTab1Page2Container()
 
 # All the things the user has to enter
         self.programInfo = [self.tr("Terminal Command"),
@@ -393,7 +388,7 @@ class MainWindow(QMainWindow):
                 tileLayout.addWidget(usrInput)
                 
 
-            containerLayout.addWidget(containerTile)
+            self.tab1Page2ContainerLayout.addWidget(containerTile)
 
         self.page2SubmitBtn = QPushButton(self.tr("Continue"))
         self.page2SubmitBtn.setObjectName("submitBtn")
@@ -415,6 +410,14 @@ class MainWindow(QMainWindow):
     def page2Validator(self):
         if all(edit.text().strip() for edit in self.programInfoList) and self.page2RadioBtns.checkedButton() is not None:
             self.tab1StackedWidget.setCurrentIndex(2)
+
+    def loadTab1Page2Container(self):
+        if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
+            self.tab1Page2ContainerLayout.setContentsMargins(10, 10, 10, 10)
+            self.tab1Page2ContainerLayout.setSpacing(6)
+        else:
+            self.tab1Page2ContainerLayout.setContentsMargins(0, 0, 0, 0)
+            self.tab1Page2ContainerLayout.setSpacing(0)
 
 
 
@@ -509,13 +512,14 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
 
     def workerFinished(self):
-        self.terminalUpdateMsg.setText(self.tr("Installation finished"))
-
-# Rebuild page four to display the program name
-# Easier to maintain to just rebuild the entire page than updating every element one by one
-        self.reloadTab1Page4()
+        self.tab1Page4Title.setText(self.tr("Finished installing {name}").format(name=self.programInfoList[1].text()))
 
         self.tab1StackedWidget.setCurrentIndex(3)
+
+        self.terminalUpdateMsg.setText("")
+
+        self.page3SubmitBtn.setEnabled(True)
+        self.page3BackBtn.setEnabled(True)
 
 
 
@@ -525,60 +529,27 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("Finished installing {name}").format(name=self.programInfoList[1].text()))
-        title.setObjectName("title")
+        self.tab1Page4Title = QLabel(self.tr("Finished installing"))
+        self.tab1Page4Title.setObjectName("title")
 
-# Reload all pages if the user wants to install another program
         submitBtn = QPushButton(self.tr("Install another program"))
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.reloadTab1Page1)
+# Reload the filelist, if the user wants to install more AppImages
+        submitBtn.clicked.connect(self.populatePage1FileList)
         submitBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True)) 
-        submitBtn.clicked.connect(self.reloadTab1Page2)
-        submitBtn.clicked.connect(self.reloadTab1Page3)
         submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
-        mainLayout.addWidget(title)
+        mainLayout.addWidget(self.tab1Page4Title)
         mainLayout.addWidget(submitBtn)
         mainLayout.addStretch()
         
         return mainWidget
-    
-# Functions to rebuild all pages; to remove all previous user input
-# Easier to maintain than to clear all elements one by one
-    def reloadTab1Page1(self):
-        self.populatePage1FileList()
-    
-    def reloadTab1Page2(self):
-        oldPage2 = self.tab1StackedWidget.widget(1)
-        self.tab1StackedWidget.removeWidget(oldPage2)
-        oldPage2.deleteLater()
 
-        newPage2 = self.createTab1Page2()
-        self.tab1StackedWidget.insertWidget(1, newPage2)
-
-    def reloadTab1Page3(self):
-        oldPage3 = self.tab1StackedWidget.widget(2)
-        self.tab1StackedWidget.removeWidget(oldPage3)
-        oldPage3.deleteLater()
-
-        newPage3 = self.createTab1Page3()
-        self.tab1StackedWidget.insertWidget(2, newPage3)
-
-    def reloadTab1Page4(self):
-        oldPage4 = self.tab1StackedWidget.widget(3)
-        self.tab1StackedWidget.removeWidget(oldPage4)
-        oldPage4.deleteLater()
-
-        newPage4 = self.createTab1Page4()
-        self.tab1StackedWidget.insertWidget(3, newPage4)
-
+# Only reloads parts of pages with different layouts for QSS and KDE themes
     def reloadTab1(self):
         currentIndex = self.tab1StackedWidget.currentIndex()
 
-        #self.reloadTab1Page1()
-        self.reloadTab1Page2()
-        #self.reloadTab1Page3()
-        #self.reloadTab1Page4()
+        self.loadTab1Page2Container()
 
         self.tab1StackedWidget.setCurrentIndex(currentIndex)
 
