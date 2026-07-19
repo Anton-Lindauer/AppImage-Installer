@@ -117,12 +117,12 @@ class MainWindow(QMainWindow):
 
         file1 = fileMenu.addAction(self.tr("Pick a file to install"))
         fileMenu.addSeparator()
-        file2 = fileMenu.addAction(self.tr("Refresh file list"))
+        file2 = fileMenu.addAction(self.tr("Refresh list"))
 
         file1.triggered.connect(self.tab1Page1Validator)
-        file2.triggered.connect(lambda: self.populatePage1FileList() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
+        file2.triggered.connect(lambda: self.populateFileSelection() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
         file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 0 else None)
-        file2.triggered.connect(lambda: self.reloadTab2Page1() if self.tab2StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 1 else None)
+        file2.triggered.connect(lambda: self.populateProgramSelection() if self.tab2StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 1 else None)
         file2.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 1 else None)
 
         
@@ -201,7 +201,7 @@ class MainWindow(QMainWindow):
         self.tab1Page1ContainerLayout.setSpacing(0)
 
 # The radiobutton selection has to be a seperate funktion to be able to update it, without updating the entire UI
-        self.populatePage1FileList()
+        self.populateFileSelection()
 
         self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
         self.tab1Page1SubmitBtn.setObjectName("submitBtn")
@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
         return mainWidget
 
 # This is the dynamic part. By calling this function, the QRadioButtons in the QScrollArea get updated 
-    def populatePage1FileList(self):
+    def populateFileSelection(self):
         self.clearLayout(self.tab1Page1ContainerLayout)
 
         if hasattr(self, "groupPage1"):
@@ -242,11 +242,11 @@ class MainWindow(QMainWindow):
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         self.tab1Page1ContainerScrollArea.setFixedHeight(min(max(fileListLen, 1), 6) * 39)
 
-# Disable the Scrollbar when you cannot scroll
+# Disable the scrollbar handle when there aren't enough QRadioButtons to scroll
         if fileListLen <= 6:
             self.tab1Page1ContainerScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-# General method to delete all the content of a layout, currently only used for the QScrollArea on page 1
+# General method to delete all the content of a layout, currently used for the QScrollAreas on tab one and two page one
     def clearLayout(self, layout):
         while layout.count():
             item = layout.takeAt(0)
@@ -316,7 +316,7 @@ class MainWindow(QMainWindow):
 # More information on what to enter for the user
         programInfoText = [self.tr("The command used to launch the application from the terminal."),
                            self.tr("The name that will appear in the start menu and application list."),
-                           self.tr("A brief summary of the application (displayed as a tooltip)."),
+                           self.tr("A brief summary of the application."),
                            self.tr("Determines the placement in the start menu.")]
         
 # All main categories from freedesktop.org
@@ -521,6 +521,7 @@ class MainWindow(QMainWindow):
         self.page3SubmitBtn.setEnabled(True)
         self.page3BackBtn.setEnabled(True)
 
+        self.populateProgramSelection()
 
 
     def createTab1Page4(self):
@@ -535,7 +536,7 @@ class MainWindow(QMainWindow):
         submitBtn = QPushButton(self.tr("Install another program"))
         submitBtn.setObjectName("submitBtn")
 # Reload the filelist, if the user wants to install more AppImages
-        submitBtn.clicked.connect(self.populatePage1FileList)
+        submitBtn.clicked.connect(self.populateFileSelection)
         submitBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True)) 
         submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
@@ -562,79 +563,29 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("AppImage selection"))
+        title = QLabel(self.tr("App selection"))
         title.setObjectName("title")
 
 # Let the user pick a AppImage from anywhere
-        filedialogBtn = QPushButton(self.tr("Pick a AppImage program to uninstall"))
+        filedialogBtn = QPushButton(self.tr("Pick a AppImage app to uninstall"))
         
         self.tab2Page1Handler.pickedFile.connect(self.tab2Page1Worker)
         filedialogBtn.clicked.connect(lambda: self.tab2Page1Handler.userPick(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
-        containerScrollArea = QScrollArea()
-        containerScrollArea.setWidgetResizable(True)
-        containerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.tab2Page1ContainerScrollArea = QScrollArea()
+        self.tab2Page1ContainerScrollArea.setWidgetResizable(True)
+        self.tab2Page1ContainerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 # Container in the QScrollArea
         container = QWidget() 
-        containerScrollArea.setWidget(container)
+        self.tab2Page1ContainerScrollArea.setWidget(container)
 
-        containerLayout = QVBoxLayout(container)   
-        containerLayout.setContentsMargins(0, 0, 0, 0,)
-        containerLayout.setSpacing(0)
+        self.tab2Page1ContainerLayout = QVBoxLayout(container)   
+        self.tab2Page1ContainerLayout.setContentsMargins(0, 0, 0, 0,)
+        self.tab2Page1ContainerLayout.setSpacing(0)
 
-        self.appsMetadata = Uninstaller.getInstalledMetadata(self.startMenuFilePath)
-
-        numOfApps = len(self.appsMetadata)
-
-# Group for all QRadioButtons to later find out which one is checked
-        self.groupTab2Page1 = QButtonGroup(self) 
-
-# Create a QRadioButton for each file
-        if numOfApps > 0:
-             for index, app in enumerate(self.appsMetadata):
-                radioBtn = QRadioButton(app.name)
-                containerLayout.addWidget(radioBtn)
-                self.groupTab2Page1.addButton(radioBtn)
-
-                iconPath = app.iconPath
-
-                radioBtnContainer = QWidget()
-                #radioBtnContainer.setObjectName("radioBtnContainer")
-
-                layout = QHBoxLayout(radioBtnContainer)
-                layout.setContentsMargins(0, 0, 0, 0)
-
-                iconLabel = QLabel()
-                iconLabel.setObjectName("iconLabel")
-                pixmap = QPixmap(iconPath)
-                iconLabel.setPixmap(pixmap.scaled(22, 22, aspectMode=Qt.AspectRatioMode.KeepAspectRatio))
-
-                layout.addWidget(iconLabel)
-                layout.addWidget(radioBtn)
-
-                containerLayout.addWidget(radioBtnContainer)
-
-# Only create a divider if the element isn't the last one and add rounded corners to the first and last element
-                suffix = "" if numOfApps <= 5 else "Scroll"
-
-                if numOfApps == 1 and numOfApps <= 5:
-                    radioBtn.setProperty("isFirstAndLast", "true")
-                    radioBtnContainer.setProperty("isFirstAndLast", "true")
-                elif index == 0:
-                    radioBtn.setProperty(f"isFirst{suffix}", "true")
-                    radioBtnContainer.setProperty(f"isFirst{suffix}", "true")
-                elif index == numOfApps - 1:
-                    radioBtn.setProperty(f"isLast{suffix}", "true")
-                    radioBtnContainer.setProperty(f"isLast{suffix}", "true")
-        else:
-            tab2Page1NoFileMsg = QLabel(self.tr("No AppImage installation has been found"))
-            tab2Page1NoFileMsg.setObjectName("message")
-            containerLayout.addWidget(tab2Page1NoFileMsg)
-
-# Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        containerScrollArea.setFixedHeight(min(numOfApps, 6) * 39)
+        self.populateProgramSelection()
 
         checkBox1 = QCheckBox(self.tr("Remove all symlinks (Recommended)"))
         checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
@@ -650,13 +601,57 @@ class MainWindow(QMainWindow):
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
-        mainLayout.addWidget(containerScrollArea)
+        mainLayout.addWidget(self.tab2Page1ContainerScrollArea)
         mainLayout.addWidget(checkBox1)        
         mainLayout.addWidget(checkBox2)
         mainLayout.addWidget(submitBtn)
         mainLayout.addStretch()
 
         return mainWidget
+    
+    def populateProgramSelection(self):
+        self.clearLayout(self.tab2Page1ContainerLayout)
+
+        self.appsMetadata = Uninstaller.getInstalledMetadata(self.startMenuFilePath)
+
+        numOfApps = len(self.appsMetadata)
+
+# Group for all QRadioButtons to later find out which one is checked
+        if hasattr(self, "groupTab2Page1"):
+            self.groupTab2Page1.deleteLater()
+        self.groupTab2Page1 = QButtonGroup(self) 
+
+# Create a QRadioButton for each file
+        if numOfApps > 0:
+             for index, app in enumerate(self.appsMetadata):
+                radioBtn = QRadioButton(app.name)
+                self.tab2Page1ContainerLayout.addWidget(radioBtn)
+                self.groupTab2Page1.addButton(radioBtn)
+
+                iconPath = app.iconPath
+
+                radioBtnContainer = QWidget()
+
+                layout = QHBoxLayout(radioBtnContainer)
+                layout.setContentsMargins(0, 0, 0, 0)
+
+                iconLabel = QLabel()
+                iconLabel.setObjectName("iconLabel")
+                pixmap = QPixmap(iconPath)
+                iconLabel.setPixmap(pixmap.scaled(22, 22, aspectMode=Qt.AspectRatioMode.KeepAspectRatio))
+
+                layout.addWidget(iconLabel)
+                layout.addWidget(radioBtn)
+
+                self.tab2Page1ContainerLayout.addWidget(radioBtnContainer)
+
+        else:
+            tab2Page1NoFileMsg = QLabel(self.tr("No AppImage installation has been found"))
+            tab2Page1NoFileMsg.setObjectName("message")
+            self.tab2Page1ContainerLayout.addWidget(tab2Page1NoFileMsg)
+
+# Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
+        self.tab2Page1ContainerScrollArea.setFixedHeight(min(numOfApps, 6) * 39)
     
     def tab2Page1Validator(self):
         if self.tab2StackedWidget.currentIndex() == 0:
@@ -668,6 +663,7 @@ class MainWindow(QMainWindow):
             if app.name == name:
                 self.selectedAppPath = app.path
                 self.desktopFilePath = app.desktopPath
+                self.selectedAppName = app.name
 
 
     def createTab2Page2(self):
@@ -734,6 +730,8 @@ class MainWindow(QMainWindow):
         self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
         self.terminalUpdate(self.tr("Removed AppImage file"))
 
+        self.terminalUpdate(self.tr("Uninstallation finished"))
+
         QTimer.singleShot(1000, self.terminalFinished)
 
     def terminalUpdate(self, msg):
@@ -749,7 +747,12 @@ class MainWindow(QMainWindow):
         self.tab2TerminalUpdateMsg.show()
 
     def terminalFinished(self):
+        self.tab2Page3Title.setText(self.tr("Finished uninstalling {name}").format(name=self.selectedAppName))
         self.tab2StackedWidget.setCurrentIndex(2)
+
+        self.tab2TerminalUpdateMsg.setText("")
+        self.tab2Page2SubmitBtn.setEnabled(True)
+        self.tab2Page2BackBtn.setEnabled(True)
     
 
     def createTab2Page3(self):
@@ -758,39 +761,20 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("Uninstallation finished"))
-        title.setObjectName("title")
+        self.tab2Page3Title = QLabel(self.tr("Uninstallation finished"))
+        self.tab2Page3Title.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
         submitBtn = QPushButton(self.tr("Remove another AppImage program"))
         submitBtn.setObjectName("submitBtn")
-        submitBtn.clicked.connect(self.reloadTab2Page1)     
-        submitBtn.clicked.connect(self.reloadTab2Page2)
+        submitBtn.clicked.connect(self.populateProgramSelection)     
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
-        mainLayout.addWidget(title)
+        mainLayout.addWidget(self.tab2Page3Title)
         mainLayout.addWidget(submitBtn)
         mainLayout.addStretch()
         
         return mainWidget
-    
-
-
-    def reloadTab2Page1(self):
-        oldPage1 = self.tab2StackedWidget.widget(0)
-        self.tab2StackedWidget.removeWidget(oldPage1)
-        oldPage1.deleteLater()
-
-        newPage1 = self.createTab2Page1()
-        self.tab2StackedWidget.insertWidget(0, newPage1)
-
-    def reloadTab2Page2(self):
-        oldPage2 = self.tab2StackedWidget.widget(1)
-        self.tab2StackedWidget.removeWidget(oldPage2)
-        oldPage2.deleteLater()
-
-        newPage2 = self.createTab2Page2()
-        self.tab2StackedWidget.insertWidget(1, newPage2)
 
 
 
@@ -848,25 +832,3 @@ class MainWindow(QMainWindow):
         msgBox.exec()
 
         sys.exit()
-
-
-
-
-from PySide6.QtGui import QPainterPath, QRegion
-from PySide6.QtCore import QRectF
-
-class RoundedScrollArea(QScrollArea):
-    def __init__(self, radius=8, parent=None):
-        super().__init__(parent)
-        self.radius = radius
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._update_mask()
-
-    def _update_mask(self):
-        path = QPainterPath()
-        rect = QRectF(self.rect())
-        path.addRoundedRect(rect, self.radius, self.radius)
-        region = QRegion(path.toFillPolygon().toPolygon())
-        self.setMask(region)

@@ -1,13 +1,10 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox, QListView
-from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings, QEvent
+from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings
 from PySide6.QtGui import QGuiApplication, QDesktopServices
 
 from pathlib import Path
-import subprocess
-import tempfile
-import shutil
 import os
 
 # All functions from the menubar

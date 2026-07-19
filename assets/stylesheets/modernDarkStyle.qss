@@ -152,44 +152,6 @@ QRadioButton {
     font-size: 14px;
 }
 
-QRadioButton[isFirst="true"] {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-QRadioButton[isLast="true"] {
-    border-bottom: none;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-}
-
-QRadioButton[isFirstScroll="true"] {
-    border-top-left-radius: 10px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-    border-bottom-right-radius: 0px;
-}
-
-QRadioButton[isLastScroll="true"] {
-    border-bottom: none;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 0px;
-}
-
-QRadioButton[isFirstAndLast="true"] {
-    border-bottom: none;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
-}
-
 QRadioButton::indicator {
     width: 18px;
     height: 18px;
@@ -407,14 +369,6 @@ QLabel#message {
     color: #d4d6d9;
     font-size: 14px;
     padding: 4px;
-}
-
-QWidget#radioBtnContainer {
-    border-bottom: 1px solid #484d52
-}
-
-QWidget#radioBtnContainer:hover {
-    background-color: #4e5256;
 }
 
 QLabel#iconLabel {

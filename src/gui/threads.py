@@ -3,7 +3,6 @@
 from PySide6.QtCore import QThread, Signal
 
 from src.core.logic import Installer, StartmenuEntry
-from src.gui.components import PrepInstall
 
 import time
 
@@ -58,7 +57,7 @@ class InstallWorker(QThread):
     def run(self):
         try:
             self.installer.moveFile(self.selectedFilePath, self.fileDest)
-            self.progressUpdate.emit(self.tr("File moved successfully (1/3 tasks finished)"))
+            self.progressUpdate.emit(self.tr("Moved AppImage file (1/3 tasks finished)"))
 
             self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.symLinkDir)
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))
