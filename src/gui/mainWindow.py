@@ -82,7 +82,7 @@ class MainWindow(QMainWindow):
 
         if not self.selectedAppImage == None:
             self.tab1StackedWidget.setCurrentIndex(1)
-            self.selectedAppPath = self.selectedAppImage
+            self.selectedAppImagePath = self.selectedAppImage
 
 # Tab two
         self.tab2 = QWidget()
@@ -262,11 +262,11 @@ class MainWindow(QMainWindow):
 
 # The worker that extracts the AppImages metadata
     def tab1Page1Worker(self, path):
-        self.selectedAppPath = path
+        self.selectedAppImagePath = path
 
         self.tab1Page1SubmitBtn.setEnabled(False)
 
-        self.metadataWorker = MetadataWorker(self.selectedAppPath, self.logger)
+        self.metadataWorker = MetadataWorker(self.selectedAppImagePath, self.logger)
 
         self.metadataWorker.finished.connect(self.metadataLoader)
         self.metadataWorker.error.connect(self.workerError)
@@ -486,7 +486,7 @@ class MainWindow(QMainWindow):
                 self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.installWorker = InstallWorker(self.selectedAppPath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
+        self.installWorker = InstallWorker(self.selectedAppImagePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
 
 # Process status updates from the installation function
         self.installWorker.progressUpdate.connect(self.workerProgress)
@@ -514,6 +514,15 @@ class MainWindow(QMainWindow):
     def workerFinished(self):
         self.tab1Page4Title.setText(self.tr("Finished installing {name}").format(name=self.programInfoList[1].text()))
 
+        try:
+            self.tab1Page4OpenProgramBtn.clicked.disconnect()
+        except TypeError:
+            pass
+
+        self.tab1Page4OpenProgramBtn.setText(self.tr("Open {name}").format(name=self.programInfoList[1].text()))
+        
+        self.tab1Page4OpenProgramBtn.clicked.connect(self.openProgram)
+
         self.tab1StackedWidget.setCurrentIndex(3)
 
         self.terminalUpdateMsg.setText("")
@@ -534,17 +543,27 @@ class MainWindow(QMainWindow):
         self.tab1Page4Title.setObjectName("title")
 
         submitBtn = QPushButton(self.tr("Install another program"))
-        submitBtn.setObjectName("submitBtn")
 # Reload the filelist, if the user wants to install more AppImages
         submitBtn.clicked.connect(self.populateFileSelection)
         submitBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True)) 
         submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
+        self.tab1Page4OpenProgramBtn = QPushButton(self.tr("Open"))
+
         mainLayout.addWidget(self.tab1Page4Title)
         mainLayout.addWidget(submitBtn)
+        mainLayout.addWidget(self.tab1Page4OpenProgramBtn)
         mainLayout.addStretch()
         
         return mainWidget
+    
+    def openProgram(self):
+        subprocess.Popen(
+        [self.cmdName],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True)
 
 # Only reloads parts of pages with different layouts for QSS and KDE themes
     def reloadTab1(self):
@@ -623,7 +642,7 @@ class MainWindow(QMainWindow):
 
 # Create a QRadioButton for each file
         if numOfApps > 0:
-             for index, app in enumerate(self.appsMetadata):
+             for app in self.appsMetadata:
                 radioBtn = QRadioButton(app.name)
                 self.tab2Page1ContainerLayout.addWidget(radioBtn)
                 self.groupTab2Page1.addButton(radioBtn)
