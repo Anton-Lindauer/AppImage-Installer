@@ -42,11 +42,6 @@
         <translation>Installieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="105"/>
-        <source>Remove</source>
-        <translation>Entfernen</translation>
-    </message>
-    <message>
         <location filename="../src/gui/mainWindow.py" line="114"/>
         <source>File</source>
         <translation>Datei</translation>
@@ -74,6 +69,7 @@
     </message>
     <message>
         <location filename="../src/gui/mainWindow.py" line="131"/>
+        <location filename="../src/gui/mainWindow.py" line="669"/>
         <source>Configure</source>
         <translation>Einrichten</translation>
     </message>
@@ -157,7 +153,7 @@
     <message>
         <location filename="../src/gui/mainWindow.py" line="397"/>
         <location filename="../src/gui/mainWindow.py" line="453"/>
-        <location filename="../src/gui/mainWindow.py" line="717"/>
+        <location filename="../src/gui/mainWindow.py" line="735"/>
         <source>Back</source>
         <translation>Zurück</translation>
     </message>
@@ -177,12 +173,12 @@
         <translation>Installation läuft...</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="816"/>
+        <location filename="../src/gui/mainWindow.py" line="834"/>
         <source>AppImage-Installer ran into an issue!</source>
         <translation>Es ist ein Problem aufgetretten!</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="819"/>
+        <location filename="../src/gui/mainWindow.py" line="837"/>
         <source>This error occured:
 {error}
 A more detailed log can be found in {logFile}.</source>
@@ -196,7 +192,7 @@ Ein detaillierter Log befindet sich in {logFile}.</translation>
         <translation>{name} wurde installiert</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="830"/>
+        <location filename="../src/gui/mainWindow.py" line="848"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
@@ -206,7 +202,7 @@ Ein detaillierter Log befindet sich in {logFile}.</translation>
         <translation>Legt die Zuordnung im Startmenü fest</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="834"/>
+        <location filename="../src/gui/mainWindow.py" line="852"/>
         <source>Open Log</source>
         <translation>Log öffnen</translation>
     </message>
@@ -216,7 +212,7 @@ Ein detaillierter Log befindet sich in {logFile}.</translation>
         <translation>Ein weiteres Programm installieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="668"/>
+        <location filename="../src/gui/mainWindow.py" line="686"/>
         <source>No AppImage installation has been found</source>
         <translation>Keine AppImage Installation gefunden</translation>
     </message>
@@ -224,6 +220,11 @@ Ein detaillierter Log befindet sich in {logFile}.</translation>
         <location filename="../src/gui/mainWindow.py" line="609"/>
         <source>Remove all symlinks (Recommended)</source>
         <translation>Symlinks entfernen (Empfohlen)</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.py" line="105"/>
+        <source>Manage</source>
+        <translation>Verwalten</translation>
     </message>
     <message>
         <location filename="../src/gui/mainWindow.py" line="120"/>
@@ -266,48 +267,58 @@ Ein detaillierter Log befindet sich in {logFile}.</translation>
         <translation>Startmenü Eintrag entfernen (Empfohlen)</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="694"/>
+        <location filename="../src/gui/mainWindow.py" line="665"/>
+        <source>Launch</source>
+        <translation>Starten</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.py" line="672"/>
+        <source>Delete</source>
+        <translation>Löschen</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/mainWindow.py" line="712"/>
         <source>Uninstallation process</source>
         <translation>Deinstallation</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="713"/>
+        <location filename="../src/gui/mainWindow.py" line="731"/>
         <source>Start uninstallation</source>
         <translation>Deinstallation starten</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="735"/>
+        <location filename="../src/gui/mainWindow.py" line="753"/>
         <source>Uninstallation in process...</source>
         <translation>Deinstallation läuft...</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="741"/>
+        <location filename="../src/gui/mainWindow.py" line="759"/>
         <source>Removed symlink</source>
         <translation>Symlink entfernt</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="746"/>
+        <location filename="../src/gui/mainWindow.py" line="764"/>
         <source>Removed startmenu entry</source>
         <translation>Startmenü Eintrag entfernt</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="750"/>
+        <location filename="../src/gui/mainWindow.py" line="768"/>
         <source>Removed AppImage file</source>
         <translation>AppImage Datei entfernt</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="752"/>
-        <location filename="../src/gui/mainWindow.py" line="783"/>
+        <location filename="../src/gui/mainWindow.py" line="770"/>
+        <location filename="../src/gui/mainWindow.py" line="801"/>
         <source>Uninstallation finished</source>
         <translation>Deinstallation abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="769"/>
+        <location filename="../src/gui/mainWindow.py" line="787"/>
         <source>Finished uninstalling {name}</source>
         <translation>Deinstallation von {name} abgeschlossen</translation>
     </message>
     <message>
-        <location filename="../src/gui/mainWindow.py" line="787"/>
+        <location filename="../src/gui/mainWindow.py" line="805"/>
         <source>Remove another AppImage program</source>
         <translation>Ein weiters AppImage Programm entfernen</translation>
     </message>

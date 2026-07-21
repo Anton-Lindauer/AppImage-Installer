@@ -50,7 +50,7 @@ QMenu::item:selected {
 
 QMenu::separator {
     background-color: #cdd0d5;
-    height: 1px;
+    height: 2px;
 }
 
 QTabWidget {
@@ -439,6 +439,34 @@ QLabel#terminalText {
     font-size: 14px;
     color: #33ff33;
     padding: 4px;
+}
+
+/* only for tab two page one*/
+QPushButton#appBtn {
+    color: #1a1d21;
+    background-color: #e0e3e7;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 0px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+QPushButton#appBtn:hover {
+    background-color: #d0d3d7;
+}
+
+QPushButton#appBtn:pressed {
+    background-color: #c0c3c7;
+}
+
+QGroupBox#appTile {
+    background-color: #f0f1f3;
+}
+
+QLabel#nameLabel {
+    color: #1a1d21;
 }
 
 /* Everything that's only for the settings window */

@@ -17,7 +17,7 @@ if len(sys.argv) > 1:
     selectedAppImage = Path(sys.argv[1]).resolve()
 
 from PySide6.QtCore import QTranslator, QSettings, QLocale
-from PySide6.QtWidgets import QApplication, QStyleFactory
+from PySide6.QtWidgets import QApplication
 from src.gui.mainWindow import MainWindow
 
 def loadTranslator(app):
@@ -26,7 +26,6 @@ def loadTranslator(app):
 # Write the used language to the settings if there is no entry allready
     if not settings.contains("language"):
         settings.setValue("language", QLocale.system().name()[:2])
-        print("Created language")
     
     language = settings.value("language", QLocale.system().name()[:2], type=str)
 

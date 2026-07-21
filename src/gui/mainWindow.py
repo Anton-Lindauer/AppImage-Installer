@@ -1,7 +1,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QGridLayout, QDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QGridLayout, QDialog, QSizePolicy
 from PySide6.QtCore import Qt, QSettings, QTimer
 from PySide6.QtGui import QPixmap
 
@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
         self.tab2Layout.addWidget(self.tab2StackedWidget)
 
         self.tabs.addTab(self.tab1, self.tr("Install"))
-        self.tabs.addTab(self.tab2, self.tr("Remove"))
+        self.tabs.addTab(self.tab2, self.tr("Manage"))
 
         mainLayout.addWidget(self.tabs)
 
@@ -204,7 +204,6 @@ class MainWindow(QMainWindow):
         self.populateFileSelection()
 
         self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
-        self.tab1Page1SubmitBtn.setObjectName("submitBtn")
         self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
 
         mainLayout.addWidget(title)
@@ -391,11 +390,9 @@ class MainWindow(QMainWindow):
             self.tab1Page2ContainerLayout.addWidget(containerTile)
 
         self.page2SubmitBtn = QPushButton(self.tr("Continue"))
-        self.page2SubmitBtn.setObjectName("submitBtn")
         self.page2SubmitBtn.clicked.connect(self.page2Validator)
 
         self.page2BackBtn = QPushButton(self.tr("Back"))
-        self.page2BackBtn.setObjectName("backBtn")
         self.page2BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
         self.page2BackBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True))
 
@@ -447,11 +444,9 @@ class MainWindow(QMainWindow):
         terminalLayout.addStretch()
 
         self.page3SubmitBtn = QPushButton(self.tr("Start installation"))
-        self.page3SubmitBtn.setObjectName("submitBtn")
         self.page3SubmitBtn.clicked.connect(self.installProgram)
 
         self.page3BackBtn = QPushButton(self.tr("Back"))
-        self.page3BackBtn.setObjectName("backBtn")
         self.page3BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(1))
 
         mainLayout.addWidget(title)
@@ -521,7 +516,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Page4OpenProgramBtn.setText(self.tr("Open {name}").format(name=self.programInfoList[1].text()))
         
-        self.tab1Page4OpenProgramBtn.clicked.connect(self.openProgram)
+        self.tab1Page4OpenProgramBtn.clicked.connect(self.openProgram(self.cmdName))
 
         self.tab1StackedWidget.setCurrentIndex(3)
 
@@ -557,9 +552,9 @@ class MainWindow(QMainWindow):
         
         return mainWidget
     
-    def openProgram(self):
+    def openProgram(self, program):
         subprocess.Popen(
-        [self.cmdName],
+        [program],
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -601,29 +596,17 @@ class MainWindow(QMainWindow):
         self.tab2Page1ContainerScrollArea.setWidget(container)
 
         self.tab2Page1ContainerLayout = QVBoxLayout(container)   
-        self.tab2Page1ContainerLayout.setContentsMargins(0, 0, 0, 0,)
-        self.tab2Page1ContainerLayout.setSpacing(0)
+        self.tab2Page1ContainerLayout.setContentsMargins(10, 10, 10, 10,)
+        self.tab2Page1ContainerLayout.setSpacing(6)
 
         self.populateProgramSelection()
 
-        checkBox1 = QCheckBox(self.tr("Remove all symlinks (Recommended)"))
-        checkBox1.setChecked(self.settings.value("rmvSymlinks", True, type=bool))
-        checkBox1.toggled.connect(lambda checked1: self.settings.setValue("rmvSymlinks", checked1))
-        checkBox2 = QCheckBox(self.tr("Remove startmenu entry (Recommended)"))
-        checkBox2.setChecked(self.settings.value("rmvStartmenuEntry", True, type=bool))
-        checkBox2.toggled.connect(lambda checked2: self.settings.setValue("rmvStartmenuEntry", checked2))
-
         submitBtn = QPushButton(self.tr("Continue"))
-        submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSelectedRadioBtn(self.groupTab2Page1))
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(1))
 
         mainLayout.addWidget(title)
-        mainLayout.addWidget(filedialogBtn)
         mainLayout.addWidget(self.tab2Page1ContainerScrollArea)
-        mainLayout.addWidget(checkBox1)        
-        mainLayout.addWidget(checkBox2)
-        mainLayout.addWidget(submitBtn)
         mainLayout.addStretch()
 
         return mainWidget
@@ -640,29 +623,47 @@ class MainWindow(QMainWindow):
             self.groupTab2Page1.deleteLater()
         self.groupTab2Page1 = QButtonGroup(self) 
 
-# Create a QRadioButton for each file
+# Create a tile for each file
         if numOfApps > 0:
              for app in self.appsMetadata:
-                radioBtn = QRadioButton(app.name)
-                self.tab2Page1ContainerLayout.addWidget(radioBtn)
-                self.groupTab2Page1.addButton(radioBtn)
+
+                tile = QGroupBox()
+                tile.setObjectName("appTile")
+
+                tileLayout = QHBoxLayout(tile)
+                tileLayout.setContentsMargins(10, 10, 10, 10)
+                tileLayout.setSpacing(6)
 
                 iconPath = app.iconPath
-
-                radioBtnContainer = QWidget()
-
-                layout = QHBoxLayout(radioBtnContainer)
-                layout.setContentsMargins(0, 0, 0, 0)
 
                 iconLabel = QLabel()
                 iconLabel.setObjectName("iconLabel")
                 pixmap = QPixmap(iconPath)
                 iconLabel.setPixmap(pixmap.scaled(22, 22, aspectMode=Qt.AspectRatioMode.KeepAspectRatio))
 
-                layout.addWidget(iconLabel)
-                layout.addWidget(radioBtn)
+                nameLabel = QLabel(app.name)
+                nameLabel.setFixedWidth(200)
+                nameLabel.setObjectName("nameLabel")
 
-                self.tab2Page1ContainerLayout.addWidget(radioBtnContainer)
+                launchBtn = QPushButton(self.tr("Launch"))
+                launchBtn.setObjectName("appBtn")
+                launchBtn.clicked.connect(lambda checked=False, app=app: self.openProgram(app.path))
+
+                configureBtn = QPushButton(self.tr("Configure"))
+                configureBtn.setObjectName("appBtn")
+
+                deleteBtn = QPushButton(self.tr("Delete"))
+                deleteBtn.setObjectName("appBtn")
+                deleteBtn.clicked.connect(lambda checked=False, app=app: self.tab2Page1Worker(app.name))
+
+                tileLayout.addWidget(iconLabel)
+                tileLayout.addWidget(nameLabel)
+                tileLayout.addStretch()
+                tileLayout.addWidget(launchBtn)
+                tileLayout.addWidget(configureBtn)
+                tileLayout.addWidget(deleteBtn)
+
+                self.tab2Page1ContainerLayout.addWidget(tile)
 
         else:
             tab2Page1NoFileMsg = QLabel(self.tr("No AppImage installation has been found"))
@@ -670,7 +671,7 @@ class MainWindow(QMainWindow):
             self.tab2Page1ContainerLayout.addWidget(tab2Page1NoFileMsg)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        self.tab2Page1ContainerScrollArea.setFixedHeight(min(numOfApps, 6) * 39)
+        self.tab2Page1ContainerScrollArea.setFixedHeight(min(numOfApps, 6) * 70)
     
     def tab2Page1Validator(self):
         if self.tab2StackedWidget.currentIndex() == 0:
@@ -711,11 +712,9 @@ class MainWindow(QMainWindow):
         terminalLayout.addStretch()
 
         self.tab2Page2SubmitBtn = QPushButton(self.tr("Start uninstallation"))
-        self.tab2Page2SubmitBtn.setObjectName("submitBtn")
         self.tab2Page2SubmitBtn.clicked.connect(self.uninstallProgram)
 
         self.tab2Page2BackBtn = QPushButton(self.tr("Back"))
-        self.tab2Page2BackBtn.setObjectName("backBtn")
         self.tab2Page2BackBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(title)
@@ -735,15 +734,14 @@ class MainWindow(QMainWindow):
         self.tab2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2TerminalUpdateMsg.show()
 
-        if self.settings.value("rmvSymlinks", True, bool):
-            Uninstaller.rmvInstalledFiles(symLinkFilePath)
-            self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
-            self.terminalUpdate(self.tr("Removed symlink"))
 
-        if self.settings.value("rmvStartmenuEntry", True, bool):
-            Uninstaller.rmvInstalledFiles(self.desktopFilePath)
-            self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
-            self.terminalUpdate(self.tr("Removed startmenu entry"))
+        Uninstaller.rmvInstalledFiles(symLinkFilePath)
+        self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
+        self.terminalUpdate(self.tr("Removed symlink"))
+
+        Uninstaller.rmvInstalledFiles(self.desktopFilePath)
+        self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
+        self.terminalUpdate(self.tr("Removed startmenu entry"))
 
         Uninstaller.rmvInstalledFiles(self.selectedAppPath)
         self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
@@ -785,7 +783,6 @@ class MainWindow(QMainWindow):
 
 # Reload all pages if the user wants to install another program
         submitBtn = QPushButton(self.tr("Remove another AppImage program"))
-        submitBtn.setObjectName("submitBtn")
         submitBtn.clicked.connect(self.populateProgramSelection)     
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 

@@ -35,3 +35,7 @@ QMenu::separator {
 QComboBox {
     max-width: 200px;
 }
+
+QPushButton#appBtn {
+    max-width: 80px;
+}
