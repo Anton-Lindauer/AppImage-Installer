@@ -10,8 +10,8 @@ import subprocess
 import os
 from pathlib import Path
 
-from src.core.logic import Installer, Uninstaller, Logging
-from src.gui.components import MenuBarUtils, PrepInstall, PrepUninstall
+from src.core.logic import Installer, Uninstaller, Logging, AppMetadata
+from src.gui.components import MenuBarUtils, InstallFileSelector
 from src.gui.threads import MetadataWorker, InstallWorker
 
 class MainWindow(QMainWindow):
@@ -31,8 +31,7 @@ class MainWindow(QMainWindow):
 
         self.logger = Logging()
 
-        self.tab1Page1Handler = PrepInstall()
-        self.tab2Page1Handler = PrepUninstall()
+        self.tab1Page1Handler = InstallFileSelector()
 
         self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
 
@@ -134,7 +133,7 @@ class MainWindow(QMainWindow):
 # Therefore you have to force Qt to do it
         setting2.hovered.connect(lambda: setting1.hide())
 
-        setting2.triggered.connect(self.menubarUtils.settingsWindow)
+        setting2.triggered.connect(self.menubarUtils.openSettingsWindow)
 
         theme1 = setting1.addAction(self.tr("System theme"))
         setting1.addSeparator()
@@ -185,7 +184,7 @@ class MainWindow(QMainWindow):
 
 # Let the user pick an AppImage from anywhere
         filedialogBtn = QPushButton(self.tr("Pick a file to install"))
-        filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.userPick(self))
+        filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.openFileDialog(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         self.tab1Page1ContainerScrollArea = QScrollArea()
@@ -204,7 +203,7 @@ class MainWindow(QMainWindow):
         self.populateFileSelection()
 
         self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
-        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.findSelectedRadioBtn(self.groupPage1))
+        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.emitSelectedRadioBtn(self.groupPage1))
 
         mainLayout.addWidget(title)
         mainLayout.addWidget(filedialogBtn)
@@ -257,7 +256,7 @@ class MainWindow(QMainWindow):
 # Only accept a file from the menubar selector if the user is on the first page
     def tab1Page1Validator(self):
         if self.tab1StackedWidget.currentIndex() == 0:
-            self.tab1Page1Handler.userPick(self)
+            self.tab1Page1Handler.openFileDialog(self)
 
 # The worker that extracts the AppImages metadata
     def tab1Page1Worker(self, path):
@@ -514,9 +513,9 @@ class MainWindow(QMainWindow):
         except TypeError:
             pass
 
+# Currently broken; idk why but a clicked signal is send twice when calling the connect funktion
         self.tab1Page4OpenProgramBtn.setText(self.tr("Open {name}").format(name=self.programInfoList[1].text()))
-        
-        self.tab1Page4OpenProgramBtn.clicked.connect(self.openProgram(self.cmdName))
+        #self.tab1Page4OpenProgramBtn.clicked.connect(self.openProgram(self.cmdName))
 
         self.tab1StackedWidget.setCurrentIndex(3)
 
@@ -580,12 +579,6 @@ class MainWindow(QMainWindow):
         title = QLabel(self.tr("App selection"))
         title.setObjectName("title")
 
-# Let the user pick a AppImage from anywhere
-        filedialogBtn = QPushButton(self.tr("Pick a AppImage app to uninstall"))
-        
-        self.tab2Page1Handler.pickedFile.connect(self.tab2Page1Worker)
-        filedialogBtn.clicked.connect(lambda: self.tab2Page1Handler.userPick(self))
-
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         self.tab2Page1ContainerScrollArea = QScrollArea()
         self.tab2Page1ContainerScrollArea.setWidgetResizable(True)
@@ -601,10 +594,6 @@ class MainWindow(QMainWindow):
 
         self.populateProgramSelection()
 
-        submitBtn = QPushButton(self.tr("Continue"))
-        submitBtn.clicked.connect(lambda: self.tab2Page1Handler.findSelectedRadioBtn(self.groupTab2Page1))
-        submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(1))
-
         mainLayout.addWidget(title)
         mainLayout.addWidget(self.tab2Page1ContainerScrollArea)
         mainLayout.addStretch()
@@ -615,6 +604,8 @@ class MainWindow(QMainWindow):
         self.clearLayout(self.tab2Page1ContainerLayout)
 
         self.appsMetadata = Uninstaller.getInstalledMetadata(self.startMenuFilePath)
+
+        appsConfigList = AppMetadata.getAppsMetadata(self.startMenuFilePath)
 
         numOfApps = len(self.appsMetadata)
 
@@ -651,6 +642,7 @@ class MainWindow(QMainWindow):
 
                 configureBtn = QPushButton(self.tr("Configure"))
                 configureBtn.setObjectName("appBtn")
+                configureBtn.clicked.connect(lambda checked=False, app=app: self.appConfigWindow(appsConfigList, app.name))
 
                 deleteBtn = QPushButton(self.tr("Delete"))
                 deleteBtn.setObjectName("appBtn")
@@ -672,11 +664,7 @@ class MainWindow(QMainWindow):
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         self.tab2Page1ContainerScrollArea.setFixedHeight(min(numOfApps, 6) * 70)
-    
-    def tab2Page1Validator(self):
-        if self.tab2StackedWidget.currentIndex() == 0:
-            self.tab2Page1Handler.userPick(self)
-        
+
     def tab2Page1Worker(self, name):
         self.tab2StackedWidget.setCurrentIndex(1)
         for app in self.appsMetadata:
@@ -685,6 +673,30 @@ class MainWindow(QMainWindow):
                 self.desktopFilePath = app.desktopPath
                 self.selectedAppName = app.name
 
+    def appConfigWindow(self, appsConfigs, name):
+        for app in appsConfigs:
+            if app.name == name:
+
+                configWindow = QDialog()
+                configWindow.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
+
+                configWindowLayout = QVBoxLayout(configWindow)
+
+                appNameLabel = QLabel(name)
+                appNameLabel.setObjectName("title")
+
+                appDescriptionLabel = QLabel(app.description)
+
+                filePathLabel = QLabel(app.filePath)
+
+                fileSizeLabel = QLabel(str(app.fileSize))
+
+                configWindowLayout.addWidget(appNameLabel)
+                configWindowLayout.addWidget(appDescriptionLabel)
+                configWindowLayout.addWidget(filePathLabel)
+                configWindowLayout.addWidget(fileSizeLabel)
+
+                configWindow.exec()
 
     def createTab2Page2(self):
         mainWidget = QWidget()
@@ -729,7 +741,7 @@ class MainWindow(QMainWindow):
         self.tab2Page2SubmitBtn.setEnabled(False)
         self.tab2Page2BackBtn.setEnabled(False)
 
-        symLinkFilePath = Uninstaller.listSymlinks(self.selectedAppPath, self.symLinkDir)
+        symLinkFilePath = Uninstaller.getSymlinkPath(self.selectedAppPath, self.symLinkDir)
 
         self.tab2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2TerminalUpdateMsg.show()

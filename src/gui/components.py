@@ -7,15 +7,15 @@ from PySide6.QtGui import QGuiApplication, QDesktopServices
 from pathlib import Path
 import os
 
-# All functions from the menubar
+# All menubar exclusive functionality
 class MenuBarUtils(QObject):
     def __init__(self):
         super().__init__()
 
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
-        fileDir = Path(__file__).resolve()
-        projectRoot = fileDir.parent.parent.parent
+        currentFilePath = Path(__file__).resolve()
+        projectRoot = currentFilePath.parent.parent.parent
         self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
         self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
         self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
@@ -23,99 +23,97 @@ class MenuBarUtils(QObject):
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
 
+    @staticmethod
     def openRepo():
-            QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
+        QDesktopServices.openUrl(QUrl("https://github.com/Anton-Lindauer/AppImage-Installer"))
 
     def loadTheme(self, selectedTheme):
-            app = QApplication.instance()
-            match selectedTheme:
-                case "sysTheme":
-                    self.settings.setValue("theme", "sysTheme")
-                    sysStyle = QGuiApplication.instance().styleHints().colorScheme()
-                    if sysStyle == Qt.ColorScheme.Dark:
-                        themeToLoad = self.modernBlueDarkStylePath
-                    else:
-                        themeToLoad = self.modernLightStylePath
-                case "modernBlueDarkTheme":
-                    self.settings.setValue("theme", "modernBlueDarkTheme")
-                    themeToLoad = self.modernBlueDarkStylePath
-                case "modernDarkTheme":  
-                    self.settings.setValue("theme", "modernDarkTheme")
-                    themeToLoad = self.modernDarkStylePath
-                case "modernLightTheme":  
-                    self.settings.setValue("theme", "modernLightTheme")
-                    themeToLoad = self.modernLightStylePath
-                case "kdeTheme":
-                    if self.desktopEnv == "KDE":
-                        self.settings.setValue("theme", "kdeTheme")
-                        themeToLoad = self.kdeStylePath
-                    else:
-                        print("Not supported on your desktop environment")
-                        return
+        app = QApplication.instance()
+        match selectedTheme:
+            case "sysTheme":
+                self.settings.setValue("theme", "sysTheme")
+                systemColorScheme = QGuiApplication.instance().styleHints().colorScheme()
+                themeToLoad = (
+                    self.modernBlueDarkStylePath
+                    if systemColorScheme == Qt.ColorScheme.Dark
+                    else self.modernLightStylePath
+                )
+            case "modernBlueDarkTheme":
+                self.settings.setValue("theme", "modernBlueDarkTheme")
+                themeToLoad = self.modernBlueDarkStylePath
+            case "modernDarkTheme":
+                self.settings.setValue("theme", "modernDarkTheme")
+                themeToLoad = self.modernDarkStylePath
+            case "modernLightTheme":
+                self.settings.setValue("theme", "modernLightTheme")
+                themeToLoad = self.modernLightStylePath
+            case "kdeTheme":
+                if self.desktopEnv != "KDE":
+                    print("Not supported on your desktop environment")
+                    return
+                self.settings.setValue("theme", "kdeTheme")
+                themeToLoad = self.kdeStylePath
 
-# Open the stylesheet with the selected theme
-            with open(themeToLoad, "r") as f:
-                            _style = f.read()
-                            app.setStyleSheet(_style)
+        with open(themeToLoad, "r") as f:
+            styleSheetContent = f.read()
+            app.setStyleSheet(styleSheetContent)
 
-    def settingsWindow(self):
-        settingsPage = QDialog()
-        settingsPage.setWindowTitle(self.tr("AppImage-Installer Settings"))
+    def openSettingsWindow(self):
+        settingsDialog = QDialog()
+        settingsDialog.setWindowTitle(self.tr("AppImage-Installer Settings"))
 
-        settingsWindowLayout = QVBoxLayout(settingsPage)
-        settingsWindowLayout.setContentsMargins(20, 20, 20, 20)
-        settingsWindowLayout.setSpacing(6)
+        settingsLayout = QVBoxLayout(settingsDialog)
+        settingsLayout.setContentsMargins(20, 20, 20, 20)
+        settingsLayout.setSpacing(6)
 
-        title = QLabel(self.tr("General Settings"))
-        title.setObjectName("title")
+        generalSettingsTitle = QLabel(self.tr("General Settings"))
+        generalSettingsTitle.setObjectName("title")
 
-        setting1 = QCheckBox(self.tr("Auto delete old logs"))
-        setting1.setChecked(self.settings.value("autoDelete", True, type=bool))
-        setting1.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
+        autoDeleteLogsCheckbox = QCheckBox(self.tr("Auto delete old logs"))
+        autoDeleteLogsCheckbox.setChecked(self.settings.value("autoDelete", True, type=bool))
+        autoDeleteLogsCheckbox.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
 
-        title2 = QLabel(self.tr("Language"))
-        title2.setObjectName("title")
+        languageSectionTitle = QLabel(self.tr("Language"))
+        languageSectionTitle.setObjectName("title")
 
-        infoText2 = QLabel(self.tr("Requires restart to change"))
-        infoText2.setObjectName("settingsDescription")
+        languageRestartHint = QLabel(self.tr("Requires restart to change"))
+        languageRestartHint.setObjectName("settingsDescription")
 
-        languageSel = QComboBox()
-        languageSel.addItem("Deutsch", "de")
-        languageSel.addItem("English", "en")
+        languageComboBox = QComboBox()
+        languageComboBox.addItem("Deutsch", "de")
+        languageComboBox.addItem("English", "en")
 
-# KDE doesn't have those problems
-        if not self.settings.value("theme") == "kdeTheme":
+ # KDE doesn't have problems with the QComboBox
+        if self.settings.value("theme") != "kdeTheme":
 
 # Fix to properly load the stylesheets
-            view = QListView(languageSel)
-            languageSel.setView(view)
+            languageListView = QListView(languageComboBox)
+            languageComboBox.setView(languageListView)
 
-# Fix for items not wanting to align to the left side
-            for i in range(languageSel.count()):
-                languageSel.setItemData(
+# Fix for items not wanting to align to the right side
+            for i in range(languageComboBox.count()):
+                languageComboBox.setItemData(
                     i,
                     int(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                     Qt.ItemDataRole.TextAlignmentRole
                 )
 
         savedLanguage = self.settings.value("language", "en", type=str)
-        languageIndex = languageSel.findData(savedLanguage)
-        languageSel.setCurrentIndex(languageIndex)
+        languageComboBox.setCurrentIndex(languageComboBox.findData(savedLanguage))
+        languageComboBox.currentTextChanged.connect(lambda: self.settings.setValue("language", languageComboBox.currentData()))
 
-        languageSel.currentTextChanged.connect(lambda: self.settings.setValue("language", languageSel.currentData()))
+        settingsLayout.addWidget(generalSettingsTitle)
+        settingsLayout.addWidget(autoDeleteLogsCheckbox)
+        settingsLayout.addWidget(languageSectionTitle)
+        settingsLayout.addWidget(languageRestartHint)
+        settingsLayout.addWidget(languageComboBox)
+        settingsLayout.addStretch()
 
-        settingsWindowLayout.addWidget(title)
-        settingsWindowLayout.addWidget(setting1)
-        settingsWindowLayout.addWidget(title2)
-        settingsWindowLayout.addWidget(infoText2)
-        settingsWindowLayout.addWidget(languageSel)
+        settingsDialog.exec()
 
-        settingsWindowLayout.addStretch()
-
-        settingsPage.exec()
 
 #All functions to prepare the installation of a AppImage file
-class PrepInstall(QObject):
+class InstallFileSelector(QObject):
     pickedFile = Signal(str)
 
     def __init__(self, parent=None):
@@ -123,47 +121,20 @@ class PrepInstall(QObject):
         self.userDir = Path.home()
 
 # Filedialog window to get a AppImage from outside the Downloads directory
-    def userPick(self, parentWindow):
+    def openFileDialog(self, parentWindow):
         pickedPath, _ = QFileDialog.getOpenFileName(
             parentWindow,
             self.tr("Pick a AppImage file to install"),
-                str(self.userDir),
+            str(self.userDir),
             self.tr("AppImage files (*.AppImage)")
         )
-
+ 
         if pickedPath:
             self.pickedFile.emit(pickedPath)
 
 # Find the selected file and the user can only continue with a file selected
-    def findSelectedRadioBtn(self, groupPage1):
-            selected = groupPage1.checkedButton()
-            if selected is not None:
-                pickedPath = selected.text()
-                self.pickedFile.emit(pickedPath)
-
-# All functions to prepare the uninstallation of an installed AppImage program
-class PrepUninstall(QObject):
-    pickedFile = Signal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.userDir = Path.home()
-
-# Filedialog window to get a AppImage from outside the AppImage directory
-    def userPick(self, parentWindow):
-        pickedPath, _ = QFileDialog.getOpenFileName(
-            parentWindow,
-            self.tr("Pick a AppImage file to uninstall"),
-                str(self.userDir),
-            self.tr("AppImage files (*.AppImage)")
-        )
-
-        if pickedPath:
+    def emitSelectedRadioBtn(self, radioGroupTab1Page1):
+        selectedButton = radioGroupTab1Page1.checkedButton()
+        if selectedButton is not None:
+            pickedPath = selectedButton.text()
             self.pickedFile.emit(pickedPath)
-
-# Find the selected file and the user can only continue with a file selected
-    def findSelectedRadioBtn(self, groupPage1):
-            selected = groupPage1.checkedButton()
-            if selected is not None:
-                pickedPath = selected.text()
-                self.pickedFile.emit(pickedPath)

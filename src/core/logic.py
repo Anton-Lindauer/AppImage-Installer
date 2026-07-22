@@ -174,6 +174,64 @@ class StartmenuEntry():
         logContent = f"Made {desktopEntryFile} executable"
         self.logger.addGeneralEntry(logContent)
 
+class AppMetadata():
+    def getAppsMetadata(desktopPath) -> list[AppsData]:
+        appsMetadata = []
+
+        for file in os.scandir(desktopPath):
+            if not (file.is_file(follow_symlinks=False) and file.name[-8:] == ".desktop"):
+                continue
+
+            appName = ""
+            appDescription = ""
+            appImageFilePath = ""
+            appImageFileSize = None
+
+            with open(file.path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+
+                    if "=" not in line:
+                        continue
+
+                    key, value = line.split("=", 1)
+
+                    if key == "Name":
+                        appName = value
+                    elif key == "Comment":
+                        appDescription = value
+                    elif key == "Exec":
+                        appImageFilePath = value
+# Mark not AppImage programs to later filter them out
+                        if not value.endswith(".AppImage"):
+                            appImageFilePath = False
+
+# Size of the .AppImage file in bytes
+                    if appImageFilePath:
+                        appImageFileSize = Path(appImageFilePath).stat().st_size
+
+# Filter out incomplete or not AppImage installs
+                if appName and appDescription and appImageFilePath and appImageFileSize:
+                    appMetadata = AppsData(
+                        name=appName,
+                        description=appDescription,
+                        filePath=appImageFilePath,
+                        fileSize=appImageFileSize
+                    )
+                    appsMetadata.append(appMetadata)
+                
+        appsMetadata.sort(key=lambda app: app.name.lower())
+
+        return appsMetadata
+
+@dataclass
+class AppsData():
+    name: str
+    description: str
+    filePath: str
+    fileSize: int
+
+
 class Uninstaller():
 # Store metadata from .desktop files in a list of dataclasses
     @staticmethod
@@ -224,7 +282,7 @@ class Uninstaller():
     
 # Returns the path of the terminal symlink of the selected AppImage
     @staticmethod
-    def listSymlinks(installedPath, symLinkDir):
+    def getSymlinkPath(installedPath, symLinkDir):
         for file in symLinkDir.iterdir():
             if file.is_symlink() and str(file.resolve()) == str(installedPath):
                 return file
