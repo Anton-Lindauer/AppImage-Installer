@@ -22,18 +22,18 @@ class MainWindow(QMainWindow):
         self.selectedAppImage = selectedAppImage
     
         self.userDir = Path.home()
-        self.fileDest = self.userDir / "AppImages"
+        self.appImagesDir = self.userDir / "AppImages"
         self.symLinkDir = self.userDir / ".local" / "bin"
-        self.startMenuFilePath = self.userDir / ".local" / "share" / "applications"
+        self.desktopEntriesDir = self.userDir / ".local" / "share" / "applications"
 
-        self.menubarUtils = MenuBarUtils()
+        self.menuBarUtils = MenuBarUtils()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
         self.logger = Logging()
 
-        self.tab1Page1Handler = InstallFileSelector()
+        self.tab1Page1FileSelector = InstallFileSelector()
 
-        self.tab1Page1Handler.pickedFile.connect(self.tab1Page1Worker)
+        self.tab1Page1FileSelector.pickedFile.connect(self.tab1Page1Worker)
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
         
@@ -42,24 +42,24 @@ class MainWindow(QMainWindow):
 # Used to display if the KDE integration is available
         kdeSupport = self.tr("Recommended") if self.isKde else self.tr("Not Supported")
         
-        if not self.desktopEnv == "KDE":
-            self.menubarUtils.loadTheme(self.settings.value("theme", "sysTheme", str))
+        if not self.isKde:
+            self.menuBarUtils.loadTheme(self.settings.value("theme", "sysTheme", str))
         else:
-            self.menubarUtils.loadTheme(self.settings.value("theme", "kdeTheme", str))
+            self.menuBarUtils.loadTheme(self.settings.value("theme", "kdeTheme", str))
         
         self.setWindowTitle("AppImage-Installer")
         self.setMinimumSize(750, 710)
 
 # QWidget for everything
-        central = QWidget()
-        self.setCentralWidget(central)
+        centralWidget = QWidget()
+        self.setCentralWidget(centralWidget)
 
-        mainLayout = QVBoxLayout(central)
+        mainLayout = QVBoxLayout(centralWidget)
         mainLayout.setContentsMargins(6, 6, 6, 6)
         mainLayout.setSpacing(0)
 
 # Tab one
-        self.tabs = QTabWidget()
+        self.tabWidget = QTabWidget()
 
         self.tab1 = QWidget()
         self.tab1Layout = QHBoxLayout(self.tab1)
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Layout.addWidget(self.tab1StackedWidget)
 
-        if not self.selectedAppImage == None:
+        if self.selectedAppImage is not None:
             self.tab1StackedWidget.setCurrentIndex(1)
             self.selectedAppImagePath = self.selectedAppImage
 
@@ -100,68 +100,68 @@ class MainWindow(QMainWindow):
 
         self.tab2Layout.addWidget(self.tab2StackedWidget)
 
-        self.tabs.addTab(self.tab1, self.tr("Install"))
-        self.tabs.addTab(self.tab2, self.tr("Manage"))
+        self.tabWidget.addTab(self.tab1, self.tr("Install"))
+        self.tabWidget.addTab(self.tab2, self.tr("Manage"))
 
-        mainLayout.addWidget(self.tabs)
+        mainLayout.addWidget(self.tabWidget)
 
 
 
 # All of the remaining code in this function is for the QMenuBar
-        optionsBar = self.menuBar()
+        mainMenuBar = self.menuBar()
 
-        fileMenu = optionsBar.addMenu(self.tr("File"))
-        settingsMenu = optionsBar.addMenu(self.tr("Settings"))
-        helpMenu = optionsBar.addMenu(self.tr("Help"))
+        fileMenu = mainMenuBar.addMenu(self.tr("File"))
+        settingsMenu = mainMenuBar.addMenu(self.tr("Settings"))
+        helpMenu = mainMenuBar.addMenu(self.tr("Help"))
 
-        file1 = fileMenu.addAction(self.tr("Pick a file to install"))
+        pickFileAction = fileMenu.addAction(self.tr("Pick a file to install"))
         fileMenu.addSeparator()
-        file2 = fileMenu.addAction(self.tr("Refresh list"))
+        refreshListAction = fileMenu.addAction(self.tr("Refresh list"))
 
-        file1.triggered.connect(self.tab1Page1Validator)
-        file2.triggered.connect(lambda: self.populateFileSelection() if self.tab1StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 0 else None)
-        file2.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 0 else None)
-        file2.triggered.connect(lambda: self.populateProgramSelection() if self.tab2StackedWidget.currentIndex() == 0 and self.tabs.currentIndex() == 1 else None)
-        file2.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabs.currentIndex() == 1 else None)
+        pickFileAction.triggered.connect(self.tab1Page1Guard)
+        refreshListAction.triggered.connect(lambda: self.populateFileSelection() if self.tab1StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 0 else None)
+        refreshListAction.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabWidget.currentIndex() == 0 else None)
+        refreshListAction.triggered.connect(lambda: self.populateProgramSelection() if self.tab2StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 1 else None)
+        refreshListAction.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabWidget.currentIndex() == 1 else None)
 
         
-        setting1 = settingsMenu.addMenu(self.tr("Theme"))
+        themeMenu = settingsMenu.addMenu(self.tr("Theme"))
         settingsMenu.addSeparator()
-        setting2 = settingsMenu.addAction(self.tr("Configure"))
+        configureAction = settingsMenu.addAction(self.tr("Configure"))
 
 # Qt doesn't immediately close a menu inside a menu when hovering over a different element.
 # Therefore you have to force Qt to do it
-        setting2.hovered.connect(lambda: setting1.hide())
+        configureAction.hovered.connect(lambda: themeMenu.hide())
 
-        setting2.triggered.connect(self.menubarUtils.openSettingsWindow)
+        configureAction.triggered.connect(self.menuBarUtils.openSettingsWindow)
 
-        theme1 = setting1.addAction(self.tr("System theme"))
-        setting1.addSeparator()
-        theme2 = setting1.addAction(self.tr("Modern Blue Dark"))
-        setting1.addSeparator()
-        theme3 = setting1.addAction(self.tr("Modern Dark"))
-        setting1.addSeparator()
-        theme4 = setting1.addAction(self.tr("Modern Light"))
-        setting1.addSeparator()
-        theme5 = setting1.addAction(self.tr("Use KDE theme ({Support})").format(Support=kdeSupport))
+        systemThemeAction = themeMenu.addAction(self.tr("System theme"))
+        themeMenu.addSeparator()
+        blueDarkThemeAction = themeMenu.addAction(self.tr("Modern Blue Dark"))
+        themeMenu.addSeparator()
+        darkThemeAction = themeMenu.addAction(self.tr("Modern Dark"))
+        themeMenu.addSeparator()
+        lightThemeAction = themeMenu.addAction(self.tr("Modern Light"))
+        themeMenu.addSeparator()
+        kdeThemeAction = themeMenu.addAction(self.tr("Use KDE theme ({Support})").format(Support=kdeSupport))
 
 # Reloading tab 1 page 2 because it uses a different layout for QSS and KDE themes
-        theme1.triggered.connect(lambda: self.menubarUtils.loadTheme("sysTheme"))
-        theme1.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme2.triggered.connect(lambda: self.menubarUtils.loadTheme("modernBlueDarkTheme"))
-        theme2.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme3.triggered.connect(lambda: self.menubarUtils.loadTheme("modernDarkTheme"))
-        theme3.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme4.triggered.connect(lambda: self.menubarUtils.loadTheme("modernLightTheme"))
-        theme4.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
-        theme5.triggered.connect(lambda: self.menubarUtils.loadTheme("kdeTheme"))
-        theme5.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
+        systemThemeAction.triggered.connect(lambda: self.menuBarUtils.loadTheme("sysTheme"))
+        systemThemeAction.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
+        blueDarkThemeAction.triggered.connect(lambda: self.menuBarUtils.loadTheme("modernBlueDarkTheme"))
+        blueDarkThemeAction.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
+        darkThemeAction.triggered.connect(lambda: self.menuBarUtils.loadTheme("modernDarkTheme"))
+        darkThemeAction.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
+        lightThemeAction.triggered.connect(lambda: self.menuBarUtils.loadTheme("modernLightTheme"))
+        lightThemeAction.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
+        kdeThemeAction.triggered.connect(lambda: self.menuBarUtils.loadTheme("kdeTheme"))
+        kdeThemeAction.triggered.connect(lambda: self.reloadTab1() if self.isKde else None)
 
-        help1 = helpMenu.addAction("Github Repo")
-        help1.triggered.connect(self.menubarUtils.openRepo)
+        githubRepoAction = helpMenu.addAction("Github Repo")
+        githubRepoAction.triggered.connect(self.menuBarUtils.openRepo)
 
 # Hides the box around the box with the menues; Has to be declared for every menu
-        for menu in (fileMenu, settingsMenu, setting1, helpMenu):
+        for menu in (fileMenu, settingsMenu, themeMenu, helpMenu):
             menu.setWindowFlags(
                 menu.windowFlags()
                 | Qt.FramelessWindowHint
@@ -170,8 +170,10 @@ class MainWindow(QMainWindow):
             )
             menu.setAttribute(Qt.WA_TranslucentBackground)
 
+
             
 ############################################### Tab 1 - Page 1 ###############################################
+# All of the following functions belong to the install tab / tab one
 # This is the static part of the page, it's only generated once, when the app launches
     def createTab1Page1(self):
         mainWidget = QWidget()
@@ -179,12 +181,12 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("AppImage selection"))
-        title.setObjectName("title")
+        pageTitle = QLabel(self.tr("AppImage selection"))
+        pageTitle.setObjectName("title")
 
 # Let the user pick an AppImage from anywhere
-        filedialogBtn = QPushButton(self.tr("Pick a file to install"))
-        filedialogBtn.clicked.connect(lambda: self.tab1Page1Handler.openFileDialog(self))
+        openFileDialogBtn = QPushButton(self.tr("Pick a file to install"))
+        openFileDialogBtn.clicked.connect(lambda: self.tab1Page1FileSelector.openFileDialog(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         self.tab1Page1ContainerScrollArea = QScrollArea()
@@ -192,23 +194,23 @@ class MainWindow(QMainWindow):
         self.tab1Page1ContainerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 # Container in the QScrollArea
-        container = QWidget()
-        self.tab1Page1ContainerScrollArea.setWidget(container)
+        radioBtnContainer = QWidget()
+        self.tab1Page1ContainerScrollArea.setWidget(radioBtnContainer)
 
-        self.tab1Page1ContainerLayout = QVBoxLayout(container)   
+        self.tab1Page1ContainerLayout = QVBoxLayout(radioBtnContainer)   
         self.tab1Page1ContainerLayout.setContentsMargins(0, 0, 0, 0,)
         self.tab1Page1ContainerLayout.setSpacing(0)
 
 # The radiobutton selection has to be a seperate funktion to be able to update it, without updating the entire UI
         self.populateFileSelection()
 
-        self.tab1Page1SubmitBtn = QPushButton(self.tr("Continue"))  
-        self.tab1Page1SubmitBtn.clicked.connect(lambda: self.tab1Page1Handler.emitSelectedRadioBtn(self.groupPage1))
+        self.tab1Page1ContinueBtn = QPushButton(self.tr("Continue"))  
+        self.tab1Page1ContinueBtn.clicked.connect(lambda: self.tab1Page1FileSelector.emitSelectedRadioBtn(self.tab1Page1RadioBtnGroup))
 
-        mainLayout.addWidget(title)
-        mainLayout.addWidget(filedialogBtn)
+        mainLayout.addWidget(pageTitle)
+        mainLayout.addWidget(openFileDialogBtn)
         mainLayout.addWidget(self.tab1Page1ContainerScrollArea)
-        mainLayout.addWidget(self.tab1Page1SubmitBtn)
+        mainLayout.addWidget(self.tab1Page1ContinueBtn)
         mainLayout.addStretch()
 
         return mainWidget
@@ -217,31 +219,31 @@ class MainWindow(QMainWindow):
     def populateFileSelection(self):
         self.clearLayout(self.tab1Page1ContainerLayout)
 
-        if hasattr(self, "groupPage1"):
-            self.groupPage1.deleteLater()
-        self.groupPage1 = QButtonGroup(self)
+        if hasattr(self, "tab1Page1RadioBtnGroup"):
+            self.tab1Page1RadioBtnGroup.deleteLater()
+        self.tab1Page1RadioBtnGroup = QButtonGroup(self)
 
 # All paths of AppImage files in the Downloads directory
-        self.fileList = Installer.listFiles(self.userDir)     
-        fileListLen = len(self.fileList)
+        self.appImageFilePaths = Installer.listFiles(self.userDir)     
+        appImageFileCount = len(self.appImageFilePaths)
 
 # Create a QRadioButton for each file
-        if fileListLen > 0:
-             for file in self.fileList:
-                radioBtn = QRadioButton(file)
+        if appImageFileCount > 0:
+             for filePath in self.appImageFilePaths:
+                radioBtn = QRadioButton(filePath)
                 self.tab1Page1ContainerLayout.addWidget(radioBtn)
-                self.groupPage1.addButton(radioBtn)
+                self.tab1Page1RadioBtnGroup.addButton(radioBtn)
 
         else:
-            page1NoFileMsg = QLabel(self.tr("No .AppImage file has been found in your Downloads directory"))
-            page1NoFileMsg.setObjectName("message")
-            self.tab1Page1ContainerLayout.addWidget(page1NoFileMsg)
+            noFilesFoundLabel = QLabel(self.tr("No .AppImage file has been found in your Downloads directory"))
+            noFilesFoundLabel.setObjectName("message")
+            self.tab1Page1ContainerLayout.addWidget(noFilesFoundLabel)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        self.tab1Page1ContainerScrollArea.setFixedHeight(min(max(fileListLen, 1), 6) * 39)
+        self.tab1Page1ContainerScrollArea.setFixedHeight(min(max(appImageFileCount, 1), 6) * 39)
 
 # Disable the scrollbar handle when there aren't enough QRadioButtons to scroll
-        if fileListLen <= 6:
+        if appImageFileCount <= 6:
             self.tab1Page1ContainerScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 # General method to delete all the content of a layout, currently used for the QScrollAreas on tab one and two page one
@@ -254,15 +256,15 @@ class MainWindow(QMainWindow):
                 widget.deleteLater()
 
 # Only accept a file from the menubar selector if the user is on the first page
-    def tab1Page1Validator(self):
+    def tab1Page1Guard(self):
         if self.tab1StackedWidget.currentIndex() == 0:
-            self.tab1Page1Handler.openFileDialog(self)
+            self.tab1Page1FileSelector.openFileDialog(self)
 
 # The worker that extracts the AppImages metadata
-    def tab1Page1Worker(self, path):
-        self.selectedAppImagePath = path
+    def tab1Page1Worker(self, appImagePath):
+        self.selectedAppImagePath = appImagePath
 
-        self.tab1Page1SubmitBtn.setEnabled(False)
+        self.tab1Page1ContinueBtn.setEnabled(False)
 
         self.metadataWorker = MetadataWorker(self.selectedAppImagePath, self.logger)
 
@@ -271,51 +273,53 @@ class MainWindow(QMainWindow):
 
         self.metadataWorker.start()
 
-# Loads the AppImages metadata in the QLineEdits and QRadiobuttons
+# Loads the AppImages metadata in the QLineEdits and QRadiobuttons on page two
     def metadataLoader(self, metadata):
         self.tab1StackedWidget.setCurrentIndex(1)
 
-        self.programInfoList[0].setText(metadata["exec"].lower())
-        self.programInfoList[1].setText(metadata["name"])
-        self.programInfoList[2].setText(metadata["comment"])
+        self.programInfoInputs[0].setText(metadata["exec"].lower())
+        self.programInfoInputs[1].setText(metadata["name"])
+        self.programInfoInputs[2].setText(metadata["comment"])
         
 # Activate the QRadioButtons when they are in the AppImages category string
         categories = metadata["categories"].split(";")
 
-        for button in self.page2RadioBtns.buttons():
+        for button in self.tab1Page2CategoryRadioBtns.buttons():
             button.setChecked(button.text() in categories)
 
 
 
+############################################### Tab 1 - Page 2 ###############################################
+# This is the static part of the page, it's only generated once, when the app launches
     def createTab1Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("Program information"))
-        title.setObjectName("title")
+        pageTitle = QLabel(self.tr("Program information"))
+        pageTitle.setObjectName("title")
 
 # Box for the options for the user; Contains other boxes with the descriptions and QlineEdits
-        container = QGroupBox()
+        programInfoGroupBox = QGroupBox()
         
 # Set the layout in the container
 # Has to be dynamic, because the layout is different for QSS and KDE themes
-        self.tab1Page2ContainerLayout = QVBoxLayout(container)
+        self.tab1Page2ContainerLayout = QVBoxLayout(programInfoGroupBox)
 
-        self.loadTab1Page2Container()
+        self.configureTab1Page2Layout()
 
 # All the things the user has to enter
-        self.programInfo = [self.tr("Terminal Command"),
-                            self.tr("Display Name"),
-                            self.tr("Short Description"),
-                            self.tr("Categories")]
+        self.programInfoLabels = [self.tr("Terminal Command"),
+                                  self.tr("Display Name"),
+                                  self.tr("Short Description"),
+                                  self.tr("Categories")]
         
 # More information on what to enter for the user
-        programInfoText = [self.tr("The command used to launch the application from the terminal."),
-                           self.tr("The name that will appear in the start menu and application list."),
-                           self.tr("A brief summary of the application."),
-                           self.tr("Determines the placement in the start menu.")]
+        fieldHelpTexts = [self.tr("The command used to launch the application from the terminal."),
+                          self.tr("The name that will appear in the start menu and application list."),
+                          self.tr("A brief summary of the application."),
+                          self.tr("Determines the placement in the start menu.")]
         
 # All main categories from freedesktop.org
         self.categoryList = ["AudioVideo", "Audio", "Video", 
@@ -324,90 +328,91 @@ class MainWindow(QMainWindow):
                              "Office", "Science", "Settings", 
                              "System", "Utility"]
         
-        self.programInfoList = []
+        self.programInfoInputs = []
         
 # Create all the element in the groupbox
-        for index, info in enumerate(self.programInfo):  
+        for index, fieldLabelText in enumerate(self.programInfoLabels):  
 # Boxes with the descriptions and the QLineEdits
-            containerTile = QWidget()
-            containerTile.setObjectName("page2InnerBox")
+            fieldTile = QWidget()
+            fieldTile.setObjectName("page2InnerBox")
 
-            tileLayout = QVBoxLayout(containerTile)
-            tileLayout.setContentsMargins(0, 0, 0, 0)
-            tileLayout.setSpacing(6)
+            fieldTileLayout = QVBoxLayout(fieldTile)
+            fieldTileLayout.setContentsMargins(0, 0, 0, 0)
+            fieldTileLayout.setSpacing(6)
 
 # Special properties for the first and last boxes; Used in QSS for rounded corners
             if index == 0:
-                containerTile.setProperty("isFirst", "true")
+                fieldTile.setProperty("isFirst", "true")
             elif index == 3:
-                containerTile.setProperty("isLast", "true")
+                fieldTile.setProperty("isLast", "true")
             
 # What the user is expected to enter 
-            description = QLabel(info)
-            description.setObjectName("entry")
+            fieldNameLabel = QLabel(fieldLabelText)
+            fieldNameLabel.setObjectName("entry")
 
 # More detailed description for the user
-            infoDescription = QLabel(programInfoText[index])
-            infoDescription.setObjectName("infoDescription")
-            infoDescription.setWordWrap(True)
+            fieldHelpLabel = QLabel(fieldHelpTexts[index])
+            fieldHelpLabel.setObjectName("infoDescription")
+            fieldHelpLabel.setWordWrap(True)
 
-            tileLayout.addWidget(description)
-            tileLayout.addWidget(infoDescription)
+            fieldTileLayout.addWidget(fieldNameLabel)
+            fieldTileLayout.addWidget(fieldHelpLabel)
 
 # Add QRadioButtons only to the last box, QLineEdits for all other boxes
-            if index == index == len(self.programInfo) - 1:
-                innerTile = QWidget()
-                innerTileLayout = QGridLayout(innerTile)
-                innerTileLayout.setContentsMargins(0, 0, 0, 6)
-                innerTileLayout.setSpacing(6)
+            if index == len(self.programInfoLabels) - 1:
+                categoryGrid = QWidget()
+                categoryGridLayout = QGridLayout(categoryGrid)
+                categoryGridLayout.setContentsMargins(0, 0, 0, 6)
+                categoryGridLayout.setSpacing(6)
 
-                self.allCategories = ""
-                self.page2RadioBtns = QButtonGroup()
-                self.page2RadioBtns.setExclusive(False)
+                self.tab1Page2CategoryRadioBtns = QButtonGroup()
+                self.tab1Page2CategoryRadioBtns.setExclusive(False)
 
 # Create a QRadioButton for all 14 categories
-                for i, category in enumerate(self.categoryList):
-                    radioBtn = QRadioButton(category)
+                for i, categoryName in enumerate(self.categoryList):
+                    radioBtn = QRadioButton(categoryName)
                     radioBtn.setObjectName("categorySel")
                     radioBtn.setAutoExclusive(False)
-                    self.page2RadioBtns.addButton(radioBtn)
+                    self.tab1Page2CategoryRadioBtns.addButton(radioBtn)
 
                     row = i // 3
                     column = i % 3
 
-                    innerTileLayout.addWidget(radioBtn, row, column)
+                    categoryGridLayout.addWidget(radioBtn, row, column)
 
-                tileLayout.addWidget(innerTile)
+                fieldTileLayout.addWidget(categoryGrid)
 
 # Add QLineEdit input fields for box one to three
             else:
-                usrInput = QLineEdit()
-                self.programInfoList.append(usrInput)
-                tileLayout.addWidget(usrInput)
+                inputField = QLineEdit()
+                self.programInfoInputs.append(inputField)
+                fieldTileLayout.addWidget(inputField)
                 
 
-            self.tab1Page2ContainerLayout.addWidget(containerTile)
+            self.tab1Page2ContainerLayout.addWidget(fieldTile)
 
-        self.page2SubmitBtn = QPushButton(self.tr("Continue"))
-        self.page2SubmitBtn.clicked.connect(self.page2Validator)
+        self.tab1Page2ContinueBtn = QPushButton(self.tr("Continue"))
+        self.tab1Page2ContinueBtn.clicked.connect(self.page2Validator)
 
-        self.page2BackBtn = QPushButton(self.tr("Back"))
-        self.page2BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
-        self.page2BackBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True))
+        self.tab1Page2BackBtn = QPushButton(self.tr("Back"))
+        self.tab1Page2BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
+        self.tab1Page2BackBtn.clicked.connect(lambda: self.tab1Page1ContinueBtn.setEnabled(True))
 
-        mainLayout.addWidget(title)
-        mainLayout.addWidget(container)
-        mainLayout.addWidget(self.page2SubmitBtn)
-        mainLayout.addWidget(self.page2BackBtn)
+        mainLayout.addWidget(pageTitle)
+        mainLayout.addWidget(programInfoGroupBox)
+        mainLayout.addWidget(self.tab1Page2ContinueBtn)
+        mainLayout.addWidget(self.tab1Page2BackBtn)
         mainLayout.addStretch()    
 
         return mainWidget
-    
+
+# Only continue when all QLineEdits contain text and one or more QRadioButton is selected
     def page2Validator(self):
-        if all(edit.text().strip() for edit in self.programInfoList) and self.page2RadioBtns.checkedButton() is not None:
+        if all(edit.text().strip() for edit in self.programInfoInputs) and self.tab1Page2CategoryRadioBtns.checkedButton() is not None:
             self.tab1StackedWidget.setCurrentIndex(2)
 
-    def loadTab1Page2Container(self):
+# Custom layouts for KDE and QSS themes
+    def configureTab1Page2Layout(self):
         if self.isKde and self.settings.value("theme", "sysTheme", str) == "kdeTheme":
             self.tab1Page2ContainerLayout.setContentsMargins(10, 10, 10, 10)
             self.tab1Page2ContainerLayout.setSpacing(6)
@@ -417,23 +422,25 @@ class MainWindow(QMainWindow):
 
 
 
+############################################### Tab 1 - Page 3 ###############################################
+# This is the static part of the page, it's only generated once, when the app launches
     def createTab1Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("Installation process"))
-        title.setObjectName("title")
+        pageTitle = QLabel(self.tr("Installation process"))
+        pageTitle.setObjectName("title")
 
 # QGroupBox thats used as a terminal for the status updates, that the user receives
-        container = QGroupBox()    
-        terminalLayout = QVBoxLayout(container)
+        terminalGroupBox = QGroupBox()    
+        terminalLayout = QVBoxLayout(terminalGroupBox)
         terminalLayout.setContentsMargins(6, 6, 6, 6)
         terminalLayout.setSpacing(0)
 
-        container.setMinimumHeight(200)
-        container.setObjectName("page3Container")
+        terminalGroupBox.setMinimumHeight(200)
+        terminalGroupBox.setObjectName("page3Container")
 
 # Updates that are displayed in the GUIs terminal like UI element
         self.terminalUpdateMsg = QLabel()     
@@ -442,45 +449,45 @@ class MainWindow(QMainWindow):
         terminalLayout.addWidget(self.terminalUpdateMsg)
         terminalLayout.addStretch()
 
-        self.page3SubmitBtn = QPushButton(self.tr("Start installation"))
-        self.page3SubmitBtn.clicked.connect(self.installProgram)
+        self.tab1Page3StartInstallBtn = QPushButton(self.tr("Start installation"))
+        self.tab1Page3StartInstallBtn.clicked.connect(self.tab1Page3Worker)
 
-        self.page3BackBtn = QPushButton(self.tr("Back"))
-        self.page3BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(1))
+        self.tab1Page3BackBtn = QPushButton(self.tr("Back"))
+        self.tab1Page3BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(1))
 
-        mainLayout.addWidget(title)
-        mainLayout.addWidget(container)
-        mainLayout.addWidget(self.page3SubmitBtn)
-        mainLayout.addWidget(self.page3BackBtn)
+        mainLayout.addWidget(pageTitle)
+        mainLayout.addWidget(terminalGroupBox)
+        mainLayout.addWidget(self.tab1Page3StartInstallBtn)
+        mainLayout.addWidget(self.tab1Page3BackBtn)
         mainLayout.addStretch()
 
         return mainWidget
     
-    def installProgram(self):
+    def tab1Page3Worker(self):
 # Disable the buttons on page 3 
-        self.page3SubmitBtn.setEnabled(False)
-        self.page3BackBtn.setEnabled(False)
+        self.tab1Page3StartInstallBtn.setEnabled(False)
+        self.tab1Page3BackBtn.setEnabled(False)
 
 # Get program data from the QLineEdits
-        self.cmdName = self.programInfoList[0].text()
-        self.programName = self.programInfoList[1].text()
-        self.programDescr = self.programInfoList[2].text()
+        self.cmdName = self.programInfoInputs[0].text()
+        self.programName = self.programInfoInputs[1].text()
+        self.programDescription = self.programInfoInputs[2].text()
 
 # Get all selected categories
         self.programCategory = ""
-        allCategories = self.page2RadioBtns.buttons()
+        categoryRadioBtns = self.tab1Page2CategoryRadioBtns.buttons()
 
-        selected = [rb.text() for rb in allCategories if rb.isChecked()]
+        selectedCategories = [rb.text() for rb in categoryRadioBtns if rb.isChecked()]
 
-        if selected:
-            self.programCategory = ";".join(selected)
+        if selectedCategories:
+            self.programCategory = ";".join(selectedCategories)
 
 # Temporary way of deleting old logs
         if self.settings.value("autoDelete", True, type=bool):
-                self.logger.rmvOldLogs()
+            self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.installWorker = InstallWorker(self.selectedAppImagePath, self.fileDest, self.userDir, self.programName,self.programDescr, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
+        self.installWorker = InstallWorker(self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
 
 # Process status updates from the installation function
         self.installWorker.progressUpdate.connect(self.workerProgress)
@@ -506,23 +513,22 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
 
     def workerFinished(self):
-        self.tab1Page4Title.setText(self.tr("Finished installing {name}").format(name=self.programInfoList[1].text()))
+        self.tab1Page4Title.setText(self.tr("Finished installing {name}").format(name=self.programInfoInputs[1].text()))
 
         try:
             self.tab1Page4OpenProgramBtn.clicked.disconnect()
         except TypeError:
             pass
 
-# Currently broken; idk why but a clicked signal is send twice when calling the connect funktion
-        self.tab1Page4OpenProgramBtn.setText(self.tr("Open {name}").format(name=self.programInfoList[1].text()))
-        #self.tab1Page4OpenProgramBtn.clicked.connect(self.openProgram(self.cmdName))
+        self.tab1Page4OpenProgramBtn.setText(self.tr("Open {name}").format(name=self.programInfoInputs[1].text()))
+        self.tab1Page4OpenProgramBtn.clicked.connect(lambda: self.openProgram(self.cmdName))
 
         self.tab1StackedWidget.setCurrentIndex(3)
 
         self.terminalUpdateMsg.setText("")
 
-        self.page3SubmitBtn.setEnabled(True)
-        self.page3BackBtn.setEnabled(True)
+        self.tab1Page3StartInstallBtn.setEnabled(True)
+        self.tab1Page3BackBtn.setEnabled(True)
 
         self.populateProgramSelection()
 
@@ -536,24 +542,24 @@ class MainWindow(QMainWindow):
         self.tab1Page4Title = QLabel(self.tr("Finished installing"))
         self.tab1Page4Title.setObjectName("title")
 
-        submitBtn = QPushButton(self.tr("Install another program"))
+        installAnotherBtn = QPushButton(self.tr("Install another program"))
 # Reload the filelist, if the user wants to install more AppImages
-        submitBtn.clicked.connect(self.populateFileSelection)
-        submitBtn.clicked.connect(lambda: self.tab1Page1SubmitBtn.setEnabled(True)) 
-        submitBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
+        installAnotherBtn.clicked.connect(self.populateFileSelection)
+        installAnotherBtn.clicked.connect(lambda: self.tab1Page1ContinueBtn.setEnabled(True)) 
+        installAnotherBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
         self.tab1Page4OpenProgramBtn = QPushButton(self.tr("Open"))
 
         mainLayout.addWidget(self.tab1Page4Title)
-        mainLayout.addWidget(submitBtn)
+        mainLayout.addWidget(installAnotherBtn)
         mainLayout.addWidget(self.tab1Page4OpenProgramBtn)
         mainLayout.addStretch()
         
         return mainWidget
     
-    def openProgram(self, program):
+    def openProgram(self, command):
         subprocess.Popen(
-        [program],
+        [command],
         stdin=subprocess.DEVNULL,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
@@ -563,21 +569,23 @@ class MainWindow(QMainWindow):
     def reloadTab1(self):
         currentIndex = self.tab1StackedWidget.currentIndex()
 
-        self.loadTab1Page2Container()
+        self.configureTab1Page2Layout()
 
         self.tab1StackedWidget.setCurrentIndex(currentIndex)
 
 
 
-
+############################################### Tab 1 - Page 1 ###############################################
+# All of the following functions belong to the manage tab / tab two
+# This is the static part of the page, it's only generated once, when the app launches
     def createTab2Page1(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("App selection"))
-        title.setObjectName("title")
+        pageTitle = QLabel(self.tr("App selection"))
+        pageTitle.setObjectName("title")
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
         self.tab2Page1ContainerScrollArea = QScrollArea()
@@ -585,87 +593,83 @@ class MainWindow(QMainWindow):
         self.tab2Page1ContainerScrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 # Container in the QScrollArea
-        container = QWidget() 
-        self.tab2Page1ContainerScrollArea.setWidget(container)
+        appTileContainer = QWidget() 
+        self.tab2Page1ContainerScrollArea.setWidget(appTileContainer)
 
-        self.tab2Page1ContainerLayout = QVBoxLayout(container)   
+        self.tab2Page1ContainerLayout = QVBoxLayout(appTileContainer)   
         self.tab2Page1ContainerLayout.setContentsMargins(10, 10, 10, 10,)
         self.tab2Page1ContainerLayout.setSpacing(6)
 
         self.populateProgramSelection()
 
-        mainLayout.addWidget(title)
+        mainLayout.addWidget(pageTitle)
         mainLayout.addWidget(self.tab2Page1ContainerScrollArea)
         mainLayout.addStretch()
 
         return mainWidget
     
+# The dynamicly generated part, the list of installed AppImage programs
     def populateProgramSelection(self):
         self.clearLayout(self.tab2Page1ContainerLayout)
 
-        self.appsMetadata = Uninstaller.getInstalledMetadata(self.startMenuFilePath)
+        self.appsMetadata = Uninstaller.getInstalledMetadata(self.desktopEntriesDir)
 
-        appsConfigList = AppMetadata.getAppsMetadata(self.startMenuFilePath)
+        appsConfigList = AppMetadata.getAppsMetadata(self.desktopEntriesDir)
 
-        numOfApps = len(self.appsMetadata)
-
-# Group for all QRadioButtons to later find out which one is checked
-        if hasattr(self, "groupTab2Page1"):
-            self.groupTab2Page1.deleteLater()
-        self.groupTab2Page1 = QButtonGroup(self) 
+        installedAppCount = len(self.appsMetadata)
 
 # Create a tile for each file
-        if numOfApps > 0:
-             for app in self.appsMetadata:
+        if installedAppCount > 0:
+             for installedApp in self.appsMetadata:
 
-                tile = QGroupBox()
-                tile.setObjectName("appTile")
+                appTile = QGroupBox()
+                appTile.setObjectName("appTile")
 
-                tileLayout = QHBoxLayout(tile)
-                tileLayout.setContentsMargins(10, 10, 10, 10)
-                tileLayout.setSpacing(6)
+                appTileLayout = QHBoxLayout(appTile)
+                appTileLayout.setContentsMargins(10, 10, 10, 10)
+                appTileLayout.setSpacing(6)
 
-                iconPath = app.iconPath
+                iconPath = installedApp.iconPath
 
-                iconLabel = QLabel()
-                iconLabel.setObjectName("iconLabel")
-                pixmap = QPixmap(iconPath)
-                iconLabel.setPixmap(pixmap.scaled(22, 22, aspectMode=Qt.AspectRatioMode.KeepAspectRatio))
+                appIconLabel = QLabel()
+                appIconLabel.setObjectName("iconLabel")
+                appIconPixmap = QPixmap(iconPath)
+                appIconLabel.setPixmap(appIconPixmap.scaled(22, 22, aspectMode=Qt.AspectRatioMode.KeepAspectRatio))
 
-                nameLabel = QLabel(app.name)
-                nameLabel.setFixedWidth(200)
-                nameLabel.setObjectName("nameLabel")
+                appNameLabel = QLabel(installedApp.name)
+                appNameLabel.setFixedWidth(200)
+                appNameLabel.setObjectName("nameLabel")
 
-                launchBtn = QPushButton(self.tr("Launch"))
-                launchBtn.setObjectName("appBtn")
-                launchBtn.clicked.connect(lambda checked=False, app=app: self.openProgram(app.path))
+                launchAppBtn = QPushButton(self.tr("Launch"))
+                launchAppBtn.setObjectName("appBtn")
+                launchAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.openProgram(app.path))
 
-                configureBtn = QPushButton(self.tr("Configure"))
-                configureBtn.setObjectName("appBtn")
-                configureBtn.clicked.connect(lambda checked=False, app=app: self.appConfigWindow(appsConfigList, app.name))
+                configureAppBtn = QPushButton(self.tr("Configure"))
+                configureAppBtn.setObjectName("appBtn")
+                configureAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.appConfigWindow(appsConfigList, app.name))
 
-                deleteBtn = QPushButton(self.tr("Delete"))
-                deleteBtn.setObjectName("appBtn")
-                deleteBtn.clicked.connect(lambda checked=False, app=app: self.tab2Page1Worker(app.name))
+                deleteAppBtn = QPushButton(self.tr("Delete"))
+                deleteAppBtn.setObjectName("appBtn")
+                deleteAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.prepUninstallData(app.name))
 
-                tileLayout.addWidget(iconLabel)
-                tileLayout.addWidget(nameLabel)
-                tileLayout.addStretch()
-                tileLayout.addWidget(launchBtn)
-                tileLayout.addWidget(configureBtn)
-                tileLayout.addWidget(deleteBtn)
+                appTileLayout.addWidget(appIconLabel)
+                appTileLayout.addWidget(appNameLabel)
+                appTileLayout.addStretch()
+                appTileLayout.addWidget(launchAppBtn)
+                appTileLayout.addWidget(configureAppBtn)
+                appTileLayout.addWidget(deleteAppBtn)
 
-                self.tab2Page1ContainerLayout.addWidget(tile)
+                self.tab2Page1ContainerLayout.addWidget(appTile)
 
         else:
-            tab2Page1NoFileMsg = QLabel(self.tr("No AppImage installation has been found"))
-            tab2Page1NoFileMsg.setObjectName("message")
-            self.tab2Page1ContainerLayout.addWidget(tab2Page1NoFileMsg)
+            noAppsFoundLabel = QLabel(self.tr("No AppImage installation has been found"))
+            noAppsFoundLabel.setObjectName("message")
+            self.tab2Page1ContainerLayout.addWidget(noAppsFoundLabel)
 
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
-        self.tab2Page1ContainerScrollArea.setFixedHeight(min(numOfApps, 6) * 70)
+        self.tab2Page1ContainerScrollArea.setFixedHeight(min(installedAppCount, 6) * 70)
 
-    def tab2Page1Worker(self, name):
+    def prepUninstallData(self, name):
         self.tab2StackedWidget.setCurrentIndex(1)
         for app in self.appsMetadata:
             if app.name == name:
@@ -674,29 +678,29 @@ class MainWindow(QMainWindow):
                 self.selectedAppName = app.name
 
     def appConfigWindow(self, appsConfigs, name):
-        for app in appsConfigs:
-            if app.name == name:
+        for appConfig in appsConfigs:
+            if appConfig.name == name:
 
-                configWindow = QDialog()
-                configWindow.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
+                appConfigDialog = QDialog()
+                appConfigDialog.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
 
-                configWindowLayout = QVBoxLayout(configWindow)
+                appConfigLayout = QVBoxLayout(appConfigDialog)
 
                 appNameLabel = QLabel(name)
                 appNameLabel.setObjectName("title")
 
-                appDescriptionLabel = QLabel(app.description)
+                appDescriptionLabel = QLabel(appConfig.description)
 
-                filePathLabel = QLabel(app.filePath)
+                filePathLabel = QLabel(appConfig.filePath)
 
-                fileSizeLabel = QLabel(str(app.fileSize))
+                fileSizeLabel = QLabel(str(appConfig.fileSize))
 
-                configWindowLayout.addWidget(appNameLabel)
-                configWindowLayout.addWidget(appDescriptionLabel)
-                configWindowLayout.addWidget(filePathLabel)
-                configWindowLayout.addWidget(fileSizeLabel)
+                appConfigLayout.addWidget(appNameLabel)
+                appConfigLayout.addWidget(appDescriptionLabel)
+                appConfigLayout.addWidget(filePathLabel)
+                appConfigLayout.addWidget(fileSizeLabel)
 
-                configWindow.exec()
+                appConfigDialog.exec()
 
     def createTab2Page2(self):
         mainWidget = QWidget()
