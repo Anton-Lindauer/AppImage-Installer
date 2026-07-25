@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import QThread, Signal
 
-from src.core.logic import Installer, StartmenuEntry
+from src.core.logic import Installer, StartmenuEntry, Uninstaller, AppMetadata
 
 import time
 
@@ -68,6 +68,71 @@ class InstallWorker(QThread):
             self.progressUpdate.emit(self.tr("Installation finished"))
 
 # Wait 2s to let the user see that everything has been completed
+            time.sleep(1)
+
+            self.finished.emit()
+
+        except Exception as error:
+            print(error)
+
+            self.error.emit(str(error))
+
+
+
+class getAppConfigs(QThread):
+    error = Signal(str)
+    progressUpdate = Signal(list)
+    finished = Signal(list)
+
+    def __init__(self, desktopEntriesDir):
+        super().__init__()
+
+        self.desktopEntriesDir = desktopEntriesDir
+
+    def run(self):
+        try:
+            appsMetadata = Uninstaller.getInstalledMetadata(self.desktopEntriesDir)
+            self.progressUpdate.emit(appsMetadata)
+            
+            appsConfigList = AppMetadata.getAppsMetadata(self.desktopEntriesDir)
+
+            self.finished.emit(appsConfigList)
+
+        except Exception as error:
+            print(error)
+            self.error.emit(str(error))
+
+class UninstallWorker(QThread):
+    progressUpdate = Signal(str)
+    error = Signal(str)
+    finished = Signal()
+
+    def __init__(self, logger, selectedAppPath, symLinkDir, desktopFilePath, ):
+        super().__init__()
+
+        self.logger = logger
+        self.selectedAppPath = selectedAppPath
+        self.symLinkDir = symLinkDir
+        self.desktopFilePath = desktopFilePath
+
+    def run(self):
+        try:
+            symLinkFilePath = Uninstaller.getSymlinkPath(self.selectedAppPath, self.symLinkDir)
+
+            Uninstaller.rmvInstalledFiles(symLinkFilePath)
+            self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
+            self.progressUpdate.emit(self.tr("Removed symlink"))
+
+            Uninstaller.rmvInstalledFiles(self.desktopFilePath)
+            self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
+            self.progressUpdate.emit(self.tr("Removed startmenu entry"))
+
+            Uninstaller.rmvInstalledFiles(self.selectedAppPath)
+            self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
+            self.progressUpdate.emit(self.tr("Removed AppImage file"))
+
+            self.progressUpdate.emit(self.tr("Uninstallation finished"))
+
             time.sleep(1)
 
             self.finished.emit()

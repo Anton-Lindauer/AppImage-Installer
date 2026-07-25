@@ -12,7 +12,7 @@ from pathlib import Path
 
 from src.core.logic import Installer, Uninstaller, Logging, AppMetadata
 from src.gui.components import MenuBarUtils, InstallFileSelector
-from src.gui.threads import MetadataWorker, InstallWorker
+from src.gui.threads import MetadataWorker, InstallWorker, getAppConfigs, UninstallWorker
 
 class MainWindow(QMainWindow):
 
@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         pickFileAction.triggered.connect(self.tab1Page1Guard)
         refreshListAction.triggered.connect(lambda: self.populateFileSelection() if self.tab1StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 0 else None)
         refreshListAction.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabWidget.currentIndex() == 0 else None)
-        refreshListAction.triggered.connect(lambda: self.populateProgramSelection() if self.tab2StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 1 else None)
+        refreshListAction.triggered.connect(lambda: self.tab2Page1Worker() if self.tab2StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 1 else None)
         refreshListAction.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabWidget.currentIndex() == 1 else None)
 
         
@@ -443,14 +443,14 @@ class MainWindow(QMainWindow):
         terminalGroupBox.setObjectName("page3Container")
 
 # Updates that are displayed in the GUIs terminal like UI element
-        self.terminalUpdateMsg = QLabel()     
-        self.terminalUpdateMsg.setObjectName("terminalText")
+        self.tab1Page3TerminalUpdateMsg = QLabel()     
+        self.tab1Page3TerminalUpdateMsg.setObjectName("terminalText")
 
-        terminalLayout.addWidget(self.terminalUpdateMsg)
+        terminalLayout.addWidget(self.tab1Page3TerminalUpdateMsg)
         terminalLayout.addStretch()
 
         self.tab1Page3StartInstallBtn = QPushButton(self.tr("Start installation"))
-        self.tab1Page3StartInstallBtn.clicked.connect(self.tab1Page3Worker)
+        self.tab1Page3StartInstallBtn.clicked.connect(self.installWorker)
 
         self.tab1Page3BackBtn = QPushButton(self.tr("Back"))
         self.tab1Page3BackBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(1))
@@ -463,10 +463,13 @@ class MainWindow(QMainWindow):
 
         return mainWidget
     
-    def tab1Page3Worker(self):
+    def installWorker(self):
 # Disable the buttons on page 3 
         self.tab1Page3StartInstallBtn.setEnabled(False)
         self.tab1Page3BackBtn.setEnabled(False)
+
+        self.tab1Page3TerminalUpdateMsg.setText(self.tr("Installation in process..."))
+        self.tab1Page3TerminalUpdateMsg.show()
 
 # Get program data from the QLineEdits
         self.cmdName = self.programInfoInputs[0].text()
@@ -487,20 +490,17 @@ class MainWindow(QMainWindow):
             self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.installWorker = InstallWorker(self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
+        self.installThread = InstallWorker(self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
 
 # Process status updates from the installation function
-        self.installWorker.progressUpdate.connect(self.workerProgress)
-        self.installWorker.finished.connect(self.workerFinished)
-        self.installWorker.error.connect(self.workerError)
+        self.installThread.progressUpdate.connect(self.installWorkerProgress)
+        self.installThread.finished.connect(self.installWorkerFinished)
+        self.installThread.error.connect(self.workerError)
 
-        self.terminalUpdateMsg.setText(self.tr("Installation in process..."))
-        self.terminalUpdateMsg.show()
+        self.installThread.start()
 
-        self.installWorker.start()
-
-    def workerProgress(self, message):
-        currentProgress = self.terminalUpdateMsg.text()
+    def installWorkerProgress(self, message):
+        currentProgress = self.tab1Page3TerminalUpdateMsg.text()
 
 # Update the terminal if a new progress update arrived
         if currentProgress: 
@@ -508,11 +508,11 @@ class MainWindow(QMainWindow):
         else:
             newProgress = message
 
-        self.terminalUpdateMsg.setText(newProgress)
+        self.tab1Page3TerminalUpdateMsg.setText(newProgress)
 
         QApplication.processEvents()
 
-    def workerFinished(self):
+    def installWorkerFinished(self):
         self.tab1Page4Title.setText(self.tr("Finished installing {name}").format(name=self.programInfoInputs[1].text()))
 
         try:
@@ -525,12 +525,16 @@ class MainWindow(QMainWindow):
 
         self.tab1StackedWidget.setCurrentIndex(3)
 
-        self.terminalUpdateMsg.setText("")
+        self.tab1Page3TerminalUpdateMsg.setText("")
 
         self.tab1Page3StartInstallBtn.setEnabled(True)
         self.tab1Page3BackBtn.setEnabled(True)
 
-        self.populateProgramSelection()
+        print("before")
+
+        self.tab2Page1Worker()
+
+        print("after")
 
 
     def createTab1Page4(self):
@@ -600,7 +604,7 @@ class MainWindow(QMainWindow):
         self.tab2Page1ContainerLayout.setContentsMargins(10, 10, 10, 10,)
         self.tab2Page1ContainerLayout.setSpacing(6)
 
-        self.populateProgramSelection()
+        self.tab2Page1Worker()
 
         mainLayout.addWidget(pageTitle)
         mainLayout.addWidget(self.tab2Page1ContainerScrollArea)
@@ -609,12 +613,10 @@ class MainWindow(QMainWindow):
         return mainWidget
     
 # The dynamicly generated part, the list of installed AppImage programs
-    def populateProgramSelection(self):
+    def populateProgramSelection(self, appConfigs):
         self.clearLayout(self.tab2Page1ContainerLayout)
 
-        self.appsMetadata = Uninstaller.getInstalledMetadata(self.desktopEntriesDir)
-
-        appsConfigList = AppMetadata.getAppsMetadata(self.desktopEntriesDir)
+        appsConfigList = appConfigs
 
         installedAppCount = len(self.appsMetadata)
 
@@ -669,6 +671,26 @@ class MainWindow(QMainWindow):
 # Set the size of the QScrollArea to the size of the QRadioButtons in the QScrollArea to fix Qt's stupid default behaviour
         self.tab2Page1ContainerScrollArea.setFixedHeight(min(installedAppCount, 6) * 70)
 
+    def tab2Page1Worker(self):
+# Hotfix for this QThread not beeing ended properly for some unknown reason
+        if hasattr(self, "appConfigsThread") and self.appConfigsThread.isRunning():
+            self.appConfigsThread.quit()
+            self.appConfigsThread.wait()
+
+        self.appConfigsThread = getAppConfigs(self.desktopEntriesDir)
+
+        print("tab2Page1Worker")
+
+        self.appConfigsThread.finished.connect(self.populateProgramSelection)
+        self.appConfigsThread.progressUpdate.connect(self.storeList)
+        self.appConfigsThread.error.connect(self.workerError)      
+
+        self.appConfigsThread.start()
+
+    def storeList(self, appsMetadata):
+        self.appsMetadata = appsMetadata
+        print("storeList")
+
     def prepUninstallData(self, name):
         self.tab2StackedWidget.setCurrentIndex(1)
         for app in self.appsMetadata:
@@ -721,14 +743,14 @@ class MainWindow(QMainWindow):
         container.setObjectName("page3Container")
 
 # Updates that are displayed in the GUIs terminal like UI element
-        self.tab2TerminalUpdateMsg = QLabel()     
-        self.tab2TerminalUpdateMsg.setObjectName("terminalText")
+        self.tab2Page2TerminalUpdateMsg = QLabel()     
+        self.tab2Page2TerminalUpdateMsg.setObjectName("terminalText")
 
-        terminalLayout.addWidget(self.tab2TerminalUpdateMsg)
+        terminalLayout.addWidget(self.tab2Page2TerminalUpdateMsg)
         terminalLayout.addStretch()
 
         self.tab2Page2SubmitBtn = QPushButton(self.tr("Start uninstallation"))
-        self.tab2Page2SubmitBtn.clicked.connect(self.uninstallProgram)
+        self.tab2Page2SubmitBtn.clicked.connect(self.tab2Page2Worker)
 
         self.tab2Page2BackBtn = QPushButton(self.tr("Back"))
         self.tab2Page2BackBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
@@ -741,34 +763,23 @@ class MainWindow(QMainWindow):
 
         return mainWidget
     
-    def uninstallProgram(self):
+    def tab2Page2Worker(self):
         self.tab2Page2SubmitBtn.setEnabled(False)
         self.tab2Page2BackBtn.setEnabled(False)
 
-        symLinkFilePath = Uninstaller.getSymlinkPath(self.selectedAppPath, self.symLinkDir)
+        self.tab2Page2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
+        self.tab2Page2TerminalUpdateMsg.show()
 
-        self.tab2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
-        self.tab2TerminalUpdateMsg.show()
+        self.uninstallThread = UninstallWorker(self.logger, self.selectedAppPath, self.symLinkDir, self.desktopFilePath)
 
+        self.uninstallThread.progressUpdate.connect(self.uninstallWorkerProgress)
+        self.uninstallThread.finished.connect(self.uninstallWorkerFinished)
+        self.uninstallThread.error.connect(self.workerError)
 
-        Uninstaller.rmvInstalledFiles(symLinkFilePath)
-        self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
-        self.terminalUpdate(self.tr("Removed symlink"))
+        self.uninstallThread.start()
 
-        Uninstaller.rmvInstalledFiles(self.desktopFilePath)
-        self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
-        self.terminalUpdate(self.tr("Removed startmenu entry"))
-
-        Uninstaller.rmvInstalledFiles(self.selectedAppPath)
-        self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
-        self.terminalUpdate(self.tr("Removed AppImage file"))
-
-        self.terminalUpdate(self.tr("Uninstallation finished"))
-
-        QTimer.singleShot(1000, self.terminalFinished)
-
-    def terminalUpdate(self, msg):
-        currentProgress = self.tab2TerminalUpdateMsg.text()
+    def uninstallWorkerProgress(self, msg):
+        currentProgress = self.tab2Page2TerminalUpdateMsg.text()
 
 # Update the terminal if a new progress update arrived
         if currentProgress: 
@@ -776,14 +787,14 @@ class MainWindow(QMainWindow):
         else:
             newProgress = msg
 
-        self.tab2TerminalUpdateMsg.setText(newProgress)
-        self.tab2TerminalUpdateMsg.show()
+        self.tab2Page2TerminalUpdateMsg.setText(newProgress)
+        self.tab2Page2TerminalUpdateMsg.show()
 
-    def terminalFinished(self):
+    def uninstallWorkerFinished(self):
         self.tab2Page3Title.setText(self.tr("Finished uninstalling {name}").format(name=self.selectedAppName))
         self.tab2StackedWidget.setCurrentIndex(2)
 
-        self.tab2TerminalUpdateMsg.setText("")
+        self.tab2Page2TerminalUpdateMsg.setText("")
         self.tab2Page2SubmitBtn.setEnabled(True)
         self.tab2Page2BackBtn.setEnabled(True)
     
@@ -799,7 +810,7 @@ class MainWindow(QMainWindow):
 
 # Reload all pages if the user wants to install another program
         submitBtn = QPushButton(self.tr("Remove another AppImage program"))
-        submitBtn.clicked.connect(self.populateProgramSelection)     
+        submitBtn.clicked.connect(self.tab2Page1Worker)     
         submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
         mainLayout.addWidget(self.tab2Page3Title)
