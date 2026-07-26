@@ -12,7 +12,7 @@ from pathlib import Path
 
 from src.core.logic import Installer, Uninstaller, Logging, AppMetadata
 from src.gui.components import MenuBarUtils, InstallFileSelector
-from src.gui.threads import MetadataWorker, InstallWorker, getAppConfigs, UninstallWorker
+from src.gui.threads import MetadataWorker, InstallWorker, getAppConfigs, UninstallWorker, getAppImages
 
 class MainWindow(QMainWindow):
 
@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Page1FileSelector = InstallFileSelector()
 
-        self.tab1Page1FileSelector.pickedFile.connect(self.tab1Page1Worker)
+        self.tab1Page1FileSelector.pickedFile.connect(self.tab1Page2Worker)
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
         
@@ -119,7 +119,7 @@ class MainWindow(QMainWindow):
         refreshListAction = fileMenu.addAction(self.tr("Refresh list"))
 
         pickFileAction.triggered.connect(self.tab1Page1Guard)
-        refreshListAction.triggered.connect(lambda: self.populateFileSelection() if self.tab1StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 0 else None)
+        refreshListAction.triggered.connect(lambda: self.filesWorker() if self.tab1StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 0 else None)
         refreshListAction.triggered.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0) if self.tabWidget.currentIndex() == 0 else None)
         refreshListAction.triggered.connect(lambda: self.tab2Page1Worker() if self.tab2StackedWidget.currentIndex() == 0 and self.tabWidget.currentIndex() == 1 else None)
         refreshListAction.triggered.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0) if self.tabWidget.currentIndex() == 1 else None)
@@ -202,7 +202,7 @@ class MainWindow(QMainWindow):
         self.tab1Page1ContainerLayout.setSpacing(0)
 
 # The radiobutton selection has to be a seperate funktion to be able to update it, without updating the entire UI
-        self.populateFileSelection()
+        self.filesWorker()
 
         self.tab1Page1ContinueBtn = QPushButton(self.tr("Continue"))  
         self.tab1Page1ContinueBtn.clicked.connect(lambda: self.tab1Page1FileSelector.emitSelectedRadioBtn(self.tab1Page1RadioBtnGroup))
@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
         return mainWidget
 
 # This is the dynamic part. By calling this function, the QRadioButtons in the QScrollArea get updated 
-    def populateFileSelection(self):
+    def populateFileSelection(self, appImagesPaths):
         self.clearLayout(self.tab1Page1ContainerLayout)
 
         if hasattr(self, "tab1Page1RadioBtnGroup"):
@@ -224,7 +224,7 @@ class MainWindow(QMainWindow):
         self.tab1Page1RadioBtnGroup = QButtonGroup(self)
 
 # All paths of AppImage files in the Downloads directory
-        self.appImageFilePaths = Installer.listFiles(self.userDir)     
+        self.appImageFilePaths = appImagesPaths 
         appImageFileCount = len(self.appImageFilePaths)
 
 # Create a QRadioButton for each file
@@ -246,46 +246,18 @@ class MainWindow(QMainWindow):
         if appImageFileCount <= 6:
             self.tab1Page1ContainerScrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-# General method to delete all the content of a layout, currently used for the QScrollAreas on tab one and two page one
-    def clearLayout(self, layout):
-        while layout.count():
-            item = layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.setParent(None)
-                widget.deleteLater()
-
 # Only accept a file from the menubar selector if the user is on the first page
     def tab1Page1Guard(self):
         if self.tab1StackedWidget.currentIndex() == 0:
             self.tab1Page1FileSelector.openFileDialog(self)
 
-# The worker that extracts the AppImages metadata
-    def tab1Page1Worker(self, appImagePath):
-        self.selectedAppImagePath = appImagePath
+    def filesWorker(self):
+        self.filesThread = getAppImages(self.userDir)
 
-        self.tab1Page1ContinueBtn.setEnabled(False)
+        self.filesThread.finished.connect(self.populateFileSelection)
+        self.filesThread.error.connect(self.workerError)
 
-        self.metadataWorker = MetadataWorker(self.selectedAppImagePath, self.logger)
-
-        self.metadataWorker.finished.connect(self.metadataLoader)
-        self.metadataWorker.error.connect(self.workerError)
-
-        self.metadataWorker.start()
-
-# Loads the AppImages metadata in the QLineEdits and QRadiobuttons on page two
-    def metadataLoader(self, metadata):
-        self.tab1StackedWidget.setCurrentIndex(1)
-
-        self.programInfoInputs[0].setText(metadata["exec"].lower())
-        self.programInfoInputs[1].setText(metadata["name"])
-        self.programInfoInputs[2].setText(metadata["comment"])
-        
-# Activate the QRadioButtons when they are in the AppImages category string
-        categories = metadata["categories"].split(";")
-
-        for button in self.tab1Page2CategoryRadioBtns.buttons():
-            button.setChecked(button.text() in categories)
+        self.filesThread.start()
 
 
 
@@ -420,6 +392,33 @@ class MainWindow(QMainWindow):
             self.tab1Page2ContainerLayout.setContentsMargins(0, 0, 0, 0)
             self.tab1Page2ContainerLayout.setSpacing(0)
 
+# The worker that extracts the AppImages metadata
+    def tab1Page2Worker(self, appImagePath):
+        self.selectedAppImagePath = appImagePath
+
+        self.tab1Page1ContinueBtn.setEnabled(False)
+
+        self.metadataThread = MetadataWorker(self.selectedAppImagePath, self.logger)
+
+        self.metadataThread.finished.connect(self.metadataLoader)
+        self.metadataThread.error.connect(self.workerError)
+
+        self.metadataThread.start()
+
+# Loads the AppImages metadata in the QLineEdits and QRadiobuttons on page two
+    def metadataLoader(self, metadata):
+        self.tab1StackedWidget.setCurrentIndex(1)
+
+        self.programInfoInputs[0].setText(metadata["exec"].lower())
+        self.programInfoInputs[1].setText(metadata["name"])
+        self.programInfoInputs[2].setText(metadata["comment"])
+        
+# Activate the QRadioButtons when they are in the AppImages category string
+        categories = metadata["categories"].split(";")
+
+        for button in self.tab1Page2CategoryRadioBtns.buttons():
+            button.setChecked(button.text() in categories)
+
 
 
 ############################################### Tab 1 - Page 3 ###############################################
@@ -548,7 +547,7 @@ class MainWindow(QMainWindow):
 
         installAnotherBtn = QPushButton(self.tr("Install another program"))
 # Reload the filelist, if the user wants to install more AppImages
-        installAnotherBtn.clicked.connect(self.populateFileSelection)
+        installAnotherBtn.clicked.connect(self.filesWorker)
         installAnotherBtn.clicked.connect(lambda: self.tab1Page1ContinueBtn.setEnabled(True)) 
         installAnotherBtn.clicked.connect(lambda: self.tab1StackedWidget.setCurrentIndex(0))
 
@@ -819,6 +818,16 @@ class MainWindow(QMainWindow):
         
         return mainWidget
 
+
+    
+# General method to delete all the content of a layout, currently used for the QScrollAreas on tab one and two page one
+    def clearLayout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
 
 
 # Error handler for all QThread workers; A pop up window with the error message and a button to open the error log

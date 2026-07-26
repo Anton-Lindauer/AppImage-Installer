@@ -6,6 +6,25 @@ from src.core.logic import Installer, StartmenuEntry, Uninstaller, AppMetadata
 
 import time
 
+class getAppImages(QThread):
+    error = Signal(str)
+    finished = Signal(list)
+
+    def __init__(self, userDir):
+        super().__init__()
+
+        self.userDir = userDir
+
+    def run(self):
+        try:
+            appImages = Installer.listFiles(self.userDir)
+
+            self.finished.emit(appImages)
+        except Exception as error:
+            print(error)
+
+            self.error.emit(str(error))
+
 # Extracting a AppImage can take a while, so I temporarely put that code in a QThread (I know it's not the best way to do it like this)
 class MetadataWorker(QThread):
     progressUpdate = Signal(str)
