@@ -10,10 +10,6 @@ from pathlib import Path
 from datetime import datetime
 
 class Installer():
-    
-    def __init__(self, logger):
-        self.logger = logger
-
 # Put every AppImage file into a list
     @staticmethod
     def listFiles(userDir):
@@ -73,7 +69,6 @@ class Installer():
        
         finally:
             shutil.rmtree(workDir, ignore_errors=True)
-            self.logger.addGeneralEntry(f"Extracted .desktop file data \n{metadata}")
     
 # Move the AppImage File to the right directory
     def moveFile(self, selectedFilePath, fileDest):
@@ -81,15 +76,11 @@ class Installer():
 
         shutil.move(selectedFilePath, fileDest)
 
-        logContent = f"File successfully moved to {fileDest}"
-        self.logger.addGeneralEntry(logContent)
-
 # Make the AppImage file executable
     def mkExec(self, path):
         path = Path(path)
 
         path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
-        self.logger.addGeneralEntry(f"Made {path} executable")
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     def mkSymLink(self, selectedFilePath, cmdName, fileDest, symLinkDir):
@@ -100,14 +91,7 @@ class Installer():
 
         symLinkPath.symlink_to(path)
 
-        logContent = f"Symlink {symLinkDir}/{cmdName} has been created"
-        self.logger.addGeneralEntry(logContent)
-
 class StartmenuEntry():
-
-    def __init__(self, logger):
-        self.logger = logger
-
     def create(self, selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
         fileName = Path(selectedFilePath).name
         iconsDir = userDir / ".local/share/icons"
@@ -119,14 +103,13 @@ class StartmenuEntry():
         workDir = Path(tempfile.mkdtemp())
 
 # Extract the icon.png to a temporary squashfs directory
-        logContent = subprocess.run(
+        subprocess.run(
             [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
             cwd=workDir,
             check=True,
             capture_output=True,
             text=True
         )
-        self.logger.addCmdEntry(logContent)
         
         squashfsRoot = workDir / "squashfs-root"
 
@@ -159,20 +142,14 @@ class StartmenuEntry():
                         Terminal=false
                         Categories={programCategory}
                         """
-        logContent = "Gathered all data for .desktop file creation"
-        self.logger.addGeneralEntry(logContent)
 
         desktopEntryFile = applicationsDir / f"{programName}.desktop"
         desktopEntryFile.write_text(desktopFile)
-        logContent = "Finished creating the .desktop file"
-        self.logger.addGeneralEntry(logContent)
 
 # Make the .desktop file executable
         subprocess.run(["chmod", "+x", desktopEntryFile],
             check=True,
             capture_output=True)
-        logContent = f"Made {desktopEntryFile} executable"
-        self.logger.addGeneralEntry(logContent)
 
 class AppMetadata():
     def getAppsMetadata(desktopPath) -> list[AppsData]:
@@ -329,7 +306,7 @@ class Logging():
 # Logs custom messages
     def addGeneralEntry(self, logContent):
         with open(self.logFilePath, "a") as f:
-                f.write(logContent + "\n")
+                f.write(str(logContent) + "\n")
                 f.write("******************************************************************\n")
 
 # Delete old log files after seven days

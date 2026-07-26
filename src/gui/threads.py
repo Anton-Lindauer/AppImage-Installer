@@ -6,18 +6,22 @@ from src.core.logic import Installer, StartmenuEntry, Uninstaller, AppMetadata
 
 import time
 
-class getAppImages(QThread):
+############################################### Tab 1 QThreads ###############################################
+# Returns a list of all AppImage file paths in the Downloads directory
+class AppImageListThread(QThread):
     error = Signal(str)
     finished = Signal(list)
 
-    def __init__(self, userDir):
+    def __init__(self, logger, userDir):
         super().__init__()
 
+        self.logger = logger
         self.userDir = userDir
 
     def run(self):
         try:
             appImages = Installer.listFiles(self.userDir)
+            self.logger.addGeneralEntry(appImages)
 
             self.finished.emit(appImages)
         except Exception as error:
@@ -25,24 +29,27 @@ class getAppImages(QThread):
 
             self.error.emit(str(error))
 
-# Extracting a AppImage can take a while, so I temporarely put that code in a QThread (I know it's not the best way to do it like this)
-class MetadataWorker(QThread):
+# Extracts the metadata of the selected AppImage file; the metadata is inside a .desktop file in the AppImage file
+class MetadataThread(QThread):
     progressUpdate = Signal(str)
     error = Signal(str)
     finished = Signal(dict)
 
-    def __init__(self, path, logger):
+    def __init__(self, logger, path):
         super().__init__()
-        self.path = path
-        self.logger = logger
 
-        self.installer = Installer(self.logger)
+        self.logger = logger
+        self.appImagePath = path
+
+        self.installer = Installer()
 
     def run(self):
         try:
-            self.installer.mkExec(self.path)
+            self.installer.mkExec(self.appImagePath)
+            self.logger.addGeneralEntry(f"Made {self.appImagePath} executable")
 
-            metadata = self.installer.getAppimageMetadata(self.path)
+            metadata = self.installer.getAppimageMetadata(self.appImagePath)
+            self.logger.addGeneralEntry(f"Extracted \n{metadata}")
             self.finished.emit(metadata)
 
         except Exception as error:
@@ -50,24 +57,24 @@ class MetadataWorker(QThread):
 
             self.error.emit(str(error))
 
-# Class for the installation process
-class InstallWorker(QThread):
+# All functionality to actually install the AppImage
+class InstallThread(QThread):
     progressUpdate = Signal(str)
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, selectedFilePath, fileDest, userDir, programName,programDescr, programCategory, cmdName, logger, symLinkDir):
+    def __init__(self, logger, selectedFilePath, appImagesDir, userDir, programName,programDescr, programCategory, cmdName, symLinkDir):
         super().__init__()
 
         self.logger = logger
-        self.installer = Installer(self.logger)
-        self.startMenuEntry = StartmenuEntry(self.logger)
+        self.installer = Installer()
+        self.startMenuEntry = StartmenuEntry()
 
         self.selectedFilePath = selectedFilePath
-        self.fileDest = fileDest     
+        self.appImagesDir = appImagesDir     
         self.userDir = userDir
         self.programName = programName
-        self.programDescr = programDescr
+        self.programDescription = programDescr
         self.programCategory = programCategory
         self.cmdName = cmdName
         self.symLinkDir = symLinkDir
@@ -75,18 +82,21 @@ class InstallWorker(QThread):
 # All installation steps with progress updates
     def run(self):
         try:
-            self.installer.moveFile(self.selectedFilePath, self.fileDest)
+            self.installer.moveFile(self.selectedFilePath, self.appImagesDir)
+            self.logger.addGeneralEntry(f"Moved {self.selectedFilePath} to {self.appImagesDir}")
             self.progressUpdate.emit(self.tr("Moved AppImage file (1/3 tasks finished)"))
 
-            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.fileDest, self.symLinkDir)
+            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.appImagesDir, self.symLinkDir)
+            self.logger.addGeneralEntry(f"Created symlink {self.cmdName} in {self.symLinkDir}")
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))
 
-            self.startMenuEntry.create(self.selectedFilePath, self.fileDest, self.userDir, self.programName, self.programDescr, self.programCategory)
+            self.startMenuEntry.create(self.selectedFilePath, self.appImagesDir, self.userDir, self.programName, self.programDescription, self.programCategory)
+            self.logger.addGeneralEntry(f"Created startmenu entry for {self.programName}")
             self.progressUpdate.emit(self.tr("Startmenu entry has been created (3/3 tasks finished)"))
 
             self.progressUpdate.emit(self.tr("Installation finished"))
 
-# Wait 2s to let the user see that everything has been completed
+# Wait 1s to let the user see that everything has been completed
             time.sleep(1)
 
             self.finished.emit()
@@ -98,30 +108,38 @@ class InstallWorker(QThread):
 
 
 
-class getAppConfigs(QThread):
+############################################### Tab 2 QThreads ###############################################
+# Extract the metadata from all installed AppImage programs; Metadata is stored in the .desktop file that is used as startmenu entry
+class AppConfigsThread(QThread):
     error = Signal(str)
     progressUpdate = Signal(list)
     finished = Signal(list)
 
-    def __init__(self, desktopEntriesDir):
+    def __init__(self, logger, desktopEntriesDir):
         super().__init__()
 
+        self.logger = logger
         self.desktopEntriesDir = desktopEntriesDir
 
     def run(self):
         try:
+# Temporarily two functions that extract data; will later be reworked to only one
             appsMetadata = Uninstaller.getInstalledMetadata(self.desktopEntriesDir)
+            self.logger.addGeneralEntry(f"Data 1: \n{appsMetadata}")
             self.progressUpdate.emit(appsMetadata)
             
-            appsConfigList = AppMetadata.getAppsMetadata(self.desktopEntriesDir)
+            appConfigsList = AppMetadata.getAppsMetadata(self.desktopEntriesDir)
+            self.logger.addGeneralEntry(f"Data 2: {appConfigsList}")
 
-            self.finished.emit(appsConfigList)
+            self.finished.emit(appConfigsList)
 
         except Exception as error:
             print(error)
+
             self.error.emit(str(error))
 
-class UninstallWorker(QThread):
+# All functionality to actually uninstall a picked AppImage program
+class UninstallThread(QThread):
     progressUpdate = Signal(str)
     error = Signal(str)
     finished = Signal()

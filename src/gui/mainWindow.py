@@ -2,7 +2,7 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QGridLayout, QDialog, QSizePolicy
-from PySide6.QtCore import Qt, QSettings, QTimer
+from PySide6.QtCore import Qt, QSettings
 from PySide6.QtGui import QPixmap
 
 import sys
@@ -10,9 +10,9 @@ import subprocess
 import os
 from pathlib import Path
 
-from src.core.logic import Installer, Uninstaller, Logging, AppMetadata
+from src.core.logic import Logging
 from src.gui.components import MenuBarUtils, InstallFileSelector
-from src.gui.threads import MetadataWorker, InstallWorker, getAppConfigs, UninstallWorker, getAppImages
+from src.gui.threads import MetadataThread, InstallThread, AppConfigsThread, UninstallThread, AppImageListThread
 
 class MainWindow(QMainWindow):
 
@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
             self.tab1Page1FileSelector.openFileDialog(self)
 
     def filesWorker(self):
-        self.filesThread = getAppImages(self.userDir)
+        self.filesThread = AppImageListThread(self.logger, self.userDir)
 
         self.filesThread.finished.connect(self.populateFileSelection)
         self.filesThread.error.connect(self.workerError)
@@ -398,7 +398,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Page1ContinueBtn.setEnabled(False)
 
-        self.metadataThread = MetadataWorker(self.selectedAppImagePath, self.logger)
+        self.metadataThread = MetadataThread(self.logger, self.selectedAppImagePath)
 
         self.metadataThread.finished.connect(self.metadataLoader)
         self.metadataThread.error.connect(self.workerError)
@@ -489,7 +489,7 @@ class MainWindow(QMainWindow):
             self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.installThread = InstallWorker(self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.logger, self.symLinkDir)
+        self.installThread = InstallThread(self.logger, self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.symLinkDir)
 
 # Process status updates from the installation function
         self.installThread.progressUpdate.connect(self.installWorkerProgress)
@@ -512,7 +512,7 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
 
     def installWorkerFinished(self):
-        self.tab1Page4Title.setText(self.tr("Finished installing {name}").format(name=self.programInfoInputs[1].text()))
+        self.tab1Page4PageTitle.setText(self.tr("Finished installing {name}").format(name=self.programInfoInputs[1].text()))
 
         try:
             self.tab1Page4OpenProgramBtn.clicked.disconnect()
@@ -542,8 +542,8 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        self.tab1Page4Title = QLabel(self.tr("Finished installing"))
-        self.tab1Page4Title.setObjectName("title")
+        self.tab1Page4PageTitle = QLabel(self.tr("Finished installing"))
+        self.tab1Page4PageTitle.setObjectName("title")
 
         installAnotherBtn = QPushButton(self.tr("Install another program"))
 # Reload the filelist, if the user wants to install more AppImages
@@ -553,7 +553,7 @@ class MainWindow(QMainWindow):
 
         self.tab1Page4OpenProgramBtn = QPushButton(self.tr("Open"))
 
-        mainLayout.addWidget(self.tab1Page4Title)
+        mainLayout.addWidget(self.tab1Page4PageTitle)
         mainLayout.addWidget(installAnotherBtn)
         mainLayout.addWidget(self.tab1Page4OpenProgramBtn)
         mainLayout.addStretch()
@@ -616,7 +616,7 @@ class MainWindow(QMainWindow):
         self.clearLayout(self.tab2Page1ContainerLayout)
 
         appsConfigList = appConfigs
-
+        print("appConfigList")
         installedAppCount = len(self.appsMetadata)
 
 # Create a tile for each file
@@ -676,7 +676,7 @@ class MainWindow(QMainWindow):
             self.appConfigsThread.quit()
             self.appConfigsThread.wait()
 
-        self.appConfigsThread = getAppConfigs(self.desktopEntriesDir)
+        self.appConfigsThread = AppConfigsThread(self.logger, self.desktopEntriesDir)
 
         print("tab2Page1Worker")
 
@@ -723,23 +723,27 @@ class MainWindow(QMainWindow):
 
                 appConfigDialog.exec()
 
+
+
+############################################### Tab 2 - Page 2 ###############################################
+# This is the static part of the page, it's only generated once, when the app launches
     def createTab2Page2(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        title = QLabel(self.tr("Uninstallation process"))
-        title.setObjectName("title")
+        pageTitle = QLabel(self.tr("Uninstallation process"))
+        pageTitle.setObjectName("title")
 
 # QGroupBox thats used as a terminal for the status updates, that the user receives
-        container = QGroupBox()    
-        terminalLayout = QVBoxLayout(container)
+        terminalGroupBox = QGroupBox()    
+        terminalLayout = QVBoxLayout(terminalGroupBox)
         terminalLayout.setContentsMargins(6, 6, 6, 6)
         terminalLayout.setSpacing(0)
 
-        container.setMinimumHeight(200)
-        container.setObjectName("page3Container")
+        terminalGroupBox.setMinimumHeight(200)
+        terminalGroupBox.setObjectName("page3Container")
 
 # Updates that are displayed in the GUIs terminal like UI element
         self.tab2Page2TerminalUpdateMsg = QLabel()     
@@ -748,28 +752,28 @@ class MainWindow(QMainWindow):
         terminalLayout.addWidget(self.tab2Page2TerminalUpdateMsg)
         terminalLayout.addStretch()
 
-        self.tab2Page2SubmitBtn = QPushButton(self.tr("Start uninstallation"))
-        self.tab2Page2SubmitBtn.clicked.connect(self.tab2Page2Worker)
+        self.tab2Page2StartUninstallBtn = QPushButton(self.tr("Start uninstallation"))
+        self.tab2Page2StartUninstallBtn.clicked.connect(self.tab2Page2Worker)
 
         self.tab2Page2BackBtn = QPushButton(self.tr("Back"))
         self.tab2Page2BackBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
-        mainLayout.addWidget(title)
-        mainLayout.addWidget(container)
-        mainLayout.addWidget(self.tab2Page2SubmitBtn)
+        mainLayout.addWidget(pageTitle)
+        mainLayout.addWidget(terminalGroupBox)
+        mainLayout.addWidget(self.tab2Page2StartUninstallBtn)
         mainLayout.addWidget(self.tab2Page2BackBtn)
         mainLayout.addStretch()
 
         return mainWidget
     
     def tab2Page2Worker(self):
-        self.tab2Page2SubmitBtn.setEnabled(False)
+        self.tab2Page2StartUninstallBtn.setEnabled(False)
         self.tab2Page2BackBtn.setEnabled(False)
 
         self.tab2Page2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2Page2TerminalUpdateMsg.show()
 
-        self.uninstallThread = UninstallWorker(self.logger, self.selectedAppPath, self.symLinkDir, self.desktopFilePath)
+        self.uninstallThread = UninstallThread(self.logger, self.selectedAppPath, self.symLinkDir, self.desktopFilePath)
 
         self.uninstallThread.progressUpdate.connect(self.uninstallWorkerProgress)
         self.uninstallThread.finished.connect(self.uninstallWorkerFinished)
@@ -790,36 +794,40 @@ class MainWindow(QMainWindow):
         self.tab2Page2TerminalUpdateMsg.show()
 
     def uninstallWorkerFinished(self):
-        self.tab2Page3Title.setText(self.tr("Finished uninstalling {name}").format(name=self.selectedAppName))
+        self.tab2Page3PageTitle.setText(self.tr("Finished uninstalling {name}").format(name=self.selectedAppName))
         self.tab2StackedWidget.setCurrentIndex(2)
 
         self.tab2Page2TerminalUpdateMsg.setText("")
-        self.tab2Page2SubmitBtn.setEnabled(True)
+        self.tab2Page2StartUninstallBtn.setEnabled(True)
         self.tab2Page2BackBtn.setEnabled(True)
     
 
+
+############################################### Tab 2 - Page 3 ###############################################
+# This is the static part of the page, it's only generated once, when the app launches
     def createTab2Page3(self):
         mainWidget = QWidget()
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        self.tab2Page3Title = QLabel(self.tr("Uninstallation finished"))
-        self.tab2Page3Title.setObjectName("title")
+        self.tab2Page3PageTitle = QLabel(self.tr("Uninstallation finished"))
+        self.tab2Page3PageTitle.setObjectName("title")
 
 # Reload all pages if the user wants to install another program
-        submitBtn = QPushButton(self.tr("Remove another AppImage program"))
-        submitBtn.clicked.connect(self.tab2Page1Worker)     
-        submitBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
+        removeAnotherBtn = QPushButton(self.tr("Remove another AppImage program"))
+        removeAnotherBtn.clicked.connect(self.tab2Page1Worker)     
+        removeAnotherBtn.clicked.connect(lambda: self.tab2StackedWidget.setCurrentIndex(0))
 
-        mainLayout.addWidget(self.tab2Page3Title)
-        mainLayout.addWidget(submitBtn)
+        mainLayout.addWidget(self.tab2Page3PageTitle)
+        mainLayout.addWidget(removeAnotherBtn)
         mainLayout.addStretch()
         
         return mainWidget
 
 
-    
+
+############################################### General methods ###############################################
 # General method to delete all the content of a layout, currently used for the QScrollAreas on tab one and two page one
     def clearLayout(self, layout):
         while layout.count():
