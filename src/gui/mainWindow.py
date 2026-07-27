@@ -615,13 +615,13 @@ class MainWindow(QMainWindow):
     def populateProgramSelection(self, appConfigs):
         self.clearLayout(self.tab2Page1ContainerLayout)
 
-        appsConfigList = appConfigs
+        self.appConfigs = appConfigs
         print("appConfigList")
-        installedAppCount = len(self.appsMetadata)
+        installedAppCount = len(self.appConfigs)
 
 # Create a tile for each file
         if installedAppCount > 0:
-             for installedApp in self.appsMetadata:
+             for installedApp in self.appConfigs:
 
                 appTile = QGroupBox()
                 appTile.setObjectName("appTile")
@@ -630,7 +630,7 @@ class MainWindow(QMainWindow):
                 appTileLayout.setContentsMargins(10, 10, 10, 10)
                 appTileLayout.setSpacing(6)
 
-                iconPath = installedApp.iconPath
+                iconPath = installedApp.iconFile
 
                 appIconLabel = QLabel()
                 appIconLabel.setObjectName("iconLabel")
@@ -643,11 +643,11 @@ class MainWindow(QMainWindow):
 
                 launchAppBtn = QPushButton(self.tr("Launch"))
                 launchAppBtn.setObjectName("appBtn")
-                launchAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.openProgram(app.path))
+                launchAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.openProgram(app.filePath))
 
                 configureAppBtn = QPushButton(self.tr("Configure"))
                 configureAppBtn.setObjectName("appBtn")
-                configureAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.appConfigWindow(appsConfigList, app.name))
+                configureAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.appConfigWindow(self.appConfigs, app.name))
 
                 deleteAppBtn = QPushButton(self.tr("Delete"))
                 deleteAppBtn.setObjectName("appBtn")
@@ -681,21 +681,16 @@ class MainWindow(QMainWindow):
         print("tab2Page1Worker")
 
         self.appConfigsThread.finished.connect(self.populateProgramSelection)
-        self.appConfigsThread.progressUpdate.connect(self.storeList)
         self.appConfigsThread.error.connect(self.workerError)      
 
         self.appConfigsThread.start()
 
-    def storeList(self, appsMetadata):
-        self.appsMetadata = appsMetadata
-        print("storeList")
-
     def prepUninstallData(self, name):
         self.tab2StackedWidget.setCurrentIndex(1)
-        for app in self.appsMetadata:
+        for app in self.appConfigs:
             if app.name == name:
-                self.selectedAppPath = app.path
-                self.desktopFilePath = app.desktopPath
+                self.selectedAppPath = app.filePath
+                self.desktopFilePath = app.desktopFile
                 self.selectedAppName = app.name
 
     def appConfigWindow(self, appsConfigs, name):

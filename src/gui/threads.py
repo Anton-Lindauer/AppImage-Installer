@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import QThread, Signal
 
-from src.core.logic import Installer, StartmenuEntry, Uninstaller, AppMetadata
+from src.core.logic import Installer, StartMenuEntry, Uninstaller, AppConfigReader
 
 import time
 
@@ -41,14 +41,12 @@ class MetadataThread(QThread):
         self.logger = logger
         self.appImagePath = path
 
-        self.installer = Installer()
-
     def run(self):
         try:
-            self.installer.mkExec(self.appImagePath)
+            Installer.mkExec(self.appImagePath)
             self.logger.addGeneralEntry(f"Made {self.appImagePath} executable")
 
-            metadata = self.installer.getAppimageMetadata(self.appImagePath)
+            metadata = Installer.getAppImageMetadata(self.appImagePath)
             self.logger.addGeneralEntry(f"Extracted \n{metadata}")
             self.finished.emit(metadata)
 
@@ -67,8 +65,6 @@ class InstallThread(QThread):
         super().__init__()
 
         self.logger = logger
-        self.installer = Installer()
-        self.startMenuEntry = StartmenuEntry()
 
         self.selectedFilePath = selectedFilePath
         self.appImagesDir = appImagesDir     
@@ -82,15 +78,15 @@ class InstallThread(QThread):
 # All installation steps with progress updates
     def run(self):
         try:
-            self.installer.moveFile(self.selectedFilePath, self.appImagesDir)
+            Installer.moveFile(self.selectedFilePath, self.appImagesDir)
             self.logger.addGeneralEntry(f"Moved {self.selectedFilePath} to {self.appImagesDir}")
             self.progressUpdate.emit(self.tr("Moved AppImage file (1/3 tasks finished)"))
 
-            self.installer.mkSymLink(self.selectedFilePath, self.cmdName, self.appImagesDir, self.symLinkDir)
+            Installer.mkSymLink(self.selectedFilePath, self.cmdName, self.appImagesDir, self.symLinkDir)
             self.logger.addGeneralEntry(f"Created symlink {self.cmdName} in {self.symLinkDir}")
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))
 
-            self.startMenuEntry.create(self.selectedFilePath, self.appImagesDir, self.userDir, self.programName, self.programDescription, self.programCategory)
+            StartMenuEntry.create(self.selectedFilePath, self.appImagesDir, self.userDir, self.programName, self.programDescription, self.programCategory)
             self.logger.addGeneralEntry(f"Created startmenu entry for {self.programName}")
             self.progressUpdate.emit(self.tr("Startmenu entry has been created (3/3 tasks finished)"))
 
@@ -112,7 +108,6 @@ class InstallThread(QThread):
 # Extract the metadata from all installed AppImage programs; Metadata is stored in the .desktop file that is used as startmenu entry
 class AppConfigsThread(QThread):
     error = Signal(str)
-    progressUpdate = Signal(list)
     finished = Signal(list)
 
     def __init__(self, logger, desktopEntriesDir):
@@ -123,12 +118,7 @@ class AppConfigsThread(QThread):
 
     def run(self):
         try:
-# Temporarily two functions that extract data; will later be reworked to only one
-            appsMetadata = Uninstaller.getInstalledMetadata(self.desktopEntriesDir)
-            self.logger.addGeneralEntry(f"Data 1: \n{appsMetadata}")
-            self.progressUpdate.emit(appsMetadata)
-            
-            appConfigsList = AppMetadata.getAppsMetadata(self.desktopEntriesDir)
+            appConfigsList = AppConfigReader.getAppsMetadata(self.desktopEntriesDir)
             self.logger.addGeneralEntry(f"Data 2: {appConfigsList}")
 
             self.finished.emit(appConfigsList)

@@ -17,13 +17,14 @@ class Installer():
 
         fileList = [file.path 
                     for file in os.scandir(downloadsDir) 
-                    if file.name[-9:] == ".AppImage" and file.is_file(follow_symlinks=False)]
+                    if file.name.endswith(".AppImage") and file.is_file(follow_symlinks=False)]
 
         fileList.sort()
         return fileList
     
 # Get the content of the .desktop file in the AppImage to later create a startmenu entry    
-    def getAppimageMetadata(self, filePath):
+    @staticmethod
+    def getAppImageMetadata(filePath):
         workDir = Path(tempfile.mkdtemp())
 
         try:
@@ -71,19 +72,22 @@ class Installer():
             shutil.rmtree(workDir, ignore_errors=True)
     
 # Move the AppImage File to the right directory
-    def moveFile(self, selectedFilePath, fileDest):
+    @staticmethod
+    def moveFile(selectedFilePath, fileDest):
         Path(fileDest).mkdir(parents=True, exist_ok=True)
 
         shutil.move(selectedFilePath, fileDest)
 
 # Make the AppImage file executable
-    def mkExec(self, path):
+    @staticmethod
+    def mkExec(path):
         path = Path(path)
 
         path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
-    def mkSymLink(self, selectedFilePath, cmdName, fileDest, symLinkDir):
+    @staticmethod
+    def mkSymLink(selectedFilePath, cmdName, fileDest, symLinkDir):
         path = fileDest / Path(selectedFilePath).name
         symLinkPath = Path(symLinkDir) / cmdName
 
@@ -91,8 +95,10 @@ class Installer():
 
         symLinkPath.symlink_to(path)
 
-class StartmenuEntry():
-    def create(self, selectedFilePath, fileDest, userDir, programName, programDescr, programCategory):
+
+class StartMenuEntry():
+    @staticmethod
+    def create(selectedFilePath, appImagesDir, userDir, programName, programDescription, programCategory):
         fileName = Path(selectedFilePath).name
         iconsDir = userDir / ".local/share/icons"
         applicationsDir = userDir / ".local/share/applications"
@@ -124,24 +130,25 @@ class StartmenuEntry():
 
         programIcon = Path(iconFile).name
 
-        iconPath = Path(iconsDir / programIcon)
+        iconPath = iconsDir / programIcon
 
 # Only move the icon if it doesn't already exist; allows for multiple installations of the same program
-        if not  iconPath.exists():
+        if not iconPath.exists():
             shutil.move(iconFile, iconsDir)
         
         shutil.rmtree(workDir, ignore_errors=True)
 
 # .desktop file content
-        desktopFile = f"""[Desktop Entry]
-                        Type=Application
-                        Name={programName}
-                        Comment={programDescr}
-                        Exec={fileDest}/{fileName}
-                        Icon={userDir}/.local/share/icons/{programIcon}
-                        Terminal=false
-                        Categories={programCategory}
-                        """
+        desktopFile = "\n".join([
+            "[Desktop Entry]",
+            "Type=Application",
+            f"Name={programName}",
+            f"Comment={programDescription}",
+            f"Exec={appImagesDir}/{fileName}",
+            f"Icon={userDir}/.local/share/icons/{programIcon}",
+            "Terminal=false",
+            f"Categories={programCategory}",
+        ])
 
         desktopEntryFile = applicationsDir / f"{programName}.desktop"
         desktopEntryFile.write_text(desktopFile)
@@ -151,20 +158,24 @@ class StartmenuEntry():
             check=True,
             capture_output=True)
 
-class AppMetadata():
-    def getAppsMetadata(desktopPath) -> list[AppsData]:
-        appsMetadata = []
 
-        for file in os.scandir(desktopPath):
-            if not (file.is_file(follow_symlinks=False) and file.name[-8:] == ".desktop"):
+class AppConfigReader():
+    @staticmethod
+    def getAppsMetadata(desktopPath) -> list[AppsData]:
+        appConfigs = []
+
+        for entry in os.scandir(desktopPath):
+            if not (entry.is_file(follow_symlinks=False) and entry.name.endswith(".desktop")):
                 continue
 
             appName = ""
             appDescription = ""
             appImageFilePath = ""
             appImageFileSize = None
+            appIconPath = ""
+            desktopFilePath = entry.path
 
-            with open(file.path, encoding="utf-8") as f:
+            with open(entry.path, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
 
@@ -183,23 +194,28 @@ class AppMetadata():
                         if not value.endswith(".AppImage"):
                             appImageFilePath = False
 
+                    elif key == "Icon":
+                        appIconPath = value
+
 # Size of the .AppImage file in bytes
-                    if appImageFilePath:
-                        appImageFileSize = Path(appImageFilePath).stat().st_size
+                if appImageFilePath:
+                    appImageFileSize = Path(appImageFilePath).stat().st_size
 
 # Filter out incomplete or not AppImage installs
                 if appName and appDescription and appImageFilePath and appImageFileSize:
-                    appMetadata = AppsData(
+                    appConfig = AppsData(
                         name=appName,
                         description=appDescription,
                         filePath=appImageFilePath,
-                        fileSize=appImageFileSize
+                        fileSize=appImageFileSize,
+                        iconFile=appIconPath,
+                        desktopFile=desktopFilePath
                     )
-                    appsMetadata.append(appMetadata)
+                    appConfigs.append(appConfig)
                 
-        appsMetadata.sort(key=lambda app: app.name.lower())
+        appConfigs.sort(key=lambda app: app.name.lower())
 
-        return appsMetadata
+        return appConfigs
 
 @dataclass
 class AppsData():
@@ -207,77 +223,22 @@ class AppsData():
     description: str
     filePath: str
     fileSize: int
+    iconFile: str
+    desktopFile: str
 
 
-class Uninstaller():
-# Store metadata from .desktop files in a list of dataclasses
+class Uninstaller():    
     @staticmethod
-    def getInstalledMetadata(desktopPath) -> list[UninstallData]:
-        installedProgramsMetadata = []
-        
-        for file in os.scandir(desktopPath):
-            if not (file.is_file(follow_symlinks=False) and file.name[-8:] == ".desktop"):
-                continue
-
-            programName = ""
-            execPath = ""
-            iconFilePath = ""
-            desktopFilePath = file.path
-
-            with open(file.path, encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-
-                    if "=" not in line:
-                        continue
-
-                    key, value = line.split("=", 1)
-                    
-                    if key == "Name":
-                        programName = value
-                    elif key == "Exec":
-                        execPath = value
-# Mark not AppImage programs to later filter them out
-                        if not value.endswith(".AppImage"):
-                            execPath = False
-                    elif key == "Icon":
-                        iconFilePath = value
-
-# Filter out incomplete or not AppImage installs
-                if programName and execPath and iconFilePath and desktopFilePath:
-                    programMetadata = UninstallData(
-                        name=programName,
-                        path=execPath,
-                        iconPath=iconFilePath,
-                        desktopPath=desktopFilePath
-                    )
-                    installedProgramsMetadata.append(programMetadata)
-                
-        installedProgramsMetadata.sort(key=lambda app: app.name.lower())
-
-        return installedProgramsMetadata
-    
-# Returns the path of the terminal symlink of the selected AppImage
-    @staticmethod
-    def getSymlinkPath(installedPath, symLinkDir):
+    def getSymlinkPath(appPath, symLinkDir):
         for file in symLinkDir.iterdir():
-            if file.is_symlink() and str(file.resolve()) == str(installedPath):
+            if file.is_symlink() and str(file.resolve()) == str(appPath):
                 return file
 
     @staticmethod
-    def rmvInstalledFiles(path):
-        if path == None:
-            return
-        
-        os.remove(path)
+    def rmvInstalledFiles(filePath):
+        if Path(filePath).exists(follow_symlinks=False):
+            os.remove(filePath)
 
-# Stores the content of each .desktop file for the uninstallation
-@dataclass
-class UninstallData:
-    name: str
-    path: str
-    iconPath: str
-    desktopPath: str
 
 class Logging():
 
@@ -312,6 +273,6 @@ class Logging():
 # Delete old log files after seven days
     def rmvOldLogs(self):
         timeNow = datetime.now()
-        for log in Path(self.logDir).iterdir():
+        for log in self.logDir.iterdir():
             if (timeNow - datetime.fromtimestamp(log.stat().st_mtime)).days > 7:
                 log.unlink()
