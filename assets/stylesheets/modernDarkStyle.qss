@@ -403,7 +403,9 @@ QLabel#iconLabel {
 }
 
 QLabel#entry {
-    padding: 10px;
+    padding-left: 8px;
+    padding-top: 8px;
+    padding-bottom: 0px;
     font-size: 14px;
     font: bold;
     color: #d4d6d9;
@@ -420,7 +422,6 @@ QLabel#infoDescription {
 
 QRadioButton#categorySel {
     border: none;
-    padding: 0px;
     padding-right: 10px;
     padding-left: 10px;
     padding-top: 0px;
@@ -442,23 +443,68 @@ QLabel#terminalText {
 }
 
 /* only for tab two page one*/
-QPushButton#appBtn {
+QPushButton#launchAppBtn {
     color: #d8dadd;
     background-color: #3e4246;
     border: none;
     border-radius: 6px;
     font-size: 14px;
-    padding: 0px;
+    padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
+    qproperty-icon: url(assets/icons/darkThemes/play.svg)
 }
 
-QPushButton#appBtn:hover {
+QPushButton#launchAppBtn:hover {
     background-color: #4e5256;
 }
 
-QPushButton#appBtn:pressed {
+QPushButton#launchAppBtn:pressed {
     background-color: #5e6266;
+}
+
+QPushButton#configureAppBtn {
+    color: #d8dadd;
+    background-color: #3e4246;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    qproperty-icon: url(assets/icons/darkThemes/settings.svg)
+}
+
+QPushButton#configureAppBtn:hover {
+    background-color: #4e5256;
+}
+
+QPushButton#configureAppBtn:pressed {
+    background-color: #5e6266;
+}
+
+QPushButton#deleteAppBtn {
+    color: #d8dadd;
+    background-color: #3e4246;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    qproperty-icon: url(assets/icons/allThemes/trash.svg)
+}
+
+QPushButton#deleteAppBtn:hover {
+    background-color: #4e5256;
+}
+
+QPushButton#deleteAppBtn:pressed {
+    background-color: #5e6266;
+}
+
+QPushButton#configWindowBtn {
+    padding: 2px;
 }
 
 QGroupBox#appTile {
@@ -467,6 +513,10 @@ QGroupBox#appTile {
 
 QLabel#nameLabel {
     color: #d8dadd;
+}
+
+QLineEdit#appConfigInput {
+    margin: 0px;
 }
 
 /* Everything that's only for the settings window */

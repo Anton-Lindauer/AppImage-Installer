@@ -443,23 +443,68 @@ QLabel#terminalText {
 }
 
 /* only for tab two page one*/
-QPushButton#appBtn {
+QPushButton#launchAppBtn {
     color: #d8dadd;
     background-color: #292d32;
     border: none;
     border-radius: 6px;
     font-size: 14px;
-    padding: 0px;
+    padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
+    qproperty-icon: url(assets/icons/darkThemes/play.svg)
 }
 
-QPushButton#appBtn:hover {
+QPushButton#launchAppBtn:hover {
     background-color: #393d42;
 }
 
-QPushButton#appBtn:pressed {
+QPushButton#launchAppBtn:pressed {
     background-color: #494d52;
+}
+
+QPushButton#configureAppBtn {
+    color: #d8dadd;
+    background-color: #292d32;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    qproperty-icon: url(assets/icons/darkThemes/settings.svg)
+}
+
+QPushButton#configureAppBtn:hover {
+    background-color: #393d42;
+}
+
+QPushButton#configureAppBtn:pressed {
+    background-color: #494d52;
+}
+
+QPushButton#deleteAppBtn {
+    color: #d8dadd;
+    background-color: #292d32;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    padding: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+    qproperty-icon: url(assets/icons/allThemes/trash.svg)
+}
+
+QPushButton#deleteAppBtn:hover {
+    background-color: #393d42;
+}
+
+QPushButton#deleteAppBtn:pressed {
+    background-color: #494d52;
+}
+
+QPushButton#configWindowBtn {
+    padding: 2px;
 }
 
 QGroupBox#appTile {
@@ -468,6 +513,10 @@ QGroupBox#appTile {
 
 QLabel#nameLabel {
     color: #d8dadd;
+}
+
+QLineEdit#appConfigInput {
+    margin: 0px;
 }
 
 /* Everything that's only for the settings window */

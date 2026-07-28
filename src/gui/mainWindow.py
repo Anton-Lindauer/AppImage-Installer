@@ -2,8 +2,8 @@ import faulthandler
 faulthandler.enable()
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QVBoxLayout, QWidget, QGroupBox, QRadioButton, QPushButton, QStackedWidget, QLineEdit, QButtonGroup, QScrollArea, QTabWidget, QCheckBox, QHBoxLayout, QGridLayout, QDialog, QSizePolicy
-from PySide6.QtCore import Qt, QSettings
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import Qt, QSettings, QLocale
+from PySide6.QtGui import QPixmap, QIcon
 
 import sys
 import subprocess
@@ -374,7 +374,7 @@ class MainWindow(QMainWindow):
         mainLayout.addWidget(programInfoGroupBox)
         mainLayout.addWidget(self.tab1Page2ContinueBtn)
         mainLayout.addWidget(self.tab1Page2BackBtn)
-        mainLayout.addStretch()    
+        mainLayout.addStretch()  
 
         return mainWidget
 
@@ -576,6 +576,8 @@ class MainWindow(QMainWindow):
 
         self.tab1StackedWidget.setCurrentIndex(currentIndex)
 
+        self.populateProgramSelection(self.appConfigs)
+
 
 
 ############################################### Tab 1 - Page 1 ###############################################
@@ -642,15 +644,21 @@ class MainWindow(QMainWindow):
                 appNameLabel.setObjectName("nameLabel")
 
                 launchAppBtn = QPushButton(self.tr("Launch"))
-                launchAppBtn.setObjectName("appBtn")
+                if self.isKde:
+                    launchAppBtn.setIcon(QIcon.fromTheme("media-playback-start"))
+                launchAppBtn.setObjectName("launchAppBtn")
                 launchAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.openProgram(app.filePath))
 
                 configureAppBtn = QPushButton(self.tr("Configure"))
-                configureAppBtn.setObjectName("appBtn")
+                if self.isKde:
+                    configureAppBtn.setIcon(QIcon.fromTheme("configure"))
+                configureAppBtn.setObjectName("configureAppBtn")
                 configureAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.appConfigWindow(self.appConfigs, app.name))
 
                 deleteAppBtn = QPushButton(self.tr("Delete"))
-                deleteAppBtn.setObjectName("appBtn")
+                if self.isKde:
+                    deleteAppBtn.setIcon(QIcon.fromTheme("edit-delete"))
+                deleteAppBtn.setObjectName("deleteAppBtn")
                 deleteAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.prepUninstallData(app.name))
 
                 appTileLayout.addWidget(appIconLabel)
@@ -694,29 +702,88 @@ class MainWindow(QMainWindow):
                 self.selectedAppName = app.name
 
     def appConfigWindow(self, appsConfigs, name):
+        appConfigDialog = QDialog()
+        appConfigDialog.setFixedSize(600, 300)
+
+        appConfigLayout = QVBoxLayout(appConfigDialog)
+
+        configGroupBox = QGroupBox()
+
+        configBoxLayout = QVBoxLayout(configGroupBox)
+        configBoxLayout.setContentsMargins(10, 10, 10, 10)
+
         for appConfig in appsConfigs:
             if appConfig.name == name:
-
-                appConfigDialog = QDialog()
                 appConfigDialog.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
 
-                appConfigLayout = QVBoxLayout(appConfigDialog)
+                appNameLabel = QLabel(self.tr("App name"))
 
-                appNameLabel = QLabel(name)
-                appNameLabel.setObjectName("title")
+                appNameInput = QLineEdit()
+                appNameInput.setText(name)
+                appNameInput.setObjectName("appConfigInput")
 
-                appDescriptionLabel = QLabel(appConfig.description)
+                appDescriptionLabel = QLabel(self.tr("App description"))
+                
+                appDescriptionInput = QLineEdit()
+                appDescriptionInput.setText(appConfig.description)
+                appDescriptionInput.setObjectName("appConfigInput")
+
+                filePathLayout = QHBoxLayout()
+
+                pathLabel = QLabel(self.tr("Path"))
 
                 filePathLabel = QLabel(appConfig.filePath)
 
-                fileSizeLabel = QLabel(str(appConfig.fileSize))
+                filePathLayout.addWidget(pathLabel)
+                filePathLayout.addStretch()
+                filePathLayout.addWidget(filePathLabel)
 
-                appConfigLayout.addWidget(appNameLabel)
-                appConfigLayout.addWidget(appDescriptionLabel)
-                appConfigLayout.addWidget(filePathLabel)
-                appConfigLayout.addWidget(fileSizeLabel)
+                fileSizeLayout = QHBoxLayout()
+
+                sizeLabel = QLabel(self.tr("File size"))
+
+# Returns the AppImage file size in KiB, MiB, etc. rounded to one decimal place
+                fileSize = QLocale.system().formattedDataSize(
+                    appConfig.fileSize, precision=1,
+                    format=QLocale.DataSizeFormat.DataSizeIecFormat
+                )
+
+                fileSizeLabel = QLabel(fileSize)
+
+                fileSizeLayout.addWidget(sizeLabel)
+                fileSizeLayout.addStretch()
+                fileSizeLayout.addWidget(fileSizeLabel)
+
+                btnLayout = QHBoxLayout()
+
+                saveChangesBtn = QPushButton(self.tr("Save changes (coming soon!)"))
+                saveChangesBtn.setObjectName("configWindowBtn")
+
+                discardChangesBtn = QPushButton(self.tr("Discard"))
+                discardChangesBtn.setObjectName("configWindowBtn")
+                discardChangesBtn.clicked.connect(lambda: appConfigDialog.close())
+
+                configBoxLayout.addWidget(saveChangesBtn)
+                configBoxLayout.addWidget(appNameLabel)
+                configBoxLayout.addWidget(appNameInput)
+                configBoxLayout.addWidget(appDescriptionLabel)
+                configBoxLayout.addWidget(appDescriptionInput)
+                configBoxLayout.addLayout(filePathLayout)
+                configBoxLayout.addLayout(fileSizeLayout)
+                
+                appConfigLayout.addWidget(configGroupBox)
+
+# Workaround to get the save button auto selected instead of the QLineEdit
+                saveChangesBtn.setFocus()
+                configBoxLayout.removeWidget(saveChangesBtn)
+                btnLayout.addWidget(saveChangesBtn)
+                btnLayout.addWidget(discardChangesBtn)
+                appConfigLayout.addLayout(btnLayout)
+                appConfigLayout.addStretch()
 
                 appConfigDialog.exec()
+
+
 
 
 
