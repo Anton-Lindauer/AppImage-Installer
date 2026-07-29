@@ -11,8 +11,8 @@ import os
 from pathlib import Path
 
 from src.core.logic import Logging
-from src.gui.components import MenuBarUtils, InstallFileSelector
-from src.gui.threads import MetadataThread, InstallThread, AppConfigsThread, UninstallThread, AppImageListThread
+from src.gui.components import MenuBarUtils, InstallFileSelector, UpdateFileSelector
+from src.gui.threads import MetadataThread, InstallThread, AppConfigsThread, UninstallThread, AppImageListThread, UpdateAppConfigThread
 
 class MainWindow(QMainWindow):
 
@@ -34,6 +34,10 @@ class MainWindow(QMainWindow):
         self.tab1Page1FileSelector = InstallFileSelector()
 
         self.tab1Page1FileSelector.pickedFile.connect(self.tab1Page2Worker)
+
+        self.configWindowFileSelector = UpdateFileSelector()
+
+        self.configWindowFileSelector.newFile.connect(self.updateConfigWindowPath)
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
         
@@ -702,10 +706,10 @@ class MainWindow(QMainWindow):
                 self.selectedAppName = app.name
 
     def appConfigWindow(self, appsConfigs, name):
-        appConfigDialog = QDialog()
-        appConfigDialog.setFixedSize(600, 300)
+        self.appConfigDialog = QDialog()
+        self.appConfigDialog.setFixedSize(650, 400)
 
-        appConfigLayout = QVBoxLayout(appConfigDialog)
+        appConfigLayout = QVBoxLayout(self.appConfigDialog)
 
         configGroupBox = QGroupBox()
 
@@ -714,19 +718,26 @@ class MainWindow(QMainWindow):
 
         for appConfig in appsConfigs:
             if appConfig.name == name:
-                appConfigDialog.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
+                desktopFile = appConfig.desktopFile
+                self.appConfigDialog.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
 
                 appNameLabel = QLabel(self.tr("App name"))
 
-                appNameInput = QLineEdit()
-                appNameInput.setText(name)
-                appNameInput.setObjectName("appConfigInput")
+                self.appNameInput = QLineEdit()
+                self.appNameInput.setText(name)
+                self.appNameInput.setObjectName("appConfigInput")
 
                 appDescriptionLabel = QLabel(self.tr("App description"))
                 
-                appDescriptionInput = QLineEdit()
-                appDescriptionInput.setText(appConfig.description)
-                appDescriptionInput.setObjectName("appConfigInput")
+                self.appDescriptionInput = QLineEdit()
+                self.appDescriptionInput.setText(appConfig.description)
+                self.appDescriptionInput.setObjectName("appConfigInput")
+
+                launchConfigLabel = QLabel(self.tr("Custom launch configuration"))
+
+                self.launchConfigInput = QLineEdit()
+                self.launchConfigInput.setObjectName("appConfigInput")
+                self.launchConfigInput.setText(" ".join(appConfig.launchFlagString))
 
                 filePathLayout = QHBoxLayout()
 
@@ -754,36 +765,85 @@ class MainWindow(QMainWindow):
                 fileSizeLayout.addStretch()
                 fileSizeLayout.addWidget(fileSizeLabel)
 
+                updateFileLayout = QHBoxLayout()
+
+                self.updateFileInput = QLineEdit()
+                self.updateFileInput.setObjectName("appConfigInput")
+                self.updateFileInput.setPlaceholderText(self.tr("DifferentFileVersion.AppImage"))
+
+                updateFileBtn = QPushButton(self.tr("Install a new version of this AppImage"))
+                updateFileBtn.clicked.connect(lambda: self.configWindowFileSelector.openFileDialog(self))
+                updateFileBtn.setObjectName("configWindowBtn")
+
+                updateFileLayout.addWidget(self.updateFileInput)
+                updateFileLayout.addWidget(updateFileBtn)
+
+                refreshIconBtn = QPushButton(self.tr("Update the app icon from the AppImage file"))
+                refreshIconBtn.setObjectName("configWindowBtn")
+
                 btnLayout = QHBoxLayout()
 
-                saveChangesBtn = QPushButton(self.tr("Save changes (coming soon!)"))
-                saveChangesBtn.setObjectName("configWindowBtn")
+                self.saveChangesBtn = QPushButton(self.tr("Save changes (coming soon!)"))
+                self.saveChangesBtn.setObjectName("configWindowBtn")
+                self.saveChangesBtn.clicked.connect(lambda: self.configWindowWorker(desktopFile))
 
-                discardChangesBtn = QPushButton(self.tr("Discard"))
-                discardChangesBtn.setObjectName("configWindowBtn")
-                discardChangesBtn.clicked.connect(lambda: appConfigDialog.close())
+                self.discardChangesBtn = QPushButton(self.tr("Discard"))
+                self.discardChangesBtn.setObjectName("configWindowBtn")
+                self.discardChangesBtn.clicked.connect(lambda: self.appConfigDialog.close())
 
-                configBoxLayout.addWidget(saveChangesBtn)
+                configBoxLayout.addWidget(self.saveChangesBtn)
                 configBoxLayout.addWidget(appNameLabel)
-                configBoxLayout.addWidget(appNameInput)
+                configBoxLayout.addWidget(self.appNameInput)
                 configBoxLayout.addWidget(appDescriptionLabel)
-                configBoxLayout.addWidget(appDescriptionInput)
+                configBoxLayout.addWidget(self.appDescriptionInput)
+                configBoxLayout.addWidget(launchConfigLabel)
+                configBoxLayout.addWidget(self.launchConfigInput)
                 configBoxLayout.addLayout(filePathLayout)
                 configBoxLayout.addLayout(fileSizeLayout)
+                configBoxLayout.addLayout(updateFileLayout)
+                configBoxLayout.addWidget(refreshIconBtn)
                 
                 appConfigLayout.addWidget(configGroupBox)
 
 # Workaround to get the save button auto selected instead of the QLineEdit
-                saveChangesBtn.setFocus()
-                configBoxLayout.removeWidget(saveChangesBtn)
-                btnLayout.addWidget(saveChangesBtn)
-                btnLayout.addWidget(discardChangesBtn)
+                self.saveChangesBtn.setFocus()
+                configBoxLayout.removeWidget(self.saveChangesBtn)
+                btnLayout.addWidget(self.saveChangesBtn)
+                btnLayout.addWidget(self.discardChangesBtn)
                 appConfigLayout.addLayout(btnLayout)
                 appConfigLayout.addStretch()
 
-                appConfigDialog.exec()
+                self.appConfigDialog.exec()
+
+    def configWindowWorker(self, desktopFile):
+        self.saveChangesBtn.setEnabled(False)
+        self.discardChangesBtn.setEnabled(False)
+
+        newAppName = self.appNameInput.text()
+        newAppDescription = self.appDescriptionInput.text()
+        newLaunchConfig = self.launchConfigInput.text()
+        newAppImageFile = self.updateFileInput.text()
+        newDesktopFile = desktopFile
+
+        self.updateConfigThread = UpdateAppConfigThread(self.logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, newDesktopFile)
+
+        self.updateConfigThread.error.connect(self.workerError)
+        self.updateConfigThread.finished.connect(self.finishedConfigUpdate)
+
+        self.updateConfigThread.start()
+
+    def finishedConfigUpdate(self):
+        self.tab2Page1Worker()
+
+        self.appConfigDialog.close()
 
 
+    def updateConfigWindowPath(self, newPath):
+        self.updateFileInput.setText(newPath)
+
+# Ensures that the QDialog stays in the foreground after closing the QFileDialog
+        self.appConfigDialog.raise_()
+        self.appConfigDialog.activateWindow()
 
 
 

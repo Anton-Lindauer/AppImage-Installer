@@ -168,3 +168,25 @@ class UninstallThread(QThread):
             print(error)
 
             self.error.emit(str(error))
+
+class UpdateAppConfigThread(QThread):
+    error = Signal(str)
+    finished = Signal()
+
+    def __init__(self, logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, newDesktopFile):
+        super().__init__()
+
+        self.logger = logger
+        self.newAppName = newAppName
+        self.newAppDescription = newAppDescription
+        self.newLaunchConfig = newLaunchConfig
+        self.newAppImageFile = newAppImageFile
+        self.newDesktopFile = newDesktopFile
+
+    def run(self):
+        try:
+            self.finished.emit()
+        except Exception as error:
+            print(error)
+
+            self.error.emit(str(error))

@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import stat
 import tempfile
+import shlex
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
@@ -144,7 +145,7 @@ class StartMenuEntry():
             "Type=Application",
             f"Name={programName}",
             f"Comment={programDescription}",
-            f"Exec={appImagesDir}/{fileName}",
+            f'Exec="{appImagesDir}/{fileName}"',
             f"Icon={userDir}/.local/share/icons/{programIcon}",
             "Terminal=false",
             f"Categories={programCategory}",
@@ -189,10 +190,14 @@ class AppConfigReader():
                     elif key == "Comment":
                         appDescription = value
                     elif key == "Exec":
-                        appImageFilePath = value
+                        valueParts = shlex.split(value)
+
+                        appImageFilePath = valueParts[0]
 # Mark not AppImage programs to later filter them out
-                        if not value.endswith(".AppImage"):
+                        if not appImageFilePath.endswith(".AppImage"):
                             appImageFilePath = False
+
+                        launchFlags = valueParts[1:]
 
                     elif key == "Icon":
                         appIconPath = value
@@ -209,7 +214,8 @@ class AppConfigReader():
                         filePath=appImageFilePath,
                         fileSize=appImageFileSize,
                         iconFile=appIconPath,
-                        desktopFile=desktopFilePath
+                        desktopFile=desktopFilePath,
+                        launchFlagString=launchFlags
                     )
                     appConfigs.append(appConfig)
                 
@@ -225,6 +231,7 @@ class AppsData():
     fileSize: int
     iconFile: str
     desktopFile: str
+    launchFlagString: str
 
 
 class Uninstaller():    

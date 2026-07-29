@@ -138,3 +138,24 @@ class InstallFileSelector(QObject):
         if selectedButton is not None:
             pickedPath = selectedButton.text()
             self.pickedFile.emit(pickedPath)
+
+
+class UpdateFileSelector(QObject):
+    newFile = Signal(str)
+
+    def __init__(self, parent=None):
+            super().__init__(parent)
+            self.userDir = Path.home()
+
+# Filedialog window to let the user pick a AppImage file to replace the one of the current installation
+# Intended as one way of updating AppImage programs without a build in updater
+    def openFileDialog(self, parentWindow):
+        pickedPath, _ = QFileDialog.getOpenFileName(
+            parentWindow,
+            self.tr("Pick a AppImage file to update the current installation"),
+            str(self.userDir),
+            self.tr("AppImage files (*.AppImage)")
+        )
+
+        if pickedPath:
+            self.newFile.emit(pickedPath)
