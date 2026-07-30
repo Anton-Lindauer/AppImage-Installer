@@ -26,25 +26,29 @@ Should work on any **Linux** Distro, doesn't work on Windows.
 
 ### Selecting a file to install
 
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/46315701a187ff9cb3c29cbf78db58fbf1f3189a/pictures%20for%20README%20file/Installer%20Page%201.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/347ea34da97cb94c251569c6954549905b71ef96/pictures%20for%20README%20file/Installer%20Page%201.png)
 Pick a file from your Downloads directory with the radiobuttons or from somewhere else.
 
 ### Entering program info
 
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Installer%20Page%202.png)
-Example of installing Ultimaker Cura. AppImage-Installer extracts the metadata from the AppImage file and will fill out everything accourdingly.
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/347ea34da97cb94c251569c6954549905b71ef96/pictures%20for%20README%20file/Installer%20Page%202.png)
+Example of installing QDiskInfo. AppImage-Installer extracts the metadata from the AppImage file and will fill out everything accourdingly.
 
 Allthough the GUI doesn't tell you, you have to fill out every field on this page to continue. You can select multiple categories.
 
-### Uninstalling AppImage programs
+### Managing AppImage programs
 
-![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/3c2d934e4599e7d495e181149be2eb9587fd7ad3/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
+![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/347ea34da97cb94c251569c6954549905b71ef96/pictures%20for%20README%20file/Uninstaller%20Page%201.png)
 **Note:** Only complete AppImage installation that follow this tools install principles will show up here.
+
+**Note:** When pressing "Update installation" the startmenu entry will be renewed even if you didn't change anything for now.
+
+**Note:** The install a new version button is supposed to be a updater, that installs a new version of the AppImage when you press the update button. The checkbox also allows you to update the app icon if the AppImage has an build in updater.
 
 ### Uninstallation terminal
 
 ![image alt](https://github.com/Anton-Lindauer/AppImage-Installer/blob/c62f0112bedb32829aca441519ca4207fe638803/pictures%20for%20README%20file/Uninstaller%20Page%202.png)
-The installer tab has a similar terminal after page 2. When pressing start uninstallation/installation, the process will actually start.
+The installer tab has a similar terminal on page 3. When pressing start uninstallation/installation, the process will actually start.
 
 ## Other important notes
 
