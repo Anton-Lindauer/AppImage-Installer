@@ -719,6 +719,8 @@ class MainWindow(QMainWindow):
         for appConfig in appsConfigs:
             if appConfig.name == name:
                 desktopFile = appConfig.desktopFile
+                categories = appConfig.startMenuCategories
+
                 self.appConfigDialog.setWindowTitle(self.tr("Configure {appName}").format(appName=name))
 
                 appNameLabel = QLabel(self.tr("App name"))
@@ -743,11 +745,11 @@ class MainWindow(QMainWindow):
 
                 pathLabel = QLabel(self.tr("Path"))
 
-                filePathLabel = QLabel(appConfig.filePath)
+                self.filePathLabel = QLabel(appConfig.filePath)
 
                 filePathLayout.addWidget(pathLabel)
                 filePathLayout.addStretch()
-                filePathLayout.addWidget(filePathLabel)
+                filePathLayout.addWidget(self.filePathLabel)
 
                 fileSizeLayout = QHBoxLayout()
 
@@ -778,14 +780,13 @@ class MainWindow(QMainWindow):
                 updateFileLayout.addWidget(self.updateFileInput)
                 updateFileLayout.addWidget(updateFileBtn)
 
-                refreshIconBtn = QPushButton(self.tr("Update the app icon from the AppImage file"))
-                refreshIconBtn.setObjectName("configWindowBtn")
+                self.refreshIconCheckBox = QCheckBox(self.tr("Refresh icon when updating"))
 
                 btnLayout = QHBoxLayout()
 
-                self.saveChangesBtn = QPushButton(self.tr("Save changes (coming soon!)"))
+                self.saveChangesBtn = QPushButton(self.tr("Update installation"))
                 self.saveChangesBtn.setObjectName("configWindowBtn")
-                self.saveChangesBtn.clicked.connect(lambda: self.configWindowWorker(desktopFile))
+                self.saveChangesBtn.clicked.connect(lambda: self.configWindowWorker(desktopFile, categories, appConfig.iconFile))
 
                 self.discardChangesBtn = QPushButton(self.tr("Discard"))
                 self.discardChangesBtn.setObjectName("configWindowBtn")
@@ -801,7 +802,7 @@ class MainWindow(QMainWindow):
                 configBoxLayout.addLayout(filePathLayout)
                 configBoxLayout.addLayout(fileSizeLayout)
                 configBoxLayout.addLayout(updateFileLayout)
-                configBoxLayout.addWidget(refreshIconBtn)
+                configBoxLayout.addWidget(self.refreshIconCheckBox)
                 
                 appConfigLayout.addWidget(configGroupBox)
 
@@ -815,7 +816,7 @@ class MainWindow(QMainWindow):
 
                 self.appConfigDialog.exec()
 
-    def configWindowWorker(self, desktopFile):
+    def configWindowWorker(self, desktopFile, categories, iconPath):
         self.saveChangesBtn.setEnabled(False)
         self.discardChangesBtn.setEnabled(False)
 
@@ -823,9 +824,16 @@ class MainWindow(QMainWindow):
         newAppDescription = self.appDescriptionInput.text()
         newLaunchConfig = self.launchConfigInput.text()
         newAppImageFile = self.updateFileInput.text()
-        newDesktopFile = desktopFile
+        oldDesktopFile = desktopFile
+        oldAppImage = self.filePathLabel.text()
+        startMenuCategories = categories
 
-        self.updateConfigThread = UpdateAppConfigThread(self.logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, newDesktopFile)
+        if not self.refreshIconCheckBox.isChecked():
+            icon = iconPath
+        else:
+            icon = False
+
+        self.updateConfigThread = UpdateAppConfigThread(self.logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImage, self.symLinkDir, self.appImagesDir, self.userDir, startMenuCategories, self.desktopEntriesDir, icon)
 
         self.updateConfigThread.error.connect(self.workerError)
         self.updateConfigThread.finished.connect(self.finishedConfigUpdate)

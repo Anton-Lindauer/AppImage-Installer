@@ -5,6 +5,7 @@ from PySide6.QtCore import QThread, Signal
 from src.core.logic import Installer, StartMenuEntry, Uninstaller, AppConfigReader
 
 import time
+from pathlib import Path
 
 ############################################### Tab 1 QThreads ###############################################
 # Returns a list of all AppImage file paths in the Downloads directory
@@ -74,6 +75,7 @@ class InstallThread(QThread):
         self.programCategory = programCategory
         self.cmdName = cmdName
         self.symLinkDir = symLinkDir
+        self.icon = False
 
 # All installation steps with progress updates
     def run(self):
@@ -86,7 +88,7 @@ class InstallThread(QThread):
             self.logger.addGeneralEntry(f"Created symlink {self.cmdName} in {self.symLinkDir}")
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))
 
-            StartMenuEntry.create(self.selectedFilePath, self.appImagesDir, self.userDir, self.programName, self.programDescription, self.programCategory)
+            StartMenuEntry.create(self.selectedFilePath, self.appImagesDir, self.userDir, self.programName, self.programDescription, self.programCategory, self.icon)
             self.logger.addGeneralEntry(f"Created startmenu entry for {self.programName}")
             self.progressUpdate.emit(self.tr("Startmenu entry has been created (3/3 tasks finished)"))
 
@@ -146,15 +148,15 @@ class UninstallThread(QThread):
         try:
             symLinkFilePath = Uninstaller.getSymlinkPath(self.selectedAppPath, self.symLinkDir)
 
-            Uninstaller.rmvInstalledFiles(symLinkFilePath)
+            Uninstaller.rmvInstalledFile(symLinkFilePath)
             self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
             self.progressUpdate.emit(self.tr("Removed symlink"))
 
-            Uninstaller.rmvInstalledFiles(self.desktopFilePath)
+            Uninstaller.rmvInstalledFile(self.desktopFilePath)
             self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
             self.progressUpdate.emit(self.tr("Removed startmenu entry"))
 
-            Uninstaller.rmvInstalledFiles(self.selectedAppPath)
+            Uninstaller.rmvInstalledFile(self.selectedAppPath)
             self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
             self.progressUpdate.emit(self.tr("Removed AppImage file"))
 
@@ -173,7 +175,7 @@ class UpdateAppConfigThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, newDesktopFile):
+    def __init__(self, logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImage, symLinkDir, appImagesDir, userDir, categories, desktopEntriesDir, icon):
         super().__init__()
 
         self.logger = logger
@@ -181,10 +183,62 @@ class UpdateAppConfigThread(QThread):
         self.newAppDescription = newAppDescription
         self.newLaunchConfig = newLaunchConfig
         self.newAppImageFile = newAppImageFile
-        self.newDesktopFile = newDesktopFile
+        self.oldDesktopFile = oldDesktopFile
+        self.oldAppImage = oldAppImage
+        self.symLinkDir = symLinkDir
+        self.appImagesDir = appImagesDir
+        self.userDir = userDir
+        self.categories = categories
+        self.desktopEntriesDir = desktopEntriesDir
+        self.icon = icon
+        self.newAppImageFilePath = self.appImagesDir / Path(self.newAppImageFile).name
 
     def run(self):
         try:
+            if self.newAppImageFile:
+                symLinkFilePath = Uninstaller.getSymlinkPath(self.oldAppImage, self.symLinkDir)
+                cmdName = Path(symLinkFilePath).name
+
+                self.newDesktopFile = self.desktopEntriesDir / f"{self.newAppName}.desktop"
+
+            else:
+                self.newAppImageFile = False
+                self.newDesktopFile = False
+
+            if self.newAppImageFile:
+                Uninstaller.rmvInstalledFile(self.oldAppImage)
+                self.logger.addGeneralEntry(f"Permanently removed {self.oldAppImage}")
+
+            Uninstaller.rmvInstalledFile(self.oldDesktopFile)
+            self.logger.addGeneralEntry(f"Permanently removed {self.oldDesktopFile}")
+
+            if self.newAppImageFile:
+                Uninstaller.rmvInstalledFile(symLinkFilePath)
+                self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
+
+                Installer.mkExec(self.newAppImageFile)
+                self.logger.addGeneralEntry(f"Made {self.newAppImageFile} executable")
+            
+                Installer.moveFile(self.newAppImageFile, self.appImagesDir)
+                self.logger.addGeneralEntry(f"Moved {self.newAppImageFile} to {self.appImagesDir}")
+
+                Installer.mkSymLink(self.newAppImageFile, cmdName, self.appImagesDir, self.symLinkDir)
+                self.logger.addGeneralEntry(f"Created symlink {cmdName} in {self.symLinkDir}")
+
+            if self.newAppImageFile:
+                StartMenuEntry.create(self.newAppImageFilePath, self.appImagesDir, self.userDir, self.newAppName, self.newAppDescription, self.categories, self.icon)
+                self.logger.addGeneralEntry(f"Created startmenu entry for {self.newAppName}")
+            else:
+                StartMenuEntry.create(self.oldAppImage, self.appImagesDir, self.userDir, self.newAppName, self.newAppDescription, self.categories, self.icon)
+                self.logger.addGeneralEntry(f"Created startmenu entry for {self.newAppName}")
+
+            if self.newDesktopFile:
+                StartMenuEntry.updateLaunchFlags(self.newDesktopFile, self.newLaunchConfig)
+                self.logger.addGeneralEntry(f"Updated {self.newAppName} launch flags to {self.newLaunchConfig}")
+            else:
+                StartMenuEntry.updateLaunchFlags(self.oldDesktopFile, self.newLaunchConfig)
+                self.logger.addGeneralEntry(f"Updated {Path(self.oldDesktopFile).name} launch flags to {self.newLaunchConfig}")
+            
             self.finished.emit()
         except Exception as error:
             print(error)

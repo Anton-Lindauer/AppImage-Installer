@@ -6,6 +6,7 @@ import subprocess
 import stat
 import tempfile
 import shlex
+import configparser
 from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
@@ -99,7 +100,7 @@ class Installer():
 
 class StartMenuEntry():
     @staticmethod
-    def create(selectedFilePath, appImagesDir, userDir, programName, programDescription, programCategory):
+    def create(selectedFilePath, appImagesDir, userDir, programName, programDescription, programCategory, icon):
         fileName = Path(selectedFilePath).name
         iconsDir = userDir / ".local/share/icons"
         applicationsDir = userDir / ".local/share/applications"
@@ -107,37 +108,44 @@ class StartMenuEntry():
         iconsDir.mkdir(parents=True, exist_ok=True)
         applicationsDir.mkdir(parents=True, exist_ok=True)
 
-        workDir = Path(tempfile.mkdtemp())
+        if not icon:
+
+            workDir = Path(tempfile.mkdtemp())
 
 # Extract the icon.png to a temporary squashfs directory
-        subprocess.run(
-            [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
-            cwd=workDir,
-            check=True,
-            capture_output=True,
-            text=True
-        )
+            subprocess.run(
+                [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
+                cwd=workDir,
+                check=True,
+                capture_output=True,
+                text=True
+            )
         
-        squashfsRoot = workDir / "squashfs-root"
+            squashfsRoot = workDir / "squashfs-root"
 
-        if not squashfsRoot.exists():
-            raise RuntimeError("Extraction failed: squashfs-root not found")
+            if not squashfsRoot.exists():
+                raise RuntimeError("Extraction failed: squashfs-root not found")
             
 # AppImages contain a icon.png which will be used as program icon 
-        iconFile = next(squashfsRoot.rglob("*.png"), None)
+            iconFile = next(squashfsRoot.rglob("*.png"), None)
 
-        if iconFile is None:
-            raise RuntimeError("No .png files found in AppImage")
+            if iconFile is None:
+                raise RuntimeError("No .png files found in AppImage")
 
-        programIcon = Path(iconFile).name
+            programIcon = Path(iconFile).name
 
-        iconPath = iconsDir / programIcon
+            iconPath = iconsDir / programIcon
 
 # Only move the icon if it doesn't already exist; allows for multiple installations of the same program
-        if not iconPath.exists():
-            shutil.move(iconFile, iconsDir)
+            if not iconPath.exists():
+                shutil.move(iconFile, iconsDir)
         
-        shutil.rmtree(workDir, ignore_errors=True)
+            shutil.rmtree(workDir, ignore_errors=True)
+            print("new app icon")
+
+        else:
+            programIcon = Path(icon).name
+            print("old app icon")
 
 # .desktop file content
         desktopFile = "\n".join([
@@ -159,6 +167,26 @@ class StartMenuEntry():
             check=True,
             capture_output=True)
 
+    def updateLaunchFlags(desktopFile: str, newFlags: str) -> None:
+        config = configparser.ConfigParser(interpolation=None)
+        config.optionxform = str
+        config.read(desktopFile)
+
+        execLine = config["Desktop Entry"]["Exec"]
+
+        parts = shlex.split(execLine)
+        appImagePath = parts[0] if parts else ""
+
+        newExecLine = shlex.quote(appImagePath)
+        flagsStripped = newFlags.strip()
+        if flagsStripped:
+            newExecLine += " " + flagsStripped
+
+        config["Desktop Entry"]["Exec"] = newExecLine
+
+        with open(desktopFile, "w") as f:
+            config.write(f, space_around_delimiters=False)
+
 
 class AppConfigReader():
     @staticmethod
@@ -175,6 +203,7 @@ class AppConfigReader():
             appImageFileSize = None
             appIconPath = ""
             desktopFilePath = entry.path
+            categories = ""
 
             with open(entry.path, encoding="utf-8") as f:
                 for line in f:
@@ -202,6 +231,9 @@ class AppConfigReader():
                     elif key == "Icon":
                         appIconPath = value
 
+                    elif key == "Categories":
+                        categories = value
+
 # Size of the .AppImage file in bytes
                 if appImageFilePath:
                     appImageFileSize = Path(appImageFilePath).stat().st_size
@@ -215,7 +247,8 @@ class AppConfigReader():
                         fileSize=appImageFileSize,
                         iconFile=appIconPath,
                         desktopFile=desktopFilePath,
-                        launchFlagString=launchFlags
+                        launchFlagString=launchFlags,
+                        startMenuCategories=categories
                     )
                     appConfigs.append(appConfig)
                 
@@ -232,6 +265,7 @@ class AppsData():
     iconFile: str
     desktopFile: str
     launchFlagString: str
+    startMenuCategories: str
 
 
 class Uninstaller():    
@@ -242,7 +276,7 @@ class Uninstaller():
                 return file
 
     @staticmethod
-    def rmvInstalledFiles(filePath):
+    def rmvInstalledFile(filePath):
         if Path(filePath).exists(follow_symlinks=False):
             os.remove(filePath)
 
