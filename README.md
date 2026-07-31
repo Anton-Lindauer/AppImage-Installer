@@ -1,12 +1,25 @@
 # AppImage-Installer
 
+- [AppImage-Installer](#appimage-installer)
+  - [A GUI tool to easily install AppImage files on Linux](#a-gui-tool-to-easily-install-appimage-files-on-linux)
+  - [Requirements](#requirements)
+  - [How to install and launch the CLI or GUI version](#how-to-install-and-launch-the-cli-or-gui-version)
+  - [Have a look at the GUI version](#have-a-look-at-the-gui-version)
+    - [Selecting a file to install](#selecting-a-file-to-install)
+    - [Entering program info](#entering-program-info)
+    - [Managing AppImage programs](#managing-appimage-programs)
+    - [Uninstallation terminal](#uninstallation-terminal)
+  - [Other important notes](#other-important-notes)
+  - [Known issues](#known-issues)
+  - [Third Party Licences](#third-party-licences)
+
 ## A GUI tool to easily install AppImage files on Linux
 
 This project is **still in development**, but you can already do the following things: You can move the AppImage file to the right directory, make the file executable, make a symlink (to launch it from the terminal) and you can also create a desktop startmenu entry. You can choose between a GUI or a CLI to install your AppImages. The AppImages files are expected to be in your downloads directory.
 
 And if you don't want a AppImage program anymore, you can also uninstall the program now (only in the GUI version).
 
-The CLI version is no longer maintained and can only install AppImages and not uninstall them.
+**The CLI version is no longer maintained and can only install AppImages and not uninstall them.**
 
 ## Requirements
 
@@ -79,3 +92,7 @@ The divider lines in the boxes don't look the same because of how Qt renders the
 The ComboBox in the configure menu has a box around the drop down menu on Linux Mint. This is because of some Qt or Cinnamon default behavior when creating that element. I haven't found a fix yet and I'm not even sure if this is fixable.
 
 There is a random line under the text of a tab when using the KDE Plasma integration, I couldn't find a fix yet.
+
+## Third Party Licences
+
+[Third Party Licenses can be found here.](THIRD_PARTY_LICENSES.md)

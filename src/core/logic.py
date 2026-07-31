@@ -14,11 +14,9 @@ from datetime import datetime
 class Installer():
 # Put every AppImage file into a list
     @staticmethod
-    def listFiles(userDir):
-        downloadsDir = userDir / "Downloads"
-
+    def listAppImageFiles(dir: Path) -> list:
         fileList = [file.path 
-                    for file in os.scandir(downloadsDir) 
+                    for file in os.scandir(dir) 
                     if file.name.endswith(".AppImage") and file.is_file(follow_symlinks=False)]
 
         fileList.sort()
@@ -26,34 +24,34 @@ class Installer():
     
 # Get the content of the .desktop file in the AppImage to later create a startmenu entry    
     @staticmethod
-    def getAppImageMetadata(filePath):
+    def getAppImageMetadata(file: str | Path) -> dict:
         workDir = Path(tempfile.mkdtemp())
 
         try:
 # Extract the AppImage to a temporary directory
             subprocess.run(
-                [str(filePath), "--appimage-extract", "*.desktop"],
+                [str(file), "--appimage-extract", "*.desktop"],
                 cwd=workDir,
                 check=True,
                 capture_output=True
             )
 
-            squashfsRoot = workDir / "squashfs-root"
+            squashfsRootDir = workDir / "squashfs-root"
 
-            if not squashfsRoot.exists():
+            if not squashfsRootDir.exists():
                 raise RuntimeError("Extraction failed: squashfs-root not found")
             
 # AppImages contain a .desktop file with the same content as the .desktop file for the startmenu entry
-            desktopFiles = list(squashfsRoot.rglob("*.desktop"))
+            desktopFilePaths = list(squashfsRootDir.rglob("*.desktop"))
 
-            if not desktopFiles:
+            if not desktopFilePaths:
                 raise RuntimeError("No .desktop files found in AppImage")
 
-            desktopFile = desktopFiles[0]
+            desktopFilePath = desktopFilePaths[0]
 
             metadata = {}
 
-            with open(desktopFile, encoding="utf-8") as f:
+            with open(desktopFilePath, encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
 
@@ -75,46 +73,45 @@ class Installer():
     
 # Move the AppImage File to the right directory
     @staticmethod
-    def moveFile(selectedFilePath, fileDest):
-        Path(fileDest).mkdir(parents=True, exist_ok=True)
+    def moveFile(destDir: str | Path, file: str | Path) -> None:
+        Path(destDir).mkdir(parents=True, exist_ok=True)
 
-        shutil.move(selectedFilePath, fileDest)
+        shutil.move(file, destDir)
 
 # Make the AppImage file executable
     @staticmethod
-    def mkExec(path):
-        path = Path(path)
-
-        path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+    def mkExec(appImageFile: str | Path) -> None:
+        appImageFilePath = Path(appImageFile)
+        
+        appImageFilePath.chmod(appImageFilePath.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
 
 # Create a symLink file, to execute the .AppImage file with a terminal command systemwide on the user's account
     @staticmethod
-    def mkSymLink(selectedFilePath, cmdName, fileDest, symLinkDir):
-        path = fileDest / Path(selectedFilePath).name
-        symLinkPath = Path(symLinkDir) / cmdName
+    def mkSymLink(appImagesDir: Path, symLinkDir: Path, appImageFile: str | Path, cmdName: str) -> None:
+        newAppImageFilePath = appImagesDir / Path(appImageFile).name
+        symLinkFilePath = symLinkDir / cmdName
 
-        Path(symLinkDir).mkdir(parents=True, exist_ok=True)
+        symLinkDir.mkdir(parents=True, exist_ok=True)
 
-        symLinkPath.symlink_to(path)
+        symLinkFilePath.symlink_to(newAppImageFilePath)
 
 
 class StartMenuEntry():
     @staticmethod
-    def create(selectedFilePath, appImagesDir, userDir, programName, programDescription, programCategory, icon):
-        fileName = Path(selectedFilePath).name
-        iconsDir = userDir / ".local/share/icons"
-        applicationsDir = userDir / ".local/share/applications"
+    def create(userDir: Path, appImagesDir: str | Path, desktopEntriesDir: Path, iconsDir: Path, appImageFile: str | Path, icon: str | Path | bool, programName: str , programDescription: str, programCategories: str) -> None:
+        fileName = Path(appImageFile).name
 
         iconsDir.mkdir(parents=True, exist_ok=True)
-        applicationsDir.mkdir(parents=True, exist_ok=True)
+        desktopEntriesDir.mkdir(parents=True, exist_ok=True)
 
+# Only extract the icon if the user selected it or if there is no icon
         if not icon:
 
             workDir = Path(tempfile.mkdtemp())
 
 # Extract the icon.png to a temporary squashfs directory
             subprocess.run(
-                [str(userDir / "AppImages" / fileName), "--appimage-extract", "*.png"],
+                [str(appImagesDir / fileName), "--appimage-extract", "*.png"],
                 cwd=workDir,
                 check=True,
                 capture_output=True,
@@ -156,10 +153,10 @@ class StartMenuEntry():
             f'Exec="{appImagesDir}/{fileName}"',
             f"Icon={userDir}/.local/share/icons/{programIcon}",
             "Terminal=false",
-            f"Categories={programCategory}",
+            f"Categories={programCategories}",
         ])
 
-        desktopEntryFile = applicationsDir / f"{programName}.desktop"
+        desktopEntryFile = desktopEntriesDir / f"{programName}.desktop"
         desktopEntryFile.write_text(desktopFile)
 
 # Make the .desktop file executable
@@ -190,10 +187,10 @@ class StartMenuEntry():
 
 class AppConfigReader():
     @staticmethod
-    def getAppsMetadata(desktopPath) -> list[AppsData]:
+    def getAppsMetadata(desktopEntriesDir: Path) -> list[AppsData]:
         appConfigs = []
 
-        for entry in os.scandir(desktopPath):
+        for entry in os.scandir(desktopEntriesDir):
             if not (entry.is_file(follow_symlinks=False) and entry.name.endswith(".desktop")):
                 continue
 
@@ -270,24 +267,25 @@ class AppsData():
 
 class Uninstaller():    
     @staticmethod
-    def getSymlinkPath(appPath, symLinkDir):
+    def getSymlinkPath(symLinkDir: Path, appImageFile: str | Path) -> Path:
         for file in symLinkDir.iterdir():
-            if file.is_symlink() and str(file.resolve()) == str(appPath):
+            if file.is_symlink() and str(file.resolve()) == str(appImageFile):
                 return file
 
     @staticmethod
-    def rmvInstalledFile(filePath):
+    def rmvInstalledFile(filePath: str | Path) -> None:
         if Path(filePath).exists(follow_symlinks=False):
             os.remove(filePath)
 
 
 class Logging():
 
-    def __init__(self):
-        self.logDir = Path.home() / ".local" / "share" / "AppImage-Installer" / "logs"
-        self.logDir.mkdir(parents=True, exist_ok=True)
+    def __init__(self, logsDir: Path) -> None:
+        self.logsDir = logsDir
+
+        self.logsDir.mkdir(parents=True, exist_ok=True)
         currentDate = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        self.logFilePath = self.logDir / (currentDate + "Log.txt")
+        self.logFilePath = self.logsDir / (currentDate + "Log.txt")
 
         with open(self.logFilePath, "a") as f:
             f.write("These log files are only there to store an error message if one occurs.\n")
@@ -306,7 +304,7 @@ class Logging():
                 f.write("******************************************************************\n")
 
 # Logs custom messages
-    def addGeneralEntry(self, logContent):
+    def addGeneralEntry(self, logContent: str):
         with open(self.logFilePath, "a") as f:
                 f.write(str(logContent) + "\n")
                 f.write("******************************************************************\n")
@@ -314,6 +312,6 @@ class Logging():
 # Delete old log files after seven days
     def rmvOldLogs(self):
         timeNow = datetime.now()
-        for log in self.logDir.iterdir():
+        for log in self.logsDir.iterdir():
             if (timeNow - datetime.fromtimestamp(log.stat().st_mtime)).days > 7:
                 log.unlink()

@@ -1,5 +1,19 @@
 # Installation guide
 
+- [Installation guide](#installation-guide)
+  - [For every distro](#for-every-distro)
+    - [General installation and setup](#general-installation-and-setup)
+    - [Startmenu entry for AppImage-Installer](#startmenu-entry-for-appimage-installer)
+  - [For every distro with KDE Plasma](#for-every-distro-with-kde-plasma)
+    - [For Debian based distros](#for-debian-based-distros)
+    - [For Arch based distros](#for-arch-based-distros)
+    - [For other distros](#for-other-distros)
+    - [IF IT DOESN'T WORK](#if-it-doesnt-work)
+    - [Dolphin integration](#dolphin-integration)
+  - [For every distro with Cinnamon](#for-every-distro-with-cinnamon)
+    - [Nemo integration](#nemo-integration)
+  - [For other desktop environments/filemanager](#for-other-desktop-environmentsfilemanager)
+
 This guide contains a general guide on how to get AppImage-Installer running, but also how to use the KDE Plasma theme for it, if you use KDE Plasma.
 
 Lastly it also contains a guide on how to make a right click menu shortcut to install AppImages for Dolphin and Nemo; I can't write a guide for every filemanager, so you will have to figure it out on your own how to do it (with AI), if you want that.

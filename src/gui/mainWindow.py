@@ -22,14 +22,17 @@ class MainWindow(QMainWindow):
         self.selectedAppImage = selectedAppImage
     
         self.userDir = Path.home()
+        self.downloadsDir = self.userDir / "Downloads"
         self.appImagesDir = self.userDir / "AppImages"
         self.symLinkDir = self.userDir / ".local" / "bin"
+        self.iconsDir = self.userDir / ".local" / "share" / "icons"
         self.desktopEntriesDir = self.userDir / ".local" / "share" / "applications"
+        self.logsDir = self.userDir / ".local" / "share" / "AppImage-Installer" / "logs"
 
         self.menuBarUtils = MenuBarUtils()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
-        self.logger = Logging()
+        self.logger = Logging(self.logsDir)
 
         self.tab1Page1FileSelector = InstallFileSelector()
 
@@ -256,7 +259,7 @@ class MainWindow(QMainWindow):
             self.tab1Page1FileSelector.openFileDialog(self)
 
     def filesWorker(self):
-        self.filesThread = AppImageListThread(self.logger, self.userDir)
+        self.filesThread = AppImageListThread(self.logger, self.downloadsDir)
 
         self.filesThread.finished.connect(self.populateFileSelection)
         self.filesThread.error.connect(self.workerError)
@@ -493,7 +496,7 @@ class MainWindow(QMainWindow):
             self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.installThread = InstallThread(self.logger, self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.symLinkDir)
+        self.installThread = InstallThread(self.logger, self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.symLinkDir, self.desktopEntriesDir, self.iconsDir)
 
 # Process status updates from the installation function
         self.installThread.progressUpdate.connect(self.installWorkerProgress)
@@ -833,7 +836,7 @@ class MainWindow(QMainWindow):
         else:
             icon = False
 
-        self.updateConfigThread = UpdateAppConfigThread(self.logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImage, self.symLinkDir, self.appImagesDir, self.userDir, startMenuCategories, self.desktopEntriesDir, icon)
+        self.updateConfigThread = UpdateAppConfigThread(self.logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImage, self.symLinkDir, self.appImagesDir, self.userDir, startMenuCategories, self.desktopEntriesDir, icon, self.iconsDir)
 
         self.updateConfigThread.error.connect(self.workerError)
         self.updateConfigThread.finished.connect(self.finishedConfigUpdate)

@@ -13,15 +13,15 @@ class AppImageListThread(QThread):
     error = Signal(str)
     finished = Signal(list)
 
-    def __init__(self, logger, userDir):
+    def __init__(self, logger, downloadsDir):
         super().__init__()
 
         self.logger = logger
-        self.userDir = userDir
+        self.downloadsDir = downloadsDir
 
     def run(self):
         try:
-            appImages = Installer.listFiles(self.userDir)
+            appImages = Installer.listAppImageFiles(self.downloadsDir)
             self.logger.addGeneralEntry(appImages)
 
             self.finished.emit(appImages)
@@ -40,14 +40,14 @@ class MetadataThread(QThread):
         super().__init__()
 
         self.logger = logger
-        self.appImagePath = path
+        self.appImageFile = path
 
     def run(self):
         try:
-            Installer.mkExec(self.appImagePath)
-            self.logger.addGeneralEntry(f"Made {self.appImagePath} executable")
+            Installer.mkExec(self.appImageFile)
+            self.logger.addGeneralEntry(f"Made {self.appImageFile} executable")
 
-            metadata = Installer.getAppImageMetadata(self.appImagePath)
+            metadata = Installer.getAppImageMetadata(self.appImageFile)
             self.logger.addGeneralEntry(f"Extracted \n{metadata}")
             self.finished.emit(metadata)
 
@@ -62,33 +62,38 @@ class InstallThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, selectedFilePath, appImagesDir, userDir, programName,programDescr, programCategory, cmdName, symLinkDir):
+    def __init__(self, logger, appImageFile, appImagesDir, userDir, programName,programDescription, programCategories, cmdName, symLinkDir, desktopEntriesDir, iconsDir):
         super().__init__()
 
         self.logger = logger
 
-        self.selectedFilePath = selectedFilePath
+        self.appImageFile = appImageFile
         self.appImagesDir = appImagesDir     
         self.userDir = userDir
         self.programName = programName
-        self.programDescription = programDescr
-        self.programCategory = programCategory
+        self.programDescription = programDescription
+        self.programCategories = programCategories
         self.cmdName = cmdName
         self.symLinkDir = symLinkDir
         self.icon = False
+        self.desktopEntriesDir = desktopEntriesDir
+        self.iconsDir = iconsDir
+
+        self.newAppImageFilePath = appImagesDir / Path(self.appImageFile).name
+        self.symLinkFilePath = self.symLinkDir / self.cmdName
 
 # All installation steps with progress updates
     def run(self):
         try:
-            Installer.moveFile(self.selectedFilePath, self.appImagesDir)
-            self.logger.addGeneralEntry(f"Moved {self.selectedFilePath} to {self.appImagesDir}")
+            Installer.moveFile(self.appImagesDir, self.appImageFile)
+            self.logger.addGeneralEntry(f"Moved {self.appImageFile} to {self.appImagesDir}")
             self.progressUpdate.emit(self.tr("Moved AppImage file (1/3 tasks finished)"))
 
-            Installer.mkSymLink(self.selectedFilePath, self.cmdName, self.appImagesDir, self.symLinkDir)
+            Installer.mkSymLink(self.appImagesDir, self.symLinkDir, self.appImageFile, self.cmdName)
             self.logger.addGeneralEntry(f"Created symlink {self.cmdName} in {self.symLinkDir}")
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))
 
-            StartMenuEntry.create(self.selectedFilePath, self.appImagesDir, self.userDir, self.programName, self.programDescription, self.programCategory, self.icon)
+            StartMenuEntry.create(self.userDir, self.appImagesDir, self.desktopEntriesDir, self.iconsDir, self.appImageFile, self.icon, self.programName, self.programDescription, self.programCategories)
             self.logger.addGeneralEntry(f"Created startmenu entry for {self.programName}")
             self.progressUpdate.emit(self.tr("Startmenu entry has been created (3/3 tasks finished)"))
 
@@ -120,10 +125,10 @@ class AppConfigsThread(QThread):
 
     def run(self):
         try:
-            appConfigsList = AppConfigReader.getAppsMetadata(self.desktopEntriesDir)
-            self.logger.addGeneralEntry(f"Data 2: {appConfigsList}")
+            appConfigs = AppConfigReader.getAppsMetadata(self.desktopEntriesDir)
+            self.logger.addGeneralEntry(f"Extracted AppImage apps configs: \n{appConfigs}")
 
-            self.finished.emit(appConfigsList)
+            self.finished.emit(appConfigs)
 
         except Exception as error:
             print(error)
@@ -136,28 +141,28 @@ class UninstallThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, selectedAppPath, symLinkDir, desktopFilePath, ):
+    def __init__(self, logger, appImageFile, symLinkDir, desktopFile, ):
         super().__init__()
 
         self.logger = logger
-        self.selectedAppPath = selectedAppPath
+        self.appImageFile = appImageFile
         self.symLinkDir = symLinkDir
-        self.desktopFilePath = desktopFilePath
+        self.desktopFile = desktopFile
 
     def run(self):
         try:
-            symLinkFilePath = Uninstaller.getSymlinkPath(self.selectedAppPath, self.symLinkDir)
+            symLinkFilePath = Uninstaller.getSymlinkPath(self.symLinkDir, self.appImageFile)
 
             Uninstaller.rmvInstalledFile(symLinkFilePath)
             self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
             self.progressUpdate.emit(self.tr("Removed symlink"))
 
-            Uninstaller.rmvInstalledFile(self.desktopFilePath)
-            self.logger.addGeneralEntry(f"Permanently removed {self.desktopFilePath}")
+            Uninstaller.rmvInstalledFile(self.desktopFile)
+            self.logger.addGeneralEntry(f"Permanently removed {self.desktopFile}")
             self.progressUpdate.emit(self.tr("Removed startmenu entry"))
 
-            Uninstaller.rmvInstalledFile(self.selectedAppPath)
-            self.logger.addGeneralEntry(f"Permanently removed {self.selectedAppPath}")
+            Uninstaller.rmvInstalledFile(self.appImageFile)
+            self.logger.addGeneralEntry(f"Permanently removed {self.appImageFile}")
             self.progressUpdate.emit(self.tr("Removed AppImage file"))
 
             self.progressUpdate.emit(self.tr("Uninstallation finished"))
@@ -175,7 +180,7 @@ class UpdateAppConfigThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImage, symLinkDir, appImagesDir, userDir, categories, desktopEntriesDir, icon):
+    def __init__(self, logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImageFile, symLinkDir, appImagesDir, userDir, categories, desktopEntriesDir, icon, iconsDir):
         super().__init__()
 
         self.logger = logger
@@ -184,19 +189,21 @@ class UpdateAppConfigThread(QThread):
         self.newLaunchConfig = newLaunchConfig
         self.newAppImageFile = newAppImageFile
         self.oldDesktopFile = oldDesktopFile
-        self.oldAppImage = oldAppImage
+        self.oldAppImage = oldAppImageFile
         self.symLinkDir = symLinkDir
         self.appImagesDir = appImagesDir
         self.userDir = userDir
         self.categories = categories
         self.desktopEntriesDir = desktopEntriesDir
         self.icon = icon
+        self.desktopEntriesDir = desktopEntriesDir
+        self.iconsDir = iconsDir
         self.newAppImageFilePath = self.appImagesDir / Path(self.newAppImageFile).name
 
     def run(self):
         try:
             if self.newAppImageFile:
-                symLinkFilePath = Uninstaller.getSymlinkPath(self.oldAppImage, self.symLinkDir)
+                symLinkFilePath = Uninstaller.getSymlinkPath(self.symLinkDir, self.oldAppImage)
                 cmdName = Path(symLinkFilePath).name
 
                 self.newDesktopFile = self.desktopEntriesDir / f"{self.newAppName}.desktop"
@@ -219,17 +226,17 @@ class UpdateAppConfigThread(QThread):
                 Installer.mkExec(self.newAppImageFile)
                 self.logger.addGeneralEntry(f"Made {self.newAppImageFile} executable")
             
-                Installer.moveFile(self.newAppImageFile, self.appImagesDir)
+                Installer.moveFile(self.appImagesDir, self.newAppImageFile)
                 self.logger.addGeneralEntry(f"Moved {self.newAppImageFile} to {self.appImagesDir}")
 
-                Installer.mkSymLink(self.newAppImageFile, cmdName, self.appImagesDir, self.symLinkDir)
+                Installer.mkSymLink(self.appImagesDir, self.symLinkDir, self.newAppImageFile, cmdName)
                 self.logger.addGeneralEntry(f"Created symlink {cmdName} in {self.symLinkDir}")
 
             if self.newAppImageFile:
-                StartMenuEntry.create(self.newAppImageFilePath, self.appImagesDir, self.userDir, self.newAppName, self.newAppDescription, self.categories, self.icon)
+                StartMenuEntry.create(self.userDir, self.appImagesDir, self.desktopEntriesDir, self.iconsDir, self.newAppImageFilePath, self.icon, self.newAppName, self.newAppDescription, self.categories)
                 self.logger.addGeneralEntry(f"Created startmenu entry for {self.newAppName}")
             else:
-                StartMenuEntry.create(self.oldAppImage, self.appImagesDir, self.userDir, self.newAppName, self.newAppDescription, self.categories, self.icon)
+                StartMenuEntry.create(self.userDir, self.appImagesDir, self.desktopEntriesDir, self.iconsDir, self.oldAppImage, self.icon, self.newAppName, self.newAppDescription, self.categories)
                 self.logger.addGeneralEntry(f"Created startmenu entry for {self.newAppName}")
 
             if self.newDesktopFile:
