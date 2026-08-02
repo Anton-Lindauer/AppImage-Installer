@@ -1,5 +1,8 @@
 # This file provides the Python functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
+# Adds support for Python 3.12
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess

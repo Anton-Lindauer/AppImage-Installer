@@ -496,7 +496,7 @@ class MainWindow(QMainWindow):
             self.logger.rmvOldLogs()
 
 # Function that installs the program
-        self.installThread = InstallThread(self.logger, self.selectedAppImagePath, self.appImagesDir, self.userDir, self.programName,self.programDescription, self.programCategory, self.cmdName, self.symLinkDir, self.desktopEntriesDir, self.iconsDir)
+        self.installThread = InstallThread(self.logger, self.userDir, self.appImagesDir, self.symLinkDir, self.desktopEntriesDir, self.iconsDir, self.selectedAppImagePath, self.programName,self.programDescription, self.programCategory, self.cmdName)
 
 # Process status updates from the installation function
         self.installThread.progressUpdate.connect(self.installWorkerProgress)
@@ -836,7 +836,7 @@ class MainWindow(QMainWindow):
         else:
             icon = False
 
-        self.updateConfigThread = UpdateAppConfigThread(self.logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImage, self.symLinkDir, self.appImagesDir, self.userDir, startMenuCategories, self.desktopEntriesDir, icon, self.iconsDir)
+        self.updateConfigThread = UpdateAppConfigThread(self.logger, self.userDir, self.appImagesDir, self.symLinkDir, self.desktopEntriesDir, self.iconsDir, newAppImageFile, oldAppImage, oldDesktopFile, newAppName, newAppDescription, newLaunchConfig, startMenuCategories, icon)
 
         self.updateConfigThread.error.connect(self.workerError)
         self.updateConfigThread.finished.connect(self.finishedConfigUpdate)
@@ -906,7 +906,7 @@ class MainWindow(QMainWindow):
         self.tab2Page2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2Page2TerminalUpdateMsg.show()
 
-        self.uninstallThread = UninstallThread(self.logger, self.selectedAppPath, self.symLinkDir, self.desktopFilePath)
+        self.uninstallThread = UninstallThread(self.logger, self.symLinkDir, self.selectedAppPath, self.desktopFilePath)
 
         self.uninstallThread.progressUpdate.connect(self.uninstallWorkerProgress)
         self.uninstallThread.finished.connect(self.uninstallWorkerFinished)

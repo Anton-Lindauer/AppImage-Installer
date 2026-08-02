@@ -13,10 +13,11 @@ class AppImageListThread(QThread):
     error = Signal(str)
     finished = Signal(list)
 
-    def __init__(self, logger, downloadsDir):
+    def __init__(self, logger, downloadsDir: Path) -> list:
         super().__init__()
 
         self.logger = logger
+        
         self.downloadsDir = downloadsDir
 
     def run(self):
@@ -36,10 +37,11 @@ class MetadataThread(QThread):
     error = Signal(str)
     finished = Signal(dict)
 
-    def __init__(self, logger, path):
+    def __init__(self, logger, path: str | Path) -> list:
         super().__init__()
 
         self.logger = logger
+
         self.appImageFile = path
 
     def run(self):
@@ -62,22 +64,22 @@ class InstallThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, appImageFile, appImagesDir, userDir, programName,programDescription, programCategories, cmdName, symLinkDir, desktopEntriesDir, iconsDir):
+    def __init__(self, logger, userDir: Path, appImagesDir: Path, symLinkDir: Path, desktopEntriesDir: Path, iconsDir: Path, appImageFile: str, programName: str, programDescription: str, programCategories: str, cmdName: str) -> str:
         super().__init__()
 
         self.logger = logger
 
-        self.appImageFile = appImageFile
-        self.appImagesDir = appImagesDir     
         self.userDir = userDir
+        self.appImagesDir = appImagesDir
+        self.symLinkDir = symLinkDir
+        self.desktopEntriesDir = desktopEntriesDir
+        self.iconsDir = iconsDir
+        self.appImageFile = appImageFile
         self.programName = programName
         self.programDescription = programDescription
         self.programCategories = programCategories
         self.cmdName = cmdName
-        self.symLinkDir = symLinkDir
         self.icon = False
-        self.desktopEntriesDir = desktopEntriesDir
-        self.iconsDir = iconsDir
 
         self.newAppImageFilePath = appImagesDir / Path(self.appImageFile).name
         self.symLinkFilePath = self.symLinkDir / self.cmdName
@@ -117,10 +119,11 @@ class AppConfigsThread(QThread):
     error = Signal(str)
     finished = Signal(list)
 
-    def __init__(self, logger, desktopEntriesDir):
+    def __init__(self, logger, desktopEntriesDir: Path) -> list:
         super().__init__()
 
         self.logger = logger
+
         self.desktopEntriesDir = desktopEntriesDir
 
     def run(self):
@@ -141,12 +144,13 @@ class UninstallThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, appImageFile, symLinkDir, desktopFile, ):
+    def __init__(self, logger, symLinkDir, appImageFile, desktopFile) -> str:
         super().__init__()
 
         self.logger = logger
-        self.appImageFile = appImageFile
+
         self.symLinkDir = symLinkDir
+        self.appImageFile = appImageFile
         self.desktopFile = desktopFile
 
     def run(self):
@@ -180,24 +184,25 @@ class UpdateAppConfigThread(QThread):
     error = Signal(str)
     finished = Signal()
 
-    def __init__(self, logger, newAppName, newAppDescription, newLaunchConfig, newAppImageFile, oldDesktopFile, oldAppImageFile, symLinkDir, appImagesDir, userDir, categories, desktopEntriesDir, icon, iconsDir):
+    def __init__(self, logger, userDir, appImagesDir, symLinkDir, desktopEntriesDir, iconsDir, newAppImageFile, oldAppImageFile, oldDesktopFile, newAppName, newAppDescription, newLaunchConfig, categories, icon):
         super().__init__()
 
         self.logger = logger
+
+        self.userDir = userDir
+        self.appImagesDir = appImagesDir
+        self.symLinkDir = symLinkDir
+        self.desktopEntriesDir = desktopEntriesDir
+        self.iconsDir = iconsDir
+        self.newAppImageFile = newAppImageFile
+        self.oldAppImage = oldAppImageFile
+        self.oldDesktopFile = oldDesktopFile
         self.newAppName = newAppName
         self.newAppDescription = newAppDescription
         self.newLaunchConfig = newLaunchConfig
-        self.newAppImageFile = newAppImageFile
-        self.oldDesktopFile = oldDesktopFile
-        self.oldAppImage = oldAppImageFile
-        self.symLinkDir = symLinkDir
-        self.appImagesDir = appImagesDir
-        self.userDir = userDir
         self.categories = categories
-        self.desktopEntriesDir = desktopEntriesDir
         self.icon = icon
-        self.desktopEntriesDir = desktopEntriesDir
-        self.iconsDir = iconsDir
+
         self.newAppImageFilePath = self.appImagesDir / Path(self.newAppImageFile).name
 
     def run(self):

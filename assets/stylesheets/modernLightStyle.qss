@@ -50,7 +50,7 @@ QMenu::item:selected {
 
 QMenu::separator {
     background-color: #cdd0d5;
-    height: 2px;
+    height: 1px;
 }
 
 QTabWidget {
