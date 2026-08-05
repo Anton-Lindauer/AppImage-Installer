@@ -1,4 +1,6 @@
 # Execute this file to launch the GUI version
+import faulthandler
+faulthandler.enable()
 
 import sys
 import os
@@ -7,7 +9,6 @@ from pathlib import Path
 # KDE integration is necessary, because KDE also uses Qt and can mess with QSS stylesheets
 desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
 if desktopEnv == "KDE":
-    print("KDE Plasma integration will be used")
     os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
 
 # Accept a file path from the right click menu in the file manager

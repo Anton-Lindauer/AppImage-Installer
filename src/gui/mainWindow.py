@@ -261,7 +261,8 @@ class MainWindow(QMainWindow):
     def filesWorker(self):
         self.filesThread = AppImageListThread(self.logger, self.downloadsDir)
 
-        self.filesThread.finished.connect(self.populateFileSelection)
+        self.filesThread.result.connect(self.populateFileSelection)
+        self.filesThread.finished.connect(self.filesThread.deleteLater)
         self.filesThread.error.connect(self.workerError)
 
         self.filesThread.start()
@@ -407,7 +408,8 @@ class MainWindow(QMainWindow):
 
         self.metadataThread = MetadataThread(self.logger, self.selectedAppImagePath)
 
-        self.metadataThread.finished.connect(self.metadataLoader)
+        self.metadataThread.finished.connect(self.metadataThread.deleteLater)
+        self.metadataThread.result.connect(self.metadataLoader)
         self.metadataThread.error.connect(self.workerError)
 
         self.metadataThread.start()
@@ -536,11 +538,9 @@ class MainWindow(QMainWindow):
         self.tab1Page3StartInstallBtn.setEnabled(True)
         self.tab1Page3BackBtn.setEnabled(True)
 
-        print("before")
+        self.installThread.deleteLater
 
         self.tab2Page1Worker()
-
-        print("after")
 
 
     def createTab1Page4(self):
@@ -583,7 +583,7 @@ class MainWindow(QMainWindow):
 
         self.tab1StackedWidget.setCurrentIndex(currentIndex)
 
-        self.populateProgramSelection(self.appConfigs)
+        self.tab2Page1Worker()
 
 
 
@@ -622,10 +622,11 @@ class MainWindow(QMainWindow):
     
 # The dynamicly generated part, the list of installed AppImage programs
     def populateProgramSelection(self, appConfigs):
+        self.appConfigsThread.deleteLater()
+
         self.clearLayout(self.tab2Page1ContainerLayout)
 
         self.appConfigs = appConfigs
-        print("appConfigList")
         installedAppCount = len(self.appConfigs)
 
 # Create a tile for each file
@@ -686,17 +687,11 @@ class MainWindow(QMainWindow):
         self.tab2Page1ContainerScrollArea.setFixedHeight(min(installedAppCount, 6) * 70)
 
     def tab2Page1Worker(self):
-# Hotfix for this QThread not beeing ended properly for some unknown reason
-        if hasattr(self, "appConfigsThread") and self.appConfigsThread.isRunning():
-            self.appConfigsThread.quit()
-            self.appConfigsThread.wait()
-
         self.appConfigsThread = AppConfigsThread(self.logger, self.desktopEntriesDir)
 
-        print("tab2Page1Worker")
-
-        self.appConfigsThread.finished.connect(self.populateProgramSelection)
-        self.appConfigsThread.error.connect(self.workerError)      
+        self.appConfigsThread.result.connect(self.populateProgramSelection)
+        self.appConfigsThread.error.connect(self.workerError)
+        self.appConfigsThread.finished.connect(self.appConfigsThread.deleteLater)    
 
         self.appConfigsThread.start()
 
@@ -819,7 +814,7 @@ class MainWindow(QMainWindow):
 
                 self.appConfigDialog.exec()
 
-    def configWindowWorker(self, desktopFile, categories, iconPath):
+    def configWindowWorker(self, desktopFile: str, categories: str, iconPath: str | Path):
         self.saveChangesBtn.setEnabled(False)
         self.discardChangesBtn.setEnabled(False)
 
@@ -830,6 +825,12 @@ class MainWindow(QMainWindow):
         oldDesktopFile = desktopFile
         oldAppImage = self.filePathLabel.text()
         startMenuCategories = categories
+
+        if newAppName == "":
+            self.saveChangesBtn.setEnabled(True)
+            self.discardChangesBtn.setEnabled(True)
+            return
+
 
         if not self.refreshIconCheckBox.isChecked():
             icon = iconPath
@@ -844,6 +845,8 @@ class MainWindow(QMainWindow):
         self.updateConfigThread.start()
 
     def finishedConfigUpdate(self):
+        self.updateConfigThread.deleteLater
+
         self.tab2Page1Worker()
 
         self.appConfigDialog.close()
@@ -933,6 +936,8 @@ class MainWindow(QMainWindow):
         self.tab2Page2TerminalUpdateMsg.setText("")
         self.tab2Page2StartUninstallBtn.setEnabled(True)
         self.tab2Page2BackBtn.setEnabled(True)
+
+        self.uninstallThread.deleteLater
     
 
 

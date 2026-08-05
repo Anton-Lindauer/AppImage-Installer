@@ -3,6 +3,9 @@
 # Adds support for Python 3.12
 from __future__ import annotations
 
+import faulthandler
+faulthandler.enable()
+
 import os
 import shutil
 import subprocess
@@ -141,11 +144,9 @@ class StartMenuEntry():
                 shutil.move(iconFile, iconsDir)
         
             shutil.rmtree(workDir, ignore_errors=True)
-            print("new app icon")
 
         else:
             programIcon = Path(icon).name
-            print("old app icon")
 
 # .desktop file content
         desktopFile = "\n".join([
@@ -239,7 +240,7 @@ class AppConfigReader():
                     appImageFileSize = Path(appImageFilePath).stat().st_size
 
 # Filter out incomplete or not AppImage installs
-                if appName and appDescription and appImageFilePath and appImageFileSize:
+                if appImageFilePath:
                     appConfig = AppsData(
                         name=appName,
                         description=appDescription,

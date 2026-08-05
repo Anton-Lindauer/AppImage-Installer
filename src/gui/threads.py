@@ -1,4 +1,6 @@
 # This file contains QThreads; processes that run in parallel to the GUI. This script is not suppossed to be run alone. 
+import faulthandler
+faulthandler.enable()
 
 from PySide6.QtCore import QThread, Signal
 
@@ -11,7 +13,7 @@ from pathlib import Path
 # Returns a list of all AppImage file paths in the Downloads directory
 class AppImageListThread(QThread):
     error = Signal(str)
-    finished = Signal(list)
+    result = Signal(list)
 
     def __init__(self, logger, downloadsDir: Path) -> list:
         super().__init__()
@@ -25,7 +27,7 @@ class AppImageListThread(QThread):
             appImages = Installer.listAppImageFiles(self.downloadsDir)
             self.logger.addGeneralEntry(appImages)
 
-            self.finished.emit(appImages)
+            self.result.emit(appImages)
         except Exception as error:
             print(error)
 
@@ -33,9 +35,8 @@ class AppImageListThread(QThread):
 
 # Extracts the metadata of the selected AppImage file; the metadata is inside a .desktop file in the AppImage file
 class MetadataThread(QThread):
-    progressUpdate = Signal(str)
+    result = Signal(dict)
     error = Signal(str)
-    finished = Signal(dict)
 
     def __init__(self, logger, path: str | Path) -> list:
         super().__init__()
@@ -51,7 +52,8 @@ class MetadataThread(QThread):
 
             metadata = Installer.getAppImageMetadata(self.appImageFile)
             self.logger.addGeneralEntry(f"Extracted \n{metadata}")
-            self.finished.emit(metadata)
+
+            self.result.emit(metadata)
 
         except Exception as error:
             print(error)
@@ -62,7 +64,6 @@ class MetadataThread(QThread):
 class InstallThread(QThread):
     progressUpdate = Signal(str)
     error = Signal(str)
-    finished = Signal()
 
     def __init__(self, logger, userDir: Path, appImagesDir: Path, symLinkDir: Path, desktopEntriesDir: Path, iconsDir: Path, appImageFile: str, programName: str, programDescription: str, programCategories: str, cmdName: str) -> str:
         super().__init__()
@@ -104,8 +105,6 @@ class InstallThread(QThread):
 # Wait 1s to let the user see that everything has been completed
             time.sleep(1)
 
-            self.finished.emit()
-
         except Exception as error:
             print(error)
 
@@ -117,7 +116,7 @@ class InstallThread(QThread):
 # Extract the metadata from all installed AppImage programs; Metadata is stored in the .desktop file that is used as startmenu entry
 class AppConfigsThread(QThread):
     error = Signal(str)
-    finished = Signal(list)
+    result = Signal(list)
 
     def __init__(self, logger, desktopEntriesDir: Path) -> list:
         super().__init__()
@@ -131,7 +130,7 @@ class AppConfigsThread(QThread):
             appConfigs = AppConfigReader.getAppsMetadata(self.desktopEntriesDir)
             self.logger.addGeneralEntry(f"Extracted AppImage apps configs: \n{appConfigs}")
 
-            self.finished.emit(appConfigs)
+            self.result.emit(appConfigs)
 
         except Exception as error:
             print(error)
@@ -142,9 +141,8 @@ class AppConfigsThread(QThread):
 class UninstallThread(QThread):
     progressUpdate = Signal(str)
     error = Signal(str)
-    finished = Signal()
 
-    def __init__(self, logger, symLinkDir, appImageFile, desktopFile) -> str:
+    def __init__(self, logger, symLinkDir: Path, appImageFile: str | Path, desktopFile: str | Path) -> str:
         super().__init__()
 
         self.logger = logger
@@ -173,8 +171,6 @@ class UninstallThread(QThread):
 
             time.sleep(1)
 
-            self.finished.emit()
-
         except Exception as error:
             print(error)
 
@@ -182,9 +178,8 @@ class UninstallThread(QThread):
 
 class UpdateAppConfigThread(QThread):
     error = Signal(str)
-    finished = Signal()
 
-    def __init__(self, logger, userDir, appImagesDir, symLinkDir, desktopEntriesDir, iconsDir, newAppImageFile, oldAppImageFile, oldDesktopFile, newAppName, newAppDescription, newLaunchConfig, categories, icon):
+    def __init__(self, logger, userDir: Path, appImagesDir: Path, symLinkDir: Path, desktopEntriesDir: Path, iconsDir: Path, newAppImageFile: str, oldAppImageFile: str, oldDesktopFile: str, newAppName: str, newAppDescription: str, newLaunchConfig: str, categories: str, icon: str | bool):
         super().__init__()
 
         self.logger = logger
@@ -211,11 +206,10 @@ class UpdateAppConfigThread(QThread):
                 symLinkFilePath = Uninstaller.getSymlinkPath(self.symLinkDir, self.oldAppImage)
                 cmdName = Path(symLinkFilePath).name
 
-                self.newDesktopFile = self.desktopEntriesDir / f"{self.newAppName}.desktop"
-
             else:
                 self.newAppImageFile = False
-                self.newDesktopFile = False
+
+            self.newDesktopFile = self.desktopEntriesDir / f"{self.newAppName}.desktop"
 
             if self.newAppImageFile:
                 Uninstaller.rmvInstalledFile(self.oldAppImage)
@@ -250,8 +244,7 @@ class UpdateAppConfigThread(QThread):
             else:
                 StartMenuEntry.updateLaunchFlags(self.oldDesktopFile, self.newLaunchConfig)
                 self.logger.addGeneralEntry(f"Updated {Path(self.oldDesktopFile).name} launch flags to {self.newLaunchConfig}")
-            
-            self.finished.emit()
+
         except Exception as error:
             print(error)
 
