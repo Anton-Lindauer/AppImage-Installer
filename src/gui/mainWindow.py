@@ -702,6 +702,7 @@ class MainWindow(QMainWindow):
                 self.selectedAppPath = app.filePath
                 self.desktopFilePath = app.desktopFile
                 self.selectedAppName = app.name
+                self.iconFile = app.iconFile
 
     def appConfigWindow(self, appsConfigs, name):
         self.appConfigDialog = QDialog()
@@ -888,6 +889,9 @@ class MainWindow(QMainWindow):
         terminalLayout.addWidget(self.tab2Page2TerminalUpdateMsg)
         terminalLayout.addStretch()
 
+        self.rmvIconCheckBox = QCheckBox(self.tr("Remove icon"))
+        self.rmvIconCheckBox.setChecked(True)
+
         self.tab2Page2StartUninstallBtn = QPushButton(self.tr("Start uninstallation"))
         self.tab2Page2StartUninstallBtn.clicked.connect(self.tab2Page2Worker)
 
@@ -896,6 +900,7 @@ class MainWindow(QMainWindow):
 
         mainLayout.addWidget(pageTitle)
         mainLayout.addWidget(terminalGroupBox)
+        mainLayout.addWidget(self.rmvIconCheckBox)
         mainLayout.addWidget(self.tab2Page2StartUninstallBtn)
         mainLayout.addWidget(self.tab2Page2BackBtn)
         mainLayout.addStretch()
@@ -909,7 +914,12 @@ class MainWindow(QMainWindow):
         self.tab2Page2TerminalUpdateMsg.setText(self.tr("Uninstallation in process..."))
         self.tab2Page2TerminalUpdateMsg.show()
 
-        self.uninstallThread = UninstallThread(self.logger, self.symLinkDir, self.selectedAppPath, self.desktopFilePath)
+        if self.rmvIconCheckBox.isChecked():
+            icon = self.iconFile
+        else:
+            icon = False
+
+        self.uninstallThread = UninstallThread(self.logger, self.symLinkDir, self.selectedAppPath, self.desktopFilePath, icon)
 
         self.uninstallThread.progressUpdate.connect(self.uninstallWorkerProgress)
         self.uninstallThread.finished.connect(self.uninstallWorkerFinished)

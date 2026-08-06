@@ -142,7 +142,7 @@ class UninstallThread(QThread):
     progressUpdate = Signal(str)
     error = Signal(str)
 
-    def __init__(self, logger, symLinkDir: Path, appImageFile: str | Path, desktopFile: str | Path) -> str:
+    def __init__(self, logger, symLinkDir: Path, appImageFile: str | Path, desktopFile: str | Path, icon: str | Path | bool):
         super().__init__()
 
         self.logger = logger
@@ -150,6 +150,7 @@ class UninstallThread(QThread):
         self.symLinkDir = symLinkDir
         self.appImageFile = appImageFile
         self.desktopFile = desktopFile
+        self.icon = icon
 
     def run(self):
         try:
@@ -166,6 +167,11 @@ class UninstallThread(QThread):
             Uninstaller.rmvInstalledFile(self.appImageFile)
             self.logger.addGeneralEntry(f"Permanently removed {self.appImageFile}")
             self.progressUpdate.emit(self.tr("Removed AppImage file"))
+
+            if self.icon:
+                Uninstaller.rmvInstalledFile(self.icon)
+                self.logger.addGeneralEntry(f"Permanently removed {self.icon}")
+                self.progressUpdate.emit(self.tr("Removed AppImage icon"))
 
             self.progressUpdate.emit(self.tr("Uninstallation finished"))
 
@@ -199,26 +205,20 @@ class UpdateAppConfigThread(QThread):
         self.icon = icon
 
         self.newAppImageFilePath = self.appImagesDir / Path(self.newAppImageFile).name
+        self.newDesktopFilePath = self.desktopEntriesDir / f"{self.newAppName}.desktop"
 
     def run(self):
         try:
-            if self.newAppImageFile:
-                symLinkFilePath = Uninstaller.getSymlinkPath(self.symLinkDir, self.oldAppImage)
-                cmdName = Path(symLinkFilePath).name
-
-            else:
-                self.newAppImageFile = False
-
-            self.newDesktopFile = self.desktopEntriesDir / f"{self.newAppName}.desktop"
-
-            if self.newAppImageFile:
-                Uninstaller.rmvInstalledFile(self.oldAppImage)
-                self.logger.addGeneralEntry(f"Permanently removed {self.oldAppImage}")
-
             Uninstaller.rmvInstalledFile(self.oldDesktopFile)
             self.logger.addGeneralEntry(f"Permanently removed {self.oldDesktopFile}")
 
             if self.newAppImageFile:
+                symLinkFilePath = Uninstaller.getSymlinkPath(self.symLinkDir, self.oldAppImage)
+                cmdName = symLinkFilePath.name
+
+                Uninstaller.rmvInstalledFile(self.oldAppImage)
+                self.logger.addGeneralEntry(f"Permanently removed {self.oldAppImage}")
+
                 Uninstaller.rmvInstalledFile(symLinkFilePath)
                 self.logger.addGeneralEntry(f"Permanently removed {symLinkFilePath}")
 
@@ -231,19 +231,14 @@ class UpdateAppConfigThread(QThread):
                 Installer.mkSymLink(self.appImagesDir, self.symLinkDir, self.newAppImageFile, cmdName)
                 self.logger.addGeneralEntry(f"Created symlink {cmdName} in {self.symLinkDir}")
 
-            if self.newAppImageFile:
                 StartMenuEntry.create(self.userDir, self.appImagesDir, self.desktopEntriesDir, self.iconsDir, self.newAppImageFilePath, self.icon, self.newAppName, self.newAppDescription, self.categories)
                 self.logger.addGeneralEntry(f"Created startmenu entry for {self.newAppName}")
             else:
                 StartMenuEntry.create(self.userDir, self.appImagesDir, self.desktopEntriesDir, self.iconsDir, self.oldAppImage, self.icon, self.newAppName, self.newAppDescription, self.categories)
                 self.logger.addGeneralEntry(f"Created startmenu entry for {self.newAppName}")
 
-            if self.newDesktopFile:
-                StartMenuEntry.updateLaunchFlags(self.newDesktopFile, self.newLaunchConfig)
-                self.logger.addGeneralEntry(f"Updated {self.newAppName} launch flags to {self.newLaunchConfig}")
-            else:
-                StartMenuEntry.updateLaunchFlags(self.oldDesktopFile, self.newLaunchConfig)
-                self.logger.addGeneralEntry(f"Updated {Path(self.oldDesktopFile).name} launch flags to {self.newLaunchConfig}")
+            StartMenuEntry.updateLaunchFlags(self.newDesktopFilePath, self.newLaunchConfig)
+            self.logger.addGeneralEntry(f"Updated {self.newAppName} launch flags to {self.newLaunchConfig}")
 
         except Exception as error:
             print(error)
