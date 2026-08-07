@@ -1,0 +1,43 @@
+name: appimage-installer
+base: core24
+version: '0.1-alpha'
+summary: Install and manage AppImages
+description: |
+  Manage all of your AppImages in a simple but feature rich tool.
+
+grade: devel
+confinement: devmode
+platforms:
+  amd64:
+
+apps:
+  appimage-installer:
+    command: bin/python3 -m main
+    extensions: [kde-neon-6]
+    plugs:
+      - home
+      - removable-media
+    desktop: snap/gui/appimage-installer.desktop
+
+icon: snap/gui/AppImage-Installer_Icon.svg
+
+parts:
+  python-runtime:
+    plugin: nil
+    stage-packages:
+      - libpython3.12-minimal
+      - libpython3.12-stdlib
+      - python3-minimal
+      - python3.12-minimal
+      - python3.12-venv
+
+  appimage-installer:
+    after: [python-runtime]
+    plugin: python
+    source: .
+    python-packages:
+      - PySide6
+
+  my-part:
+
+    plugin: nil

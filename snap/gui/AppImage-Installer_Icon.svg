@@ -1,0 +1,29 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="256" y2="256" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2B2B35"/>
+      <stop offset="1" stop-color="#1F2028"/>
+    </linearGradient>
+
+    <linearGradient id="accent" x1="64" y1="64" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9A8CFF"/>
+      <stop offset="1" stop-color="#7D6BFF"/>
+    </linearGradient>
+
+    <filter id="shadow" x="0" y="0" width="256" height="256" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect x="16" y="16" width="224" height="224" rx="52" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="64" y="52" width="128" height="152" rx="28" fill="#343746"/>
+
+    <path d="M128 82V146" stroke="url(#accent)" stroke-width="16" stroke-linecap="round"/>
+
+    <path d="M98 118L128 148L158 118" stroke="url(#accent)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="88" y="166" width="80" height="14" rx="7" fill="url(#accent)"/>
+  </g>
+</svg>
