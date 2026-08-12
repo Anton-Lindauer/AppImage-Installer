@@ -7,3 +7,6 @@ __pycache__
 
 # Qt
 *.qmlc
+
+# Snap builds
+snap_builds

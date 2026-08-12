@@ -575,6 +575,15 @@ class MainWindow(QMainWindow):
         stderr=subprocess.DEVNULL,
         start_new_session=True)
 
+#    def openProgram(self, command):
+#        print("gio open")
+#        subprocess.Popen(
+#            ["gio", "launch", str(command)],
+#            stdin=subprocess.DEVNULL,
+#            stdout=None,
+#            stderr=None,
+#            start_new_session=True,)
+
 # Only reloads parts of pages with different layouts for QSS and KDE themes
     def reloadTab1(self):
         currentIndex = self.tab1StackedWidget.currentIndex()
@@ -655,7 +664,7 @@ class MainWindow(QMainWindow):
                 if self.isKde:
                     launchAppBtn.setIcon(QIcon.fromTheme("media-playback-start"))
                 launchAppBtn.setObjectName("launchAppBtn")
-                launchAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.openProgram(app.filePath))
+                launchAppBtn.clicked.connect(lambda checked=False, app=installedApp: self.openProgram(app.desktopFile))
 
                 configureAppBtn = QPushButton(self.tr("Configure"))
                 if self.isKde:

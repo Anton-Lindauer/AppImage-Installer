@@ -18,6 +18,7 @@ if len(sys.argv) > 1:
     selectedAppImage = Path(sys.argv[1]).resolve()
 
 from PySide6.QtCore import QTranslator, QSettings, QLocale
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 from src.gui.mainWindow import MainWindow
 
@@ -44,8 +45,39 @@ def loadTranslator(app):
         print(f"Couldn't load: {language}, Fallback to English")
         return None
 
+def getAppIconPath() -> str | None:
+# Find the icon path if the app is running as snap
+    if "SNAP" in os.environ:
+        snapDir = Path(os.environ["SNAP"])
+        candidates = [
+            snapDir / "meta/gui/AppImage-Installer_Icon.svg",
+            snapDir / "snap/gui/AppImage-Installer_Icon.svg",
+            snapDir / "assets/AppImage-Installer_Icon.svg",
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return str(candidate)
+            
+# Find the icon path if the app is run unpackaged with python from source
+    projectDir = Path(__file__).resolve().parent
+    localCandidates = [
+        projectDir / "snap/gui/AppImage-Installer_Icon.svg",
+        projectDir / "assets/AppImage-Installer_Icon.svg",
+    ]
+    for candidate in localCandidates:
+        if candidate.is_file():
+            return str(candidate)
+
+    return None
+
 def main():
     app = QApplication(sys.argv)
+
+    app.setDesktopFileName("appimage-installer")
+
+    appIconPath = getAppIconPath()
+    if appIconPath:
+        app.setWindowIcon(QIcon(appIconPath))
     
 # Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
     if desktopEnv == "KDE":

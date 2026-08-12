@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=AppImage Installer
-Exec=appimage-Installer
+Exec=appimage-installer
 Icon=${SNAP}/meta/gui/AppImage-Installer_Icon.svg
 Type=Application
 Categories=Utility;
