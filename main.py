@@ -8,19 +8,12 @@ from pathlib import Path
 
 # KDE integration is necessary, because KDE also uses Qt and can mess with QSS stylesheets
 # Has to be initialized before ANYTHING else
+# In the snap this isn't wanted, the snap provides thoose styles with the kde-neon-6 extension
 desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
-if desktopEnv == "KDE":
+if desktopEnv == "KDE" and "SNAP" not in os.environ:
     os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
     print("Set environment")
     print(f"Desktop env: {desktopEnv}")
-
-    if "SNAP_DESKTOP_RUNTIME" in os.environ:
-        kdePlugins = os.path.join(
-            os.environ["SNAP_DESKTOP_RUNTIME"], "usr/lib/qt6/plugins"
-        )
-        print(f"KDE plugins: {kdePlugins}")
-        if os.path.exists(kdePlugins):
-            QCoreApplication.addLibraryPath(kdePlugins)
 
 # Accept a file path from the right click menu in the file manager
 selectedAppImage = None
