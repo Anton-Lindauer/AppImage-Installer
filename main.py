@@ -7,9 +7,20 @@ import os
 from pathlib import Path
 
 # KDE integration is necessary, because KDE also uses Qt and can mess with QSS stylesheets
+# Has to be initialized before ANYTHING else
 desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
 if desktopEnv == "KDE":
     os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
+    print("Set environment")
+    print(f"Desktop env: {desktopEnv}")
+
+    if "SNAP_DESKTOP_RUNTIME" in os.environ:
+        kdePlugins = os.path.join(
+            os.environ["SNAP_DESKTOP_RUNTIME"], "usr/lib/qt6/plugins"
+        )
+        print(f"KDE plugins: {kdePlugins}")
+        if os.path.exists(kdePlugins):
+            QCoreApplication.addLibraryPath(kdePlugins)
 
 # Accept a file path from the right click menu in the file manager
 selectedAppImage = None
@@ -17,21 +28,45 @@ selectedAppImage = None
 if len(sys.argv) > 1:
     selectedAppImage = Path(sys.argv[1]).resolve()
 
-from PySide6.QtCore import QTranslator, QSettings, QLocale
+from PySide6.QtCore import QTranslator, QSettings, QLocale, QCoreApplication
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QStyleFactory
 from src.gui.mainWindow import MainWindow
+
+def getSysLanguage() -> str:
+# There are two ways to figure out the system language
+# Firstly by reading out environment variables, which is also the most reliable way
+    for envVar in ("LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG"):
+        value = os.environ.get(envVar)
+
+        if value and value not in ("C", "POSIX"):
+            shortValue = value.split(".")[0].split(":")[0]
+
+            if shortValue:
+                print("V1")
+                return shortValue[:2].lower()
+
+# Secondly via QLocal 
+    sysLanguage = QLocale.system().name()
+
+    if sysLanguage and sysLanguage not in ("C", "POSIX"):
+        print("V2")
+        return sysLanguage[:2].lower()
+
+# The fallback if reading out the system language failed
+    return "en"
+
 
 def loadTranslator(app):
     settings = QSettings("Anton-Lindauer", "AppImage-Installer")
 
-# Write the used language to the settings if there is no entry allready
-    if not settings.contains("language"):
-        settings.setValue("language", QLocale.system().name()[:2])
-    
-    language = settings.value("language", QLocale.system().name()[:2], type=str)
+    sysLanguage = getSysLanguage()
 
-# English is the default language and doesn't have a separate .qm file
+    if not settings.contains("language"):
+        settings.setValue("language", sysLanguage)
+
+    language = settings.value("language", sysLanguage, type=str)
+
     if language == "en":
         return None
 
@@ -72,15 +107,17 @@ def getAppIconPath() -> str | None:
 
 def main():
     app = QApplication(sys.argv)
-
     app.setDesktopFileName("appimage-installer")
 
     appIconPath = getAppIconPath()
     if appIconPath:
         app.setWindowIcon(QIcon(appIconPath))
+
+    print(f"Keys: {QStyleFactory.keys()}")
     
 # Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
-    if desktopEnv == "KDE":
+    availableStyles = QStyleFactory.keys()
+    if "Breeze" in availableStyles:
         app.setStyle("Breeze")
 
     loadTranslator(app)

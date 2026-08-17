@@ -2,7 +2,7 @@
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox, QListView
 from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings
-from PySide6.QtGui import QGuiApplication, QDesktopServices
+from PySide6.QtGui import QGuiApplication, QDesktopServices, QPalette
 
 from pathlib import Path
 import os
@@ -32,12 +32,15 @@ class MenuBarUtils(QObject):
         match selectedTheme:
             case "sysTheme":
                 self.settings.setValue("theme", "sysTheme")
-                systemColorScheme = QGuiApplication.instance().styleHints().colorScheme()
+                
+                systemColorScheme = QGuiApplication.palette().color(QPalette.ColorRole.Window)
+
                 themeToLoad = (
                     self.modernBlueDarkStylePath
-                    if systemColorScheme == Qt.ColorScheme.Dark
+                    if systemColorScheme.lightness() < 128
                     else self.modernLightStylePath
                 )
+
             case "modernBlueDarkTheme":
                 self.settings.setValue("theme", "modernBlueDarkTheme")
                 themeToLoad = self.modernBlueDarkStylePath

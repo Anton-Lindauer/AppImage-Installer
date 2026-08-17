@@ -16,11 +16,12 @@ apps:
     environment:
       HOME: $SNAP_REAL_HOME
       PYTHONPATH: $SNAP:$PYTHONPATH
+      QT_PLUGIN_PATH: $SNAP_DESKTOP_RUNTIME/usr/lib/qt6/plugins:$QT_PLUGIN_PATH
     extensions: [kde-neon-6]
     plugs:
       - home
       - removable-media
-      - fuse-support
+#      - fuse-support
 
 icon: snap/gui/AppImage-Installer_Icon.svg
 
@@ -33,6 +34,7 @@ parts:
       - python3-minimal
       - python3.12-minimal
       - python3.12-venv
+      - locales
 
   appimage-installer-deps:
     after: [python-runtime]
@@ -48,3 +50,5 @@ parts:
       - main.py
       - src/
       - assets/
+      - assets/icons/
+      - translations/
