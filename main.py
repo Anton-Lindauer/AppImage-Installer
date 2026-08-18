@@ -10,10 +10,16 @@ from pathlib import Path
 # Has to be initialized before ANYTHING else
 # In the snap this isn't wanted, the snap provides thoose styles with the kde-neon-6 extension
 desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
+
 if desktopEnv == "KDE" and "SNAP" not in os.environ:
-    os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
-    print("Set environment")
-    print(f"Desktop env: {desktopEnv}")
+
+# KDE integration for Arch based distros
+    if Path("/usr/lib/qt6/plugins").exists():
+        os.environ["QT_PLUGIN_PATH"] = "/usr/lib/qt6/plugins"
+
+# KDE integratioon for Debian based distros
+    if Path("/usr/lib/x86_64-linux-gnu/qt6/plugins").exists():
+        os.environ["QT_PLUGIN_PATH"] = "/usr/lib/x86_64-linux-gnu/qt6/plugins"
 
 # Accept a file path from the right click menu in the file manager
 selectedAppImage = None
@@ -105,6 +111,7 @@ def main():
     appIconPath = getAppIconPath()
     if appIconPath:
         app.setWindowIcon(QIcon(appIconPath))
+        print(appIconPath)
 
     print(f"Keys: {QStyleFactory.keys()}")
     

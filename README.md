@@ -31,7 +31,9 @@ Should work on any **Linux** Distro, doesn't work on Windows.
 
 ## How to install and launch the CLI or GUI version
 
-[Installation guide can be found here.](HowToInstall.md)
+Installation guide can be found [here](HowToInstall.md)
+
+If you want to build the snap from source, click [here](How_to_craft_the_snap.md)
 
 ## Have a look at the GUI version
 
