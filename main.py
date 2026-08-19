@@ -27,10 +27,10 @@ selectedAppImage = None
 if len(sys.argv) > 1:
     selectedAppImage = Path(sys.argv[1]).resolve()
 
-from PySide6.QtCore import QTranslator, QSettings, QLocale, QCoreApplication
+from PySide6.QtCore import QTranslator, QSettings, QLocale
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QStyleFactory
-from src.gui.mainWindow import MainWindow
+from src.gui.main_window import MainWindow
 
 def getSysLanguage() -> str:
 # There are two ways to figure out the system language
@@ -84,9 +84,9 @@ def getAppIconPath() -> str | None:
     if "SNAP" in os.environ:
         snapDir = Path(os.environ["SNAP"])
         candidates = [
-            snapDir / "meta/gui/AppImage-Installer_Icon.svg",
-            snapDir / "snap/gui/AppImage-Installer_Icon.svg",
-            snapDir / "assets/AppImage-Installer_Icon.svg",
+            snapDir / "meta/gui/appimage-installer_icon.svg",
+            snapDir / "snap/gui/appimage-installer_icon.svg",
+            snapDir / "assets/appimage-installer_icon.svg",
         ]
         for candidate in candidates:
             if candidate.is_file():
@@ -95,8 +95,8 @@ def getAppIconPath() -> str | None:
 # Find the icon path if the app is run unpackaged with python from source
     projectDir = Path(__file__).resolve().parent
     localCandidates = [
-        projectDir / "snap/gui/AppImage-Installer_Icon.svg",
-        projectDir / "assets/AppImage-Installer_Icon.svg",
+        projectDir / "snap/gui/appimage-installer_icon.svg",
+        projectDir / "assets/appimage-installer_icon.svg",
     ]
     for candidate in localCandidates:
         if candidate.is_file():
@@ -116,9 +116,12 @@ def main():
     print(f"Keys: {QStyleFactory.keys()}")
     
 # Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
+# Only load it if "Breeze" is available AND KDE is the desktop environment,
+# because "Breeze" can show up as "available" on none KDE systems and break parts of the UI
     availableStyles = QStyleFactory.keys()
-    if "Breeze" in availableStyles:
+    if "Breeze" in availableStyles and desktopEnv == "KDE":
         app.setStyle("Breeze")
+        print("Set Breeze")
 
     loadTranslator(app)
         

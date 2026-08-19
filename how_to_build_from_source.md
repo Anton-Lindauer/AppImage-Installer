@@ -94,7 +94,7 @@ Type=Application
 Name=AppImage Installer
 Comment=Install AppImages easily
 Exec=python3 /home/{username}/AppImage-Installer/main.py
-Icon=/home/{username}/AppImage-Installer/assets/icons/AppImage-Installer_Icon.svg
+Icon=/home/{username}/AppImage-Installer/assets/icons/appimage-installer_icon.svg
 Terminal=false
 Categories=Utility;
 ```

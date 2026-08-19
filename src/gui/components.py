@@ -16,10 +16,10 @@ class MenuBarUtils(QObject):
 
         currentFilePath = Path(__file__).resolve()
         projectRoot = currentFilePath.parent.parent.parent
-        self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modernLightStyle.qss"
-        self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernBlueDarkStyle.qss"
-        self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modernDarkStyle.qss"
-        self.kdeStylePath = projectRoot / "assets" / "stylesheets" / "kdeStyle.qss"
+        self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modern_light_style.qss"
+        self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modern_blue_dark_style.qss"
+        self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modern_dark_style.qss"
+        self.kdeStylePath = projectRoot / "assets" / "stylesheets" / "kde_style.qss"
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
 

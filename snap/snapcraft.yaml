@@ -22,7 +22,7 @@ apps:
       - home
       - removable-media
 
-icon: snap/gui/AppImage-Installer_Icon.svg
+icon: snap/gui/appimage-installer_icon.svg
 
 parts:
   python-runtime:
