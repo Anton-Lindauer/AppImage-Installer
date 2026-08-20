@@ -49,5 +49,4 @@ parts:
       - main.py
       - src/
       - assets/
-      - assets/icons/
       - translations/

@@ -240,7 +240,7 @@ QComboBox::drop-down {
 }
 
 QComboBox::down-arrow {
-    image: url(assets/icons/light_themes/arrow_down.svg);
+    image: url(assets:icons/light_themes/arrow_down.svg);
     width: 12px;
     height: 12px;
 }
@@ -361,7 +361,7 @@ QCheckBox::indicator:hover {
 QCheckBox::indicator:checked {
     background-color: #3281ea;
     border: 1.5px solid #3281ea;
-    image: url(assets/icons/light_themes/check.svg)
+    image: url(assets:icons/light_themes/check.svg)
 }
 
 /* Everything that's only for tab one and two page one */
@@ -452,7 +452,7 @@ QPushButton#launchAppBtn {
     padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
-    qproperty-icon: url(assets/icons/light_themes/play.svg)
+    qproperty-icon: url(assets:icons/light_themes/play.svg)
 }
 
 QPushButton#launchAppBtn:hover {
@@ -472,7 +472,7 @@ QPushButton#configureAppBtn {
     padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
-    qproperty-icon: url(assets/icons/light_themes/settings.svg)
+    qproperty-icon: url(assets:icons/light_themes/settings.svg)
 }
 
 QPushButton#configureAppBtn:hover {
@@ -492,7 +492,7 @@ QPushButton#deleteAppBtn {
     padding: 2px;
     padding-left: 6px;
     padding-right: 6px;
-    qproperty-icon: url(assets/icons/all_themes/trash.svg)
+    qproperty-icon: url(assets:icons/all_themes/trash.svg)
 }
 
 QPushButton#deleteAppBtn:hover {

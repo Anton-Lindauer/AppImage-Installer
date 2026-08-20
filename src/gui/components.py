@@ -1,7 +1,7 @@
 # This file provides Qt functionality for the Pyside6 GUI. This script is not suppossed to be run alone. 
 
 from PySide6.QtWidgets import QApplication, QFileDialog, QDialog, QVBoxLayout, QLabel, QCheckBox, QComboBox, QListView
-from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings
+from PySide6.QtCore import Qt, Signal, QUrl, QObject, QSettings, QDir
 from PySide6.QtGui import QGuiApplication, QDesktopServices, QPalette
 
 from pathlib import Path
@@ -16,12 +16,17 @@ class MenuBarUtils(QObject):
 
         currentFilePath = Path(__file__).resolve()
         projectRoot = currentFilePath.parent.parent.parent
-        self.modernLightStylePath = projectRoot / "assets" / "stylesheets" / "modern_light_style.qss"
-        self.modernBlueDarkStylePath = projectRoot / "assets" / "stylesheets" / "modern_blue_dark_style.qss"
-        self.modernDarkStylePath = projectRoot / "assets" / "stylesheets" / "modern_dark_style.qss"
-        self.kdeStylePath = projectRoot / "assets" / "stylesheets" / "kde_style.qss"
+        assetsPath = projectRoot / "assets"
+
+        self.modernLightStylePath = assetsPath / "stylesheets" / "modern_light_style.qss"
+        self.modernBlueDarkStylePath = assetsPath / "stylesheets" / "modern_blue_dark_style.qss"
+        self.modernDarkStylePath = assetsPath / "stylesheets" / "modern_dark_style.qss"
+        self.kdeStylePath = assetsPath / "stylesheets" / "kde_style.qss"
 
         self.desktopEnv = os.environ.get("XDG_CURRENT_DESKTOP")
+
+# Fix for icon paths in QSS being wrong in the snap
+        QDir.addSearchPath("assets", str(assetsPath))
 
     @staticmethod
     def openRepo():
