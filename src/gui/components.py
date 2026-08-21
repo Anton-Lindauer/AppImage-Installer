@@ -77,7 +77,7 @@ class MenuBarUtils(QObject):
         generalSettingsTitle = QLabel(self.tr("General Settings"))
         generalSettingsTitle.setObjectName("title")
 
-        autoDeleteLogsCheckbox = QCheckBox(self.tr("Auto delete old logs"))
+        autoDeleteLogsCheckbox = QCheckBox(self.tr("Remove old logs"))
         autoDeleteLogsCheckbox.setChecked(self.settings.value("autoDelete", True, type=bool))
         autoDeleteLogsCheckbox.toggled.connect(lambda checked: self.settings.setValue("autoDelete", checked))
 

@@ -42,14 +42,12 @@ def getSysLanguage() -> str:
             shortValue = value.split(".")[0].split(":")[0]
 
             if shortValue:
-                print("V1")
                 return shortValue[:2].lower()
 
 # Secondly via QLocal 
     sysLanguage = QLocale.system().name()
 
     if sysLanguage and sysLanguage not in ("C", "POSIX"):
-        print("V2")
         return sysLanguage[:2].lower()
 
 # The fallback if reading out the system language failed
@@ -112,8 +110,6 @@ def main():
     if appIconPath:
         app.setWindowIcon(QIcon(appIconPath))
         print(appIconPath)
-
-    print(f"Keys: {QStyleFactory.keys()}")
     
 # Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
 # Only load it if "Breeze" is available AND KDE is the desktop environment,
@@ -121,7 +117,6 @@ def main():
     availableStyles = QStyleFactory.keys()
     if "Breeze" in availableStyles and desktopEnv == "KDE":
         app.setStyle("Breeze")
-        print("Set Breeze")
 
     loadTranslator(app)
         

@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         settingsMenu = mainMenuBar.addMenu(self.tr("Settings"))
         helpMenu = mainMenuBar.addMenu(self.tr("Help"))
 
-        pickFileAction = fileMenu.addAction(self.tr("Pick a file to install"))
+        pickFileAction = fileMenu.addAction(self.tr("Select AppImage file"))
         fileMenu.addSeparator()
         refreshListAction = fileMenu.addAction(self.tr("Refresh list"))
 
@@ -192,7 +192,7 @@ class MainWindow(QMainWindow):
         pageTitle.setObjectName("title")
 
 # Let the user pick an AppImage from anywhere
-        openFileDialogBtn = QPushButton(self.tr("Pick a file to install"))
+        openFileDialogBtn = QPushButton(self.tr("Select AppImage file"))
         openFileDialogBtn.clicked.connect(lambda: self.tab1Page1FileSelector.openFileDialog(self))
 
 # QScrollArea with a container for all the QRadioButtons with adjustable size to fit up to five QRadioButtons and then enable scrolling
@@ -242,7 +242,7 @@ class MainWindow(QMainWindow):
                 self.tab1Page1RadioBtnGroup.addButton(radioBtn)
 
         else:
-            noFilesFoundLabel = QLabel(self.tr("No .AppImage file has been found in your Downloads directory"))
+            noFilesFoundLabel = QLabel(self.tr("No AppImage file has been found in your Downloads directory"))
             noFilesFoundLabel.setObjectName("message")
             self.tab1Page1ContainerLayout.addWidget(noFilesFoundLabel)
 
@@ -291,13 +291,13 @@ class MainWindow(QMainWindow):
 
 # All the things the user has to enter
         self.programInfoLabels = [self.tr("Terminal Command"),
-                                  self.tr("Display Name"),
+                                  self.tr("App Name"),
                                   self.tr("Short Description"),
                                   self.tr("Categories")]
         
 # More information on what to enter for the user
         fieldHelpTexts = [self.tr("The command used to launch the application from the terminal."),
-                          self.tr("The name that will appear in the start menu and application list."),
+                          self.tr("Used as the name of the start menu entry."),
                           self.tr("A brief summary of the application."),
                           self.tr("Determines the placement in the start menu.")]
         
@@ -492,10 +492,6 @@ class MainWindow(QMainWindow):
 
         if selectedCategories:
             self.programCategory = ";".join(selectedCategories)
-
-# Temporary way of deleting old logs
-        if self.settings.value("autoDelete", True, type=bool):
-            self.logger.rmvOldLogs()
 
 # Function that installs the program
         self.installThread = InstallThread(self.logger, self.userDir, self.appImagesDir, self.symLinkDir, self.desktopEntriesDir, self.iconsDir, self.selectedAppImagePath, self.programName,self.programDescription, self.programCategory, self.cmdName)
@@ -779,9 +775,9 @@ class MainWindow(QMainWindow):
 
                 self.updateFileInput = QLineEdit()
                 self.updateFileInput.setObjectName("appConfigInput")
-                self.updateFileInput.setPlaceholderText(self.tr("DifferentFileVersion.AppImage"))
+                self.updateFileInput.setPlaceholderText(self.tr("Different_File_Version.AppImage"))
 
-                updateFileBtn = QPushButton(self.tr("Install a new version of this AppImage"))
+                updateFileBtn = QPushButton(self.tr("Select a newer file version"))
                 updateFileBtn.clicked.connect(lambda: self.configWindowFileSelector.openFileDialog(self))
                 updateFileBtn.setObjectName("configWindowBtn")
 
@@ -796,7 +792,7 @@ class MainWindow(QMainWindow):
                 self.saveChangesBtn.setObjectName("configWindowBtn")
                 self.saveChangesBtn.clicked.connect(lambda: self.configWindowWorker(desktopFile, categories, appConfig.iconFile))
 
-                self.discardChangesBtn = QPushButton(self.tr("Discard"))
+                self.discardChangesBtn = QPushButton(self.tr("Discard changes"))
                 self.discardChangesBtn.setObjectName("configWindowBtn")
                 self.discardChangesBtn.clicked.connect(lambda: self.appConfigDialog.close())
 
@@ -879,7 +875,7 @@ class MainWindow(QMainWindow):
         mainLayout.setContentsMargins(20, 10, 20, 0)
         mainLayout.setSpacing(6)
 
-        pageTitle = QLabel(self.tr("Uninstallation process"))
+        pageTitle = QLabel(self.tr("Uninstallation"))
         pageTitle.setObjectName("title")
 
 # QGroupBox thats used as a terminal for the status updates, that the user receives

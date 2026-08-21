@@ -50,3 +50,11 @@ parts:
       - src/
       - assets/
       - translations/
+
+  licenses:
+    plugin: dump
+    source: .
+    organize:
+      THIRD_PARTY_LICENSES.md: usr/share/doc/appimage-installer/THIRD_PARTY_LICENSES.md
+    stage:
+      - usr/share/doc/appimage-installer/THIRD_PARTY_LICENSES.md

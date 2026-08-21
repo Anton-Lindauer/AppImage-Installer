@@ -2,7 +2,7 @@
 import faulthandler
 faulthandler.enable()
 
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal, QSettings
 
 from src.core.logic import Installer, StartMenuEntry, Uninstaller, AppConfigReader
 
@@ -19,11 +19,18 @@ class AppImageListThread(QThread):
         super().__init__()
 
         self.logger = logger
+        self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
         
         self.downloadsDir = downloadsDir
 
     def run(self):
         try:
+# Old logs should be removed when the program starts
+# A seperate QThread would be the perfect solution, but it's unnecessary imo
+# Checking for old logs when the list is refreshed should be so fast that nobody notices
+            if self.settings.value("autoDelete", True, type=bool):
+                self.logger.rmvOldLogs()
+
             appImages = Installer.listAppImageFiles(self.downloadsDir)
             self.logger.addGeneralEntry(appImages)
 
@@ -97,8 +104,8 @@ class InstallThread(QThread):
             self.progressUpdate.emit(self.tr("Program has been made executable (2/3 tasks finished)"))
 
             StartMenuEntry.create(self.userDir, self.appImagesDir, self.desktopEntriesDir, self.iconsDir, self.appImageFile, self.icon, self.programName, self.programDescription, self.programCategories)
-            self.logger.addGeneralEntry(f"Created startmenu entry for {self.programName}")
-            self.progressUpdate.emit(self.tr("Startmenu entry has been created (3/3 tasks finished)"))
+            self.logger.addGeneralEntry(f"Created start menu entry for {self.programName}")
+            self.progressUpdate.emit(self.tr("Start menu entry has been created (3/3 tasks finished)"))
 
             self.progressUpdate.emit(self.tr("Installation finished"))
 
@@ -162,7 +169,7 @@ class UninstallThread(QThread):
 
             Uninstaller.rmvInstalledFile(self.desktopFile)
             self.logger.addGeneralEntry(f"Permanently removed {self.desktopFile}")
-            self.progressUpdate.emit(self.tr("Removed startmenu entry"))
+            self.progressUpdate.emit(self.tr("Removed start menu entry"))
 
             Uninstaller.rmvInstalledFile(self.appImageFile)
             self.logger.addGeneralEntry(f"Permanently removed {self.appImageFile}")
