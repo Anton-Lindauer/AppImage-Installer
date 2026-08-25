@@ -63,11 +63,18 @@ snapcraft pack
 Install the builded snap package
 
 ```bash
-sudo snap install ./appimage-installer_0.1-alpha_amd64.snap --dangerous --devmode
+sudo snap install ./appimage-installer_1.0.0-alpha_amd64.snap --dangerous
+```
+
+Give the Snap acces to the required hidden directories
+
+```bash
+sudo snap connect appimage-installer:dot-config-appimage-installer
+sudo snap connect appimage-installer:dot-local-share-appimage-installer
+sudo snap connect appimage-installer:dot-local-bin-appimage-installer
 ```
 
 Launch the snap
-
 
 ```bash
 appimage-installer

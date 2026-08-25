@@ -1,28 +1,60 @@
 name: appimage-installer
-base: core24
-version: '0.1-alpha'
+title: AppImage-Installer
+version: '1.0.0-alpha'
 summary: Install and manage AppImages
 description: |
   Manage all of your AppImages in a simple but feature rich tool.
 
-grade: devel
-confinement: devmode
+base: core24
+grade: stable
+confinement: strict
+
+license: MIT
+contact: primula99@outlook.de
+issues: https://github.com/Anton-Lindauer/AppImage-Installer/issues
+source-code: https://github.com/Anton-Lindauer/AppImage-Installer
+website: https://github.com/Anton-Lindauer/AppImage-Installer
+
 platforms:
   amd64:
+
+icon: snap/gui/appimage-installer_icon.svg
+
+plugs:
+
+  dot-config-appimage-installer:
+    interface: personal-files
+    write:
+      - $HOME/.config
+
+  dot-local-share-appimage-installer:
+    interface: personal-files
+    write:
+      - $HOME/.local/share
+
+  dot-local-bin-appimage-installer:
+    interface: personal-files
+    write:
+      - $HOME/.local/bin
 
 apps:
   appimage-installer:
     command: bin/python3 $SNAP/main.py
+
     environment:
       HOME: $SNAP_REAL_HOME
       PYTHONPATH: $SNAP:$PYTHONPATH
       QT_PLUGIN_PATH: $SNAP_DESKTOP_RUNTIME/usr/lib/qt6/plugins:$QT_PLUGIN_PATH
-    extensions: [kde-neon-6]
+
+    extensions:
+      - kde-neon-6
+
     plugs:
       - home
       - removable-media
-
-icon: snap/gui/appimage-installer_icon.svg
+      - dot-config-appimage-installer
+      - dot-local-share-appimage-installer
+      - dot-local-bin-appimage-installer
 
 parts:
   python-runtime:
@@ -36,7 +68,8 @@ parts:
       - locales
 
   appimage-installer-deps:
-    after: [python-runtime]
+    after:
+      - python-runtime
     plugin: python
     source: .
     python-packages:

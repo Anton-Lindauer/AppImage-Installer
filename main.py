@@ -109,7 +109,6 @@ def main():
     appIconPath = getAppIconPath()
     if appIconPath:
         app.setWindowIcon(QIcon(appIconPath))
-        print(appIconPath)
     
 # Loading "Breeze" loads the KDE Plasma theme, even if it has a different name in the KDE settings theme selection
 # Only load it if "Breeze" is available AND KDE is the desktop environment,
