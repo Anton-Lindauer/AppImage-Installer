@@ -75,6 +75,52 @@ parts:
     python-packages:
       - PySide6==6.11.1
 
+    override-prime: |
+      craftctl default
+
+      QT="$CRAFT_PRIME/lib/python3.12/site-packages/PySide6/Qt"
+
+      rm -f "$QT/lib/libQt63D"*
+      rm -f "$QT/lib/libQt6Charts"*
+      rm -f "$QT/lib/libQt6DataVisualization"*
+      rm -f "$QT/lib/libQt6Designer"*
+      rm -f "$QT/lib/libQt6Graphs"*
+      rm -f "$QT/lib/libQt6Location"*
+      rm -f "$QT/lib/libQt6Multimedia"*
+      rm -f "$QT/lib/libQt6NetworkAuth"*
+      rm -f "$QT/lib/libQt6Pdf"*
+      rm -f "$QT/lib/libQt6PdfWidgets"*
+      rm -f "$QT/lib/libQt6Positioning"*
+      rm -f "$QT/lib/libQt6Quick"*
+      rm -f "$QT/lib/libQt6Quick3D"*
+      rm -f "$QT/lib/libQt6QuickControls2"*
+      rm -f "$QT/lib/libQt6QuickTemplates2"*
+      rm -f "$QT/lib/libQt6QuickTest"*
+      rm -f "$QT/lib/libQt6QuickWidgets"*
+      rm -f "$QT/lib/libQt6RemoteObjects"*
+      rm -f "$QT/lib/libQt6Scxml"*
+      rm -f "$QT/lib/libQt6Sensors"*
+      rm -f "$QT/lib/libQt6SerialBus"*
+      rm -f "$QT/lib/libQt6SerialPort"*
+      rm -f "$QT/lib/libQt6SpatialAudio"*
+      rm -f "$QT/lib/libQt6StateMachine"*
+      rm -f "$QT/lib/libQt6TextToSpeech"*
+      rm -f "$QT/lib/libQt6VirtualKeyboard"*
+      rm -f "$QT/lib/libQt6WebChannel"*
+      rm -f "$QT/lib/libQt6WebEngine"*
+      rm -f "$QT/lib/libQt6WebSockets"*
+      rm -f "$QT/lib/libQt6WebView"*
+
+      rm -rf "$QT/plugins/sqldrivers"
+      rm -rf "$QT/plugins/geoservices"
+      rm -rf "$QT/plugins/position"
+      rm -rf "$QT/plugins/multimedia"
+      rm -rf "$QT/plugins/webview"
+      rm -rf "$QT/plugins/renderers"
+      rm -rf "$QT/plugins/sceneparsers"
+
+      rm -f "$QT/plugins/imageformats/libqtiff.so"
+
   app-code:
     plugin: dump
     source: .
