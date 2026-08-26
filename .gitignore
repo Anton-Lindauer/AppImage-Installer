@@ -11,4 +11,4 @@ __pycache__
 # Snap builds
 snap_builds
 
-appimage-installer_1.0.0-alpha_amd64.snap
+appimage-installer_1.1.0-alpha_amd64.snap
