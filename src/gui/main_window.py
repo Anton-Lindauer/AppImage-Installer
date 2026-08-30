@@ -27,7 +27,11 @@ class MainWindow(QMainWindow):
         self.symLinkDir = self.userDir / ".local" / "bin"
         self.iconsDir = self.userDir / ".local" / "share" / "icons"
         self.desktopEntriesDir = self.userDir / ".local" / "share" / "applications"
-        self.logsDir = self.userDir / ".local" / "share" / "AppImage-Installer" / "logs"
+
+        if "SNAP" in os.environ:
+            self.logsDir = Path(os.environ["SNAP_USER_COMMON"]) / "logs"
+        else:
+            self.logsDir = self.userDir / ".local" / "share" / "AppImage-Installer" / "logs"
 
         self.menuBarUtils = MenuBarUtils()
         self.settings = QSettings("Anton-Lindauer", "AppImage-Installer")
