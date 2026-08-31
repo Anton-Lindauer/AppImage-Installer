@@ -1,6 +1,6 @@
 name: appimage-installer
 title: AppImage-Installer
-version: '1.2.0-alpha'
+version: '1.2.1-alpha'
 summary: Install and manage AppImages
 description: |
   Manage all of your AppImages in a simple but feature rich tool.
@@ -22,17 +22,17 @@ icon: snap/gui/appimage-installer_icon.svg
 
 plugs:
 
-  appimage-installer-desktop:
+  dot-local-share-applications:
     interface: personal-files
     write:
       - $HOME/.local/share/applications
 
-  appimage-installer-bin:
+  dot-local-bin:
     interface: personal-files
     write:
       - $HOME/.local/bin
 
-  appimage-installer-icons:
+  dot-local-share-icons:
     interface: personal-files
     write:
       - $HOME/.local/share/icons
@@ -52,9 +52,9 @@ apps:
     plugs:
       - home
       - removable-media
-      - appimage-installer-desktop
-      - appimage-installer-bin
-      - appimage-installer-icons
+      - dot-local-share-applications
+      - dot-local-bin
+      - dot-local-share-icons
 
 parts:
   python-runtime:
