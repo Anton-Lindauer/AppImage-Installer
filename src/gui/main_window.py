@@ -566,23 +566,14 @@ class MainWindow(QMainWindow):
         mainLayout.addStretch()
         
         return mainWidget
-    
+
     def openProgram(self, command):
         subprocess.Popen(
-        [command],
-        stdin=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        start_new_session=True)
-
-#    def openProgram(self, command):
-#        print("gio open")
-#        subprocess.Popen(
-#            ["gio", "launch", str(command)],
-#            stdin=subprocess.DEVNULL,
-#            stdout=None,
-#            stderr=None,
-#            start_new_session=True,)
+            ["gio", "launch", str(command)],
+            stdin=subprocess.DEVNULL,
+            stdout=None,
+            stderr=None,
+            start_new_session=True,)
 
 # Only reloads parts of pages with different layouts for QSS and KDE themes
     def reloadTab1(self):

@@ -55,6 +55,14 @@ class Installer():
 
             desktopFilePath = desktopFilePaths[0]
 
+            if not Path(desktopFilePath).exists():
+                return {
+                    "exec": "",
+                    "name": "",
+                    "comment": "",
+                    "categories": ""
+                }
+
             metadata = {}
 
             with open(desktopFilePath, encoding="utf-8") as f:
@@ -132,16 +140,18 @@ class StartMenuEntry():
 # AppImages contain a icon.png which will be used as program icon 
             iconFile = next(squashfsRoot.rglob("*.png"), None)
 
-            if iconFile is None:
-                raise RuntimeError("No .png files found in AppImage")
+            if iconFile:
+                
+                programIcon = Path(iconFile).name
 
-            programIcon = Path(iconFile).name
-
-            iconPath = iconsDir / programIcon
+                iconPath = iconsDir / programIcon
 
 # Only move the icon if it doesn't already exist; allows for multiple installations of the same program
-            if not iconPath.exists():
-                shutil.move(iconFile, iconsDir)
+                if not iconPath.exists():
+                    shutil.move(iconFile, iconsDir)
+
+            else:
+                programIcon = ""
         
             shutil.rmtree(workDir, ignore_errors=True)
 
