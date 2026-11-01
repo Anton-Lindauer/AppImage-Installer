@@ -50,12 +50,9 @@ class Installer():
 # AppImages contain a .desktop file with the same content as the .desktop file for the startmenu entry
             desktopFilePaths = list(squashfsRootDir.rglob("*.desktop"))
 
-            if not desktopFilePaths:
-                raise RuntimeError("No .desktop files found in AppImage")
-
             desktopFilePath = desktopFilePaths[0]
 
-            if not Path(desktopFilePath).exists():
+            if not Path(desktopFilePath).is_file():
                 return {
                     "exec": "",
                     "name": "",
